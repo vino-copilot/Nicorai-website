@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import apiService, { ChatMessage, DynamicView } from '../services/api';
 import DynamicContentRenderer from './DynamicContentRenderer';
+import Image from 'next/image';
 
 interface ChatProps {
   isVisible: boolean;
@@ -20,7 +21,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
   const faqSuggestions = [
     "How can AI help my business?",
     "What services does NicorAI offer?",
-    "How do I get started with NicorAI?",
+    "Show me a comparison of your products",
     "What industries do you specialize in?"
   ];
 
@@ -82,6 +83,22 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
     setIsLoading(true);
     setError(null);
     
+    // Clear any previous dynamic view when sending a new message
+    // Only keep it if the new message specifically requests a view
+    const lowerContent = content.toLowerCase().trim();
+    const isViewRequest = 
+      lowerContent.includes('contact') ||
+      lowerContent.includes('comparison') || 
+      lowerContent.includes('products') ||
+      lowerContent.includes('chart') || 
+      lowerContent.includes('table') ||
+      lowerContent.includes('about nicor') ||
+      lowerContent.includes('show');
+      
+    if (!isViewRequest) {
+      setDynamicView(null);
+    }
+    
     // If in initial view, create a new chat before sending
     if (isInitialView) {
       const newChatId = apiService.createNewChat();
@@ -108,17 +125,60 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
       // Update local messages state from the API service
       setMessages(apiService.getCurrentChatMessages());
 
-      // Check if we should show a dynamic view
-      // This is just an example - in a real app, the backend would determine this
-      if (content.toLowerCase().includes('chart') || content.toLowerCase().includes('report')) {
-        const view = await apiService.getDynamicView('chart-example');
-        if (view) {
-          setDynamicView(view);
+      // First check if the API response already includes a dynamic view
+      if (aiResponse.dynamicView) {
+        console.log('Dynamic view found in API response:', aiResponse.dynamicView);
+        setDynamicView(aiResponse.dynamicView);
+        return;
+      }
+
+      // Check API response for a dynamic view indicator 
+      // Only do this if the message seems to be requesting a view
+      if (isViewRequest) {
+        const apiSuggestedView = await apiService.checkForDynamicView(content);
+        if (apiSuggestedView) {
+          setDynamicView(apiSuggestedView);
+          return;
         }
-      } else if (content.toLowerCase().includes('info') || content.toLowerCase().includes('details')) {
-        const view = await apiService.getDynamicView('card-example');
-        if (view) {
-          setDynamicView(view);
+
+        // Fallback to keyword detection for MVP - only for view requests
+        if (lowerContent.includes('table') || 
+            lowerContent.includes('comparison') || 
+            lowerContent.includes('compare') || 
+            lowerContent.includes('products') ||
+            lowerContent.includes('pricing')) {
+          const view = await apiService.getDynamicView('table-example');
+          if (view) {
+            setDynamicView(view);
+          }
+        } 
+        else if (lowerContent.includes('contact') || 
+                lowerContent.includes('connect') || 
+                lowerContent.includes('email') || 
+                lowerContent.includes('phone') ||
+                lowerContent.includes('reach')) {
+          const view = await apiService.getDynamicView('contact-info');
+          if (view) {
+            setDynamicView(view);
+          }
+        }
+        else if (lowerContent.includes('chart') || 
+                lowerContent.includes('graph') || 
+                lowerContent.includes('performance') || 
+                lowerContent.includes('report')) {
+          const view = await apiService.getDynamicView('chart-example');
+          if (view) {
+            setDynamicView(view);
+          }
+        }
+        else if (lowerContent.includes('info') || 
+                lowerContent.includes('services') || 
+                lowerContent.includes('about') || 
+                lowerContent.includes('details')) {
+          const view = await apiService.getDynamicView('card-example');
+          if (view) {
+            setDynamicView(view);
+          }
         }
       }
     } catch (error) {
@@ -146,6 +206,9 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
   const handleCloseDynamicView = () => {
     setDynamicView(null);
     
+    // Clear the last dynamic view ID to prevent tracking a closed view
+    apiService.clearLastDynamicView();
+    
     // If we're in initial view, keep showing initial view
     if (isInitialView && onMessageSent) {
       onMessageSent(false); // Ensure we're not closing the chat
@@ -162,13 +225,12 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
               // Pass true to indicate we're closing the chat
               onMessageSent?.(true);
             }}
-            className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors flex items-center"
+            className="p-2 rounded-full hover:bg-gray-200 transition-colors"
             title="Close chat"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-600">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
             </svg>
-            Close
           </button>
         </div>
       )}
@@ -179,6 +241,30 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
           <p className="text-gray-700">How can I help you today?</p>
         </div>
         
+        {/* Render dynamic view in initial view if available */}
+        {dynamicView && (
+          <div className="mb-8">
+            <div className="flex justify-start mb-4">
+              <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden">
+                <img 
+                  src="/nicor-ai-avatar.png" 
+                  alt="NicorAI" 
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="w-full max-w-[80%]">
+                <DynamicContentRenderer 
+                  view={dynamicView} 
+                  onClose={handleCloseDynamicView} 
+                />
+                <div className="text-xs text-gray-500 mt-1 text-left">
+                  {new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="mb-8">
           <div className="relative">
             <textarea
@@ -186,7 +272,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Type your message here..."
-              className="w-full p-4 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-24 placeholder-gray-500 text-gray-900"
+              className="w-full p-9 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-25 placeholder-gray-500 text-gray-900"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -196,9 +282,9 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
             />
             <button
               type="submit"
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
               </svg>
             </button>
@@ -228,14 +314,8 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
       {/* Header section with close button */}
       <div className="p-3 flex justify-end border-b border-gray-100">
         <button 
-          onClick={() => {
-            // Notify parent component to hide the chat view
-            if (onMessageSent) {
-              // Pass true to indicate we're closing the chat
-              onMessageSent(true);
-            }
-          }}
-          className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+          onClick={() => onMessageSent?.(true)}
+          className="p-2 rounded-full hover:bg-gray-200 transition-colors"
           title="Close chat"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-600">
@@ -244,82 +324,141 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
         </button>
       </div>
       
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto py-4 px-6">
-        {messages.map((message) => (
-          <div 
-            key={message.id} 
-            className={`mb-4 ${message.sender === 'user' ? 'flex justify-end' : 'flex justify-start'}`}
-          >
-            {message.sender !== 'user' && (
-              <div className="w-8 h-8 rounded-full bg-gray-200 mr-2 flex-shrink-0 overflow-hidden">
-                <img src="/images/nicor-logo-black-removebg_without_text.png" alt="NicorAI" className="w-full h-full object-cover" onError={(e) => {
-                  e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23888"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
-                }} />
-              </div>
-            )}
-            <div 
-              className={`max-w-[75%] p-3 ${
-                message.sender === 'user' 
-                  ? 'bg-blue-600 text-white rounded-tl-xl rounded-br-xl rounded-bl-xl' 
-                  : 'bg-blue-200 text-black rounded-tr-xl rounded-bl-xl rounded-br-xl'
-              }`}
-            >
-              <p className="whitespace-pre-wrap">{message.content}</p>
-              <div 
-                className={`text-xs mt-1 text-right ${
-                  message.sender === 'user' ? 'text-blue-200' : 'text-gray-500'
-                }`}
-              >
-                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
-            </div>
-            {message.sender === 'user' && (
-              <div className="w-8 h-8 rounded-full bg-blue-600 ml-2 flex-shrink-0 overflow-hidden flex items-center justify-center text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
-              </div>
-            )}
+      {/* Message container */}
+      <div className="flex-1 p-4 overflow-y-auto">
+        {messages.length === 0 ? (
+          <div className="text-center text-gray-500 py-8">
+            <p>No messages yet. Start a conversation!</p>
           </div>
-        ))}
+        ) : (
+          messages.map((message) => (
+            <div 
+              key={message.id} 
+              className={`mb-4 flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              {/* AI Avatar - only show for AI messages */}
+              {message.sender !== 'user' && (
+                <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden">
+                  <img 
+                    src="/nicor-ai-avatar.png" 
+                    alt="NicorAI" 
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
+              
+              <div className="flex flex-col">
+                <div 
+                  className={`rounded-2xl px-4 py-3 ${
+                    message.sender === 'user' 
+                      ? 'bg-blue-600 text-white rounded-tr-none w-full min-w-[260px]' 
+                      : 'bg-blue-100 text-gray-800 rounded-tl-none max-w-[80%]'
+                  }`}
+                >
+                  {message.content}
+                </div>
+                
+                {/* Timestamp */}
+                <div 
+                  className={`text-xs text-gray-500 mt-1 ${
+                    message.sender === 'user' ? 'text-right' : 'text-left'
+                  }`}
+                >
+                  {message.timestamp && new Date(message.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </div>
+              </div>
+              
+              {/* User Avatar - only show for user messages */}
+              {message.sender === 'user' && (
+                <div className="flex-shrink-0 h-8 w-8 rounded-full ml-1 bg-blue-600 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-white">
+                    <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </div>
+          ))
+        )}
         
+        {/* Loading indicator */}
         {isLoading && (
           <div className="flex justify-start mb-4">
-            <div className="w-8 h-8 rounded-full bg-gray-200 mr-2 flex-shrink-0 overflow-hidden">
-              <img src="/images/nicor-logo-black-removebg_without_text.png" alt="NicorAI" className="w-full h-full object-cover" onError={(e) => {
-                e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23888"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
-              }} />
+            <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden">
+              <img 
+                src="/nicor-ai-avatar.png" 
+                alt="NicorAI" 
+                className="h-full w-full object-cover"
+              />
             </div>
-            <div className="bg-gray-100 rounded-tr-xl rounded-tl-xl rounded-br-xl p-3 max-w-[75%]">
-              <div className="flex space-x-2 items-center">
-                <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce"></div>
-                <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:0.2s]"></div>
-                <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:0.4s]"></div>
+            <div className="bg-blue-100 rounded-2xl rounded-tl-none px-4 py-3 flex items-center max-w-[80%]">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
             </div>
           </div>
         )}
         
+        {/* Error message */}
         {error && (
-          <div className="mx-auto p-3 my-2 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm">
-            {error}
+          <div className="flex justify-start mb-4">
+            <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden">
+              <img 
+                src="/nicor-ai-avatar.png" 
+                alt="NicorAI" 
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="flex flex-col max-w-[80%]">
+              <div className="bg-blue-100 rounded-2xl rounded-tl-none px-4 py-3 text-red-700">
+                <div className="flex items-center mb-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <p className="font-medium">Connection Error</p>
+                </div>
+                <p className="text-sm">{error}</p>
+                <button 
+                  onClick={() => setError(null)} 
+                  className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-sm text-red-800"
+                >
+                  Dismiss
+                </button>
+              </div>
+              <div className="text-xs text-gray-500 mt-1 text-left">
+                {new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Render dynamic view inside messages */}
+        {dynamicView && (
+          <div className="mb-4">
+            <DynamicContentRenderer 
+              view={dynamicView} 
+              onClose={handleCloseDynamicView} 
+            />
           </div>
         )}
         
         <div ref={messagesEndRef} />
       </div>
       
-      {/* Input area - fixed at bottom */}
-      <div className="border-t border-gray-200 p-4 bg-white">
-        <form onSubmit={handleSubmit} className="flex items-end">
-          <div className="flex-1 relative">
+      {/* Input area - Updated to match the initial view styling */}
+      <div className="p-4 border-t border-gray-200">
+        <form onSubmit={handleSubmit}>
+          <div className="relative">
             <textarea
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Type your message here..."
-              className="w-full p-3 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-12 min-h-12 max-h-32 placeholder-gray-500 text-gray-900"
+              className="w-full p-4 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-14 placeholder-gray-500 text-gray-900"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -330,13 +469,18 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
             <button
               type="submit"
               disabled={isLoading}
-              className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${
-                isLoading ? 'opacity-50' : ''
-              }`}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-              </svg>
+              {isLoading ? (
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                </svg>
+              )}
             </button>
           </div>
         </form>
@@ -351,14 +495,6 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
   return (
     <div className="flex-1 h-full flex flex-col">
       {(messages.length === 0 || isInitialView) ? renderInitialView() : renderChatView()}
-      
-      {/* Render dynamic view if available */}
-      {dynamicView && (
-        <DynamicContentRenderer 
-          view={dynamicView} 
-          onClose={handleCloseDynamicView} 
-        />
-      )}
     </div>
   );
 };
