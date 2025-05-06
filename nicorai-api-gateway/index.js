@@ -60,11 +60,11 @@ app.post('/chat', async (req, res) => {
             responseType: 'view',
             content: {
                 viewSpec: {
-                    type: 'table',
-                    columns: ['Name', 'Age'],
+                    type: 'card',
+                    columns: ['Name', 'Age', 'Email'],
                     rows: [
-                        ['Alice', 30],
-                        ['Bob', 25]
+                        ['Alice', 30, 'alice@example.com'],
+                        ['Bob', 25, 'bob@example.com']
                     ]
                 }
             },
