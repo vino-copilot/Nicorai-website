@@ -52,42 +52,53 @@ app.post('/chat', async (req, res) => {
             console.log('✅ Cache hit! Returning cached response.');
             return res.json(JSON.parse(cachedData));
         }
-        console.log('⚠️ Cache miss. Proceeding to return MOCK VIEW response.');
+        console.log('⚠️ Cache miss. Proceeding to call n8n.');
 
-        // 🚨 Here we skip calling n8n and send a MOCK view response:
-        const mockViewResponse = {
-            responseId: `${Date.now()}`,
-            responseType: 'view',
-            content: {
-                viewSpec: {
-                    type: 'table',
-                    columns: ['Name', 'Age'],
-                    rows: [
-                        ['Alice', 30],
-                        ['Bob', 25]
-                    ]
-                }
-            },
-            timestamp: new Date().toISOString()
+        // Prepare request for n8n (contract 4.3.2)
+        const n8nRequestBody = {
+            requestId: `${Date.now()}`,
+            userId,
+            sessionId,
+            message,
+            conversationContext: [],
+            timestamp: timestamp || new Date().toISOString()
         };
 
-        console.log('⬅️ Sending MOCK response to frontend:', mockViewResponse);
+        console.log('➡️ Sending to n8n:', n8nRequestBody);
+
+        // Call n8n webhook
+        const n8nResponse = await axios.post(N8N_WEBHOOK_URL, n8nRequestBody);
+
+        console.log('⬅️ Received from n8n:', n8nResponse.data);
+
+        // Transform n8n response (contract 4.3.2) to frontend (4.3.1)
+        // Transform n8n response (contract 4.3.2) to frontend (4.3.1)
+        const transformedResponse = {
+            responseId: n8nResponse.data.responseId,
+            responseType: n8nResponse.data.responseType,
+            content: n8nResponse.data.content,  // ✅ correct: whole content block
+            timestamp: n8nResponse.data.timestamp
+        };
+        
+
+
+        console.log('⬅️ Sending to frontend:', transformedResponse);
 
         // 2️⃣ Store in Redis (1 hour TTL)
-        await redisClient.set(cacheKey, JSON.stringify(mockViewResponse), {
+        await redisClient.set(cacheKey, JSON.stringify(transformedResponse), {
             EX: 3600 // 1 hour
         });
-        console.log('✅ Stored MOCK response in Redis with 1-hour TTL.');
+        console.log('✅ Stored response in Redis with 1-hour TTL.');
 
-        return res.json(mockViewResponse);
+        return res.json(transformedResponse);
 
     } catch (err) {
-        console.error('❌ Error processing request:');
+        console.error('❌ Error calling n8n or transforming response:');
 
         if (err.response) {
-            console.error('🔴 Error Response:', err.response.status, err.response.data);
+            console.error('🔴 n8n Response Error:', err.response.status, err.response.data);
         } else if (err.request) {
-            console.error('🟠 No response:', err.request);
+            console.error('🟠 No response from n8n:', err.request);
         } else {
             console.error('⚠️ General Error:', err.message);
         }
@@ -102,3 +113,4 @@ app.post('/chat', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`✅ API Gateway running on port ${PORT}`);
 });
+console.log(`✅ API Gateway running on port `);
