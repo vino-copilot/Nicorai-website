@@ -1,1 +1,1 @@
-# Nicorai-website
+# NicorAI_Website

@@ -1,0 +1,79 @@
+Question 1: What does NicorAi do?
+Response Type: text
+Retrieved: {'results': [{'id': 'faq-20', 'content': 'NicorAI Systems Private Limited is a private limited company based in Thiruvananthapuram, Kerala, India, specializing in custom AI agent design and rapid product launch services, including building tailored AI solutions and scalable web and mobile applications for businesses.', 'metadata': {'question': 'What is NicorAI?', 'answer': 'NicorAI Systems Private Limited is a private limited company based in Thiruvananthapuram, Kerala, India, specializing in custom AI agent design and rapid product launch services, including building tailored AI solutions and scalable web and mobile applications for businesses.'}, 'relevanceScore': 0.689811}], 'totalResults': 1}
+Response: {'responseId': 'ai-test-1', 'responseType': 'text', 'content': {'text': 'NicorAI Systems Private Limited specializes in custom AI agent design and rapid product launch services, including building tailored AI solutions and scalable web and mobile applications for businesses.'}, 'metadata': {'modelUsed': 'llama-3.1-sonar-small-128k-online', 'tokensUsed': 50}}
+Correct? Yes
+Problems: None
+Expected: Should describe NicorAI’s AI solutions
+
+Question 2: What services does NicorAi offer?
+Response Type: text
+Retrieved: {'results': [{'id': 'faq-12', 'content': 'NicorAI offers custom AI agent design to automate tasks, provide analytics, and enhance customer interactions, as well as rapid product launch services to build and deploy scalable web and mobile applications quickly using AI-powered tools.', 'metadata': {'question': 'What services does NicorAI offer?', 'answer': 'NicorAI offers custom AI agent design to automate tasks, provide analytics, and enhance customer interactions, as well as rapid product launch services to build and deploy scalable web and mobile applications quickly using AI-powered tools.'}, 'relevanceScore': 0.842384756}], 'totalResults': 1}
+Response: {'responseId': 'ai-test-2', 'responseType': 'text', 'content': {'text': 'NicorAI offers custom AI agent design for automation, analytics, and enhanced customer interactions, as well as rapid product launch services for scalable web and mobile applications using AI-powered tools.'}, 'metadata': {'modelUsed': 'llama-3.1-sonar-small-128k-online', 'tokensUsed': 50}}
+Correct? Yes
+Problems: None
+Expected: Should mention AI agent design and product launch
+
+Question 3: Show me a table
+Response Type: view
+Retrieved: {'results': [{'id': 'faq-10', 'content': 'NicorAI offers value-driven, transparent pricing models based on project requirements, scope, and complexity, ensuring flexibility to meet client needs.', 'metadata': {'question': 'How does NicorAI approach pricing?', 'answer': 'NicorAI offers value-driven, transparent pricing models based on project requirements, scope, and complexity, ensuring flexibility to meet client needs.'}, 'relevanceScore': 0.121019676}], 'totalResults': 1}
+Response: {'responseId': 'ai-test-3', 'responseType': 'view', 'content': {'text': 'Sorry, I don’t have an answer for that.'}, 'metadata': {'modelUsed': 'none', 'tokensUsed': 0}}
+Correct? No
+Problems: Invalid or missing FAQ card, Low relevance score: 0.121019676
+Expected: Should show FAQ card with title and body
+
+Question 4: What’s the weather?
+Response Type: text
+Retrieved: {'results': [{'id': 'faq-6', 'content': 'NicorAI employs a diverse technology stack, including AI/ML tools like Python, TensorFlow, PyTorch, Scikit-learn, and Pandas; web technologies like JavaScript, TypeScript, React, Angular, Node.js, HTML, and CSS; CMS platforms like AEM, Umbraco, and WordPress; mobile frameworks like React Native, Flutter, Swift, and Kotlin; cloud platforms like AWS, Azure, and Google Cloud; and enterprise technologies like C#/.NET, Java, and Ruby on Rails.', 'metadata': {'question': 'What technologies does NicorAI use?', 'answer': 'NicorAI employs a diverse technology stack, including AI/ML tools like Python, TensorFlow, PyTorch, Scikit-learn, and Pandas; web technologies like JavaScript, TypeScript, React, Angular, Node.js, HTML, and CSS; CMS platforms like AEM, Umbraco, and WordPress; mobile frameworks like React Native, Flutter, Swift, and Kotlin; cloud platforms like AWS, Azure, and Google Cloud; and enterprise technologies like C#/.NET, Java, and Ruby on Rails.'}, 'relevanceScore': 0.100325644}], 'totalResults': 1}
+Response: {'responseId': 'ai-test-4', 'responseType': 'text', 'content': {'text': 'Sorry, I don’t have an answer for that.'}, 'metadata': {'modelUsed': 'none', 'tokensUsed': 0}}
+Correct? Yes
+Problems: Low relevance score: 0.100325644
+Expected: Should say it doesn’t know
+
+Question 5: What does NicorAi do?
+Response Type: text
+Retrieved: {'results': [{'id': 'faq-20', 'content': 'NicorAI Systems Private Limited is a private limited company based in Thiruvananthapuram, Kerala, India, specializing in custom AI agent design and rapid product launch services, including building tailored AI solutions and scalable web and mobile applications for businesses.', 'metadata': {'question': 'What is NicorAI?', 'answer': 'NicorAI Systems Private Limited is a private limited company based in Thiruvananthapuram, Kerala, India, specializing in custom AI agent design and rapid product launch services, including building tailored AI solutions and scalable web and mobile applications for businesses.'}, 'relevanceScore': 0.689811}], 'totalResults': 1}
+Response: {'responseId': 'ai-test-5', 'responseType': 'text', 'content': {'text': 'NicorAI Systems Private Limited specializes in custom AI agent design and rapid product launch services, including building tailored AI solutions and scalable web and mobile applications for businesses.'}, 'metadata': {'modelUsed': 'llama-3.1-sonar-small-128k-online', 'tokensUsed': 50}}
+Correct? Yes
+Problems: Check if faster (cache) - manual timing needed
+Expected: Should be same as first, faster (cache)
+
+Question 6: Who runs NicorAi?
+Response Type: text
+Retrieved: {'results': [{'id': 'faq-20', 'content': 'NicorAI Systems Private Limited is a private limited company based in Thiruvananthapuram, Kerala, India, specializing in custom AI agent design and rapid product launch services, including building tailored AI solutions and scalable web and mobile applications for businesses.', 'metadata': {'question': 'What is NicorAI?', 'answer': 'NicorAI Systems Private Limited is a private limited company based in Thiruvananthapuram, Kerala, India, specializing in custom AI agent design and rapid product launch services, including building tailored AI solutions and scalable web and mobile applications for businesses.'}, 'relevanceScore': 0.720184624}], 'totalResults': 1}
+Response: {'responseId': 'ai-test-6', 'responseType': 'text', 'content': {'text': 'NicorAI Systems Private Limited is run by four directors: VENKATRAMAN SHETTY SUNITA, SUPI MON, CIJU YOHANNAN, and SURESH VINO[1].'}, 'metadata': {'modelUsed': 'llama-3.1-sonar-small-128k-online', 'tokensUsed': 50}}
+Correct? Yes
+Problems: None
+Expected: Should mention leadership or say unknown
+
+Question 7: Show me an FAQ
+Response Type: view
+Retrieved: {'results': [{'id': 'faq-8', 'content': 'NicorAI ensures quality and scalability through rigorous quality assurance and testing, adherence to best practices, scalable architecture design, modern development processes, and continuous monitoring and optimization.', 'metadata': {'question': 'How does NicorAI ensure quality and scalability?', 'answer': 'NicorAI ensures quality and scalability through rigorous quality assurance and testing, adherence to best practices, scalable architecture design, modern development processes, and continuous monitoring and optimization.'}, 'relevanceScore': 0.180563554}], 'totalResults': 1}
+Response: {'responseId': 'ai-test-7', 'responseType': 'view', 'content': {'text': 'Sorry, I don’t have an answer for that.'}, 'metadata': {'modelUsed': 'none', 'tokensUsed': 0}}
+Correct? No
+Problems: Invalid or missing FAQ card, Low relevance score: 0.180563554
+Expected: Should show FAQ card with title and body
+
+Question 8: How much does it cost?
+Response Type: text
+Retrieved: {'results': [{'id': 'faq-10', 'content': 'NicorAI offers value-driven, transparent pricing models based on project requirements, scope, and complexity, ensuring flexibility to meet client needs.', 'metadata': {'question': 'How does NicorAI approach pricing?', 'answer': 'NicorAI offers value-driven, transparent pricing models based on project requirements, scope, and complexity, ensuring flexibility to meet client needs.'}, 'relevanceScore': 0.252547264}], 'totalResults': 1}
+Response: {'responseId': 'ai-test-8', 'responseType': 'text', 'content': {'text': 'Sorry, I don’t have an answer for that.'}, 'metadata': {'modelUsed': 'none', 'tokensUsed': 0}}
+Correct? No
+Problems: Unexpected 'no answer' response, Low relevance score: 0.252547264
+Expected: Should say pricing info unavailable
+
+Question 9: Tell me about AI.
+Response Type: text
+Retrieved: {'results': [{'id': 'faq-2', 'content': 'An AI agent is a sophisticated software application that uses artificial intelligence to perform specific tasks. Custom-built AI agents from NicorAI can automate complex processes, provide real-time data analysis, and personalize interactions, enhancing efficiency and driving business growth.', 'metadata': {'question': 'What is an AI agent, and how can it help my business?', 'answer': 'An AI agent is a sophisticated software application that uses artificial intelligence to perform specific tasks. Custom-built AI agents from NicorAI can automate complex processes, provide real-time data analysis, and personalize interactions, enhancing efficiency and driving business growth.'}, 'relevanceScore': 0.541005611}], 'totalResults': 1}
+Response: {'responseId': 'ai-test-9', 'responseType': 'text', 'content': {'text': 'Sorry, I don’t have an answer for that.'}, 'metadata': {'modelUsed': 'none', 'tokensUsed': 0}}
+Correct? No
+Problems: Unexpected 'no answer' response, Low relevance score: 0.541005611
+Expected: Should explain AI or say limited info
+
+Question 10: Give me a table of FAQs
+Response Type: view
+Retrieved: {'results': [{'id': 'faq-8', 'content': 'NicorAI ensures quality and scalability through rigorous quality assurance and testing, adherence to best practices, scalable architecture design, modern development processes, and continuous monitoring and optimization.', 'metadata': {'question': 'How does NicorAI ensure quality and scalability?', 'answer': 'NicorAI ensures quality and scalability through rigorous quality assurance and testing, adherence to best practices, scalable architecture design, modern development processes, and continuous monitoring and optimization.'}, 'relevanceScore': 0.218704775}], 'totalResults': 1}
+Response: {'responseId': 'ai-test-10', 'responseType': 'view', 'content': {'text': 'Sorry, I don’t have an answer for that.'}, 'metadata': {'modelUsed': 'none', 'tokensUsed': 0}}
+Correct? No
+Problems: Invalid or missing FAQ card, Low relevance score: 0.218704775
+Expected: Should show FAQ card with title and body
