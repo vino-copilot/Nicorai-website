@@ -59,7 +59,7 @@ class ApiService {
       lastUpdated: new Date(),
       messages: []
     };
-    
+
     // Save to localStorage
     this.saveChatSession(newChat);
     this.currentChatId = newChatId;
@@ -71,9 +71,9 @@ class ApiService {
     try {
       const chatHistoryJSON = localStorage.getItem('nicoraiChatHistory');
       if (!chatHistoryJSON) return [];
-      
+
       const history = JSON.parse(chatHistoryJSON);
-      
+
       // Convert string timestamps back to Date objects
       const convertedHistory = history.map((chat: any) => ({
         ...chat,
@@ -83,10 +83,10 @@ class ApiService {
           timestamp: new Date(msg.timestamp)
         }))
       }));
-      
+
       // Filter out empty chats (chats with no messages or just with the default title)
-      return convertedHistory.filter((chat: ChatSession) => 
-        chat.messages.length > 0 && 
+      return convertedHistory.filter((chat: ChatSession) =>
+        chat.messages.length > 0 &&
         !(chat.title === 'New Chat' && chat.messages.length === 0)
       );
     } catch (error) {
@@ -98,7 +98,7 @@ class ApiService {
   // Get messages for the current chat session
   getCurrentChatMessages(): ChatMessage[] {
     if (!this.currentChatId) return [];
-    
+
     const history = this.getChatHistory();
     const currentChat = history.find(c => c.id === this.currentChatId);
     return currentChat ? currentChat.messages : [];
@@ -118,16 +118,16 @@ class ApiService {
   private saveChatSession(chat: ChatSession) {
     try {
       const history = this.getChatHistory();
-      
+
       // Remove existing chat with the same ID if it exists
       const filteredHistory = history.filter(c => c.id !== chat.id);
-      
+
       // Add the new/updated chat at the beginning (most recent)
       const updatedHistory = [chat, ...filteredHistory];
-      
+
       // Keep only the last 20 chats to prevent localStorage from growing too large
       const trimmedHistory = updatedHistory.slice(0, 20);
-      
+
       localStorage.setItem('nicoraiChatHistory', JSON.stringify(trimmedHistory));
     } catch (error) {
       console.error('Error saving chat session:', error);
@@ -137,25 +137,25 @@ class ApiService {
   // Update chat title based on first few messages
   private updateChatTitle(chatId: string, messages: ChatMessage[]) {
     if (messages.length < 2) return; // Need at least one user message and one AI response
-    
+
     const userMessage = messages.find(m => m.sender === 'user');
     if (!userMessage) return;
-    
+
     // Use the first user message as the title (truncated)
-    const title = userMessage.content.length > 30 
-      ? `${userMessage.content.substring(0, 30)}...` 
+    const title = userMessage.content.length > 30
+      ? `${userMessage.content.substring(0, 30)}...`
       : userMessage.content;
-    
+
     const history = this.getChatHistory();
     const chat = history.find(c => c.id === chatId);
-    
+
     if (chat && chat.title === 'New Chat') {
       const updatedChat = {
         ...chat,
         title,
         lastUpdated: new Date()
       };
-      
+
       this.saveChatSession(updatedChat);
     }
   }
@@ -169,10 +169,10 @@ class ApiService {
       sender: 'user',
       timestamp: new Date()
     };
-    
+
     // Add user message to current chat
     this.addMessageToCurrentChat(userMessage);
-    
+
     try {
       // Create request payload
       const payload = {
@@ -180,10 +180,10 @@ class ApiService {
         message: message,
         timestamp: new Date().toISOString()
       };
-      
+
       // Log request for debugging
       console.log('Sending request to API Gateway:', payload);
-      
+
       // Make the actual API call
       const response = await fetch(`${API_GATEWAY_URL}/chat`, {
         method: 'POST',
@@ -192,43 +192,46 @@ class ApiService {
         },
         body: JSON.stringify(payload)
       });
-      
+
       console.log('API Gateway response status:', response.status);
-      
+
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
       }
-      
+
       // Parse the API Gateway response (format 4.3.1)
       let data;
       const responseText = await response.text();
       console.log('API Gateway raw response:', responseText);
-      
+
       try {
         data = responseText ? JSON.parse(responseText) : {};
       } catch (e) {
         console.error('Failed to parse API response as JSON:', e);
         throw new Error(`Invalid JSON response from API: ${responseText.substring(0, 100)}${responseText.length > 100 ? '...' : ''}`);
       }
-      
+
       // Validate response format
       if (!data || typeof data !== 'object') {
         console.error('Empty or invalid response from API:', data);
         throw new Error('Received empty or invalid response from API Gateway');
       }
-      
+
       // Check if the response has empty content
-      if (!data.content?.text || data.content.text.trim() === '') {
-        console.warn('Received empty text content from API Gateway:', data);
-        
-        // For MVP, provide fallback content when API returns empty
-        data.content = data.content || {};
-        data.content.text = `We couldn't process that request properly. The API returned an empty response. Please try a different question or check back later.`;
+      data.content = data.content || {};
+      if (!data.content.text || data.content.text.trim() === '') {
+        if (data.responseType === 'view' && data.content.viewSpec) {
+          // If it's a view response with no text, set a friendly default or just an empty string
+          data.content.text = ''; // or 'See the table below:' if you want a message
+        } else {
+          // Only show error if there's truly nothing to show
+          data.content.text = `We couldn't process that request properly. The API returned an empty response. Please try a different question or check back later.`;
+        }
       }
-      
+
       // Check if response contains dynamic view data
       const dynamicView = this.checkResponseForDynamicView(data);
-      
+
       // Transform the API response to the ChatMessage format
       const aiMessage: ChatMessageWithView = {
         id: data.responseId || `msg-${Date.now()}-ai`,
@@ -237,22 +240,22 @@ class ApiService {
         timestamp: new Date(data.timestamp || Date.now()),
         dynamicView: dynamicView || undefined
       };
-      
+
       // Add AI message to current chat
       this.addMessageToCurrentChat(aiMessage);
       return aiMessage;
     } catch (error) {
       console.error('Error calling API Gateway:', error);
-      
+
       // Create a more detailed error message for fallback
       let errorMessage = 'An error occurred while connecting to the server. ';
-      
+
       if (error instanceof TypeError && error.message.includes('fetch')) {
         errorMessage += 'The API Gateway appears to be offline. Please check the server status and your connection.';
       } else if (error instanceof Error) {
         errorMessage += error.message;
       }
-      
+
       if (DEVELOPMENT_MODE) {
         // Create a fallback AI message with error details
         const aiMessage: ChatMessageWithView = {
@@ -261,7 +264,7 @@ class ApiService {
           sender: 'ai',
           timestamp: new Date()
         };
-        
+
         // Add AI message to current chat
         this.addMessageToCurrentChat(aiMessage);
         return aiMessage;
@@ -277,7 +280,7 @@ class ApiService {
     if (!this.currentChatId) {
       this.createNewChat();
     }
-    
+
     const history = this.getChatHistory();
     const currentChat = history.find(c => c.id === this.currentChatId) || {
       id: this.currentChatId as string,
@@ -285,38 +288,38 @@ class ApiService {
       lastUpdated: new Date(),
       messages: []
     };
-    
+
     // Add the new message
     const updatedChat = {
       ...currentChat,
       messages: [...currentChat.messages, message],
       lastUpdated: new Date()
     };
-    
+
     // Save the updated chat
     this.saveChatSession(updatedChat);
-    
+
     // Update chat title if this is a new chat
     this.updateChatTitle(updatedChat.id, updatedChat.messages);
   }
-  
+
   // Generate a dynamic view (mock)
   async getDynamicView(viewId: string): Promise<DynamicView | null> {
     // In a real app, we would call the API Gateway to get the view
     // But for development, we'll use mock data
-    
+
     try {
       // Wait a bit to simulate API call
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
       // Create a view based on the requested ID
-      switch(viewId) {
+      switch (viewId) {
         case 'table-example':
           return {
             id: 'table-example',
             type: 'table',
             data: {
-              title: 'NicorAI Services Comparison',
+              title: 'NicorAI Services Comparison(MOCK)',
               headers: ['Service', 'Features', 'Use Case', 'Price'],
               rows: [
                 ['API Master', 'API Integration, Custom Endpoints, Documentation', 'Streamline API Management', 'Custom Pricing'],
@@ -326,13 +329,13 @@ class ApiService {
               ]
             }
           };
-          
+
         case 'contact-info':
           return {
             id: 'contact-info',
             type: 'table',
             data: {
-              title: 'Contact NicorAI',
+              title: 'Contact NicorAI(MOCK)',
               description: 'Reach out to us through any of these channels',
               headers: ['Contact Method', 'Details'],
               rows: [
@@ -344,24 +347,24 @@ class ApiService {
               footer: 'We typically respond within 24 hours on business days.'
             }
           };
-        
+
         case 'chart-example':
           return {
             id: 'chart-example',
             type: 'chart',
             data: {
-              title: 'AI Implementation Success Rate by Industry',
+              title: 'AI Implementation Success Rate by Industry(MOCK)',
               labels: ['Retail', 'Healthcare', 'Finance', 'Manufacturing', 'Technology'],
               values: [85, 72, 90, 68, 95]
             }
           };
-          
+
         case 'card-example':
           return {
             id: 'card-example',
             type: 'card',
             data: {
-              title: 'About NicorAI',
+              title: 'About NicorAI(MOCK)',
               content: 'NicorAI Systems Private Limited is a company specializing in building custom AI solutions and rapid product development. We help businesses leverage the power of artificial intelligence to automate processes, gain insights from data, and enhance customer experiences.',
               actions: [
                 {
@@ -375,7 +378,7 @@ class ApiService {
               ]
             }
           };
-          
+
         default:
           console.warn(`Unknown view ID: ${viewId}`);
           return null;
@@ -385,19 +388,19 @@ class ApiService {
       return null;
     }
   }
-  
+
   // Private helper to generate responses for fallback mode
   private generateResponse(message: string): string {
     message = message.toLowerCase();
-    
+
     if (message.includes('hello') || message.includes('hi')) {
       return "Hello! I'm the NicorAI assistant. How can I help you today?";
     }
-    
+
     if (message.includes('help')) {
       return "I'd be happy to help! You can ask me about our AI services, schedule a demo, or get information about how our solutions can benefit your business.";
     }
-    
+
     // Default response
     return `Thanks for your message. Our team at NicorAI specializes in building custom AI solutions to help businesses like yours. Would you like to know more about how we can assist with your specific needs?`;
   }
@@ -406,13 +409,13 @@ class ApiService {
   deleteChat(chatId: string) {
     const history = this.getChatHistory();
     const filteredHistory = history.filter(c => c.id !== chatId);
-    
+
     localStorage.setItem('nicoraiChatHistory', JSON.stringify(filteredHistory));
-    
+
     // If we deleted the current chat, set the current chat to the most recent one
     if (this.currentChatId === chatId) {
       this.currentChatId = filteredHistory.length > 0 ? filteredHistory[0].id : null;
-      
+
       // If there are no chats left, create a new one
       if (!this.currentChatId) {
         this.createNewChat();
@@ -431,10 +434,10 @@ class ApiService {
     try {
       // In a real implementation, this would check if the last API response
       // contained a suggestion for a dynamic view
-      
+
       // For MVP demonstration, we can simulate this by checking if the API response
       // included a responseType field set to "view" with a viewSpec
-      
+
       // To prevent showing the same view for every query, we should only
       // return a view when the query specifically asks for relevant information
       const lowerQuery = query.toLowerCase().trim();
@@ -442,23 +445,23 @@ class ApiService {
       // Get the current chat messages
       const messages = this.getCurrentChatMessages();
       if (messages.length === 0) return null;
-      
+
       // Get the last AI message
       const lastAiMessage = [...messages].reverse().find(m => m.sender === 'ai');
       if (!lastAiMessage) return null;
-      
+
       // Check if the content has special markers for a view
       // This is just a simple implementation for the MVP - real implementation
       // would use actual API response fields according to the API contract
       const content = lastAiMessage.content;
-      
+
       // If we detect a "view suggestion" pattern in the API response
       // Format: [VIEW_TYPE:data description]
       const viewMatch = content.match(/\[(\w+)_VIEW:([^\]]+)\]/i);
       if (viewMatch) {
         const viewType = viewMatch[1].toLowerCase();
         const viewDescription = viewMatch[2];
-        
+
         // Handle different view types based on markers from the API
         if (viewType === 'table') {
           // For MVP, we'll map to our pre-defined views based on what the API suggested
@@ -476,8 +479,8 @@ class ApiService {
               this.lastDynamicViewId = viewId;
               return view;
             }
-          } else if (viewDescription.toLowerCase().includes('service') || 
-                     viewDescription.toLowerCase().includes('product')) {
+          } else if (viewDescription.toLowerCase().includes('service') ||
+            viewDescription.toLowerCase().includes('product')) {
             const viewId = 'table-example';
             // Check if this is the same view we just showed
             if (this.lastDynamicViewId === viewId) {
@@ -514,13 +517,13 @@ class ApiService {
           }
         }
       }
-      
+
       // In development, check keywords in the query itself - only for specific queries
       if (DEVELOPMENT_MODE) {
         // We only want to show a view when specifically asked for it
         // Contact info view
         if (
-          lowerQuery === 'contact?' || 
+          lowerQuery === 'contact?' ||
           lowerQuery.includes('contact information') ||
           lowerQuery.includes('how can i contact') ||
           lowerQuery.includes('contact details')
@@ -535,10 +538,10 @@ class ApiService {
             this.lastDynamicViewId = viewId;
             return view;
           }
-        } 
+        }
         // Service comparison view
         else if (
-          lowerQuery.includes('compare services') || 
+          lowerQuery.includes('compare services') ||
           lowerQuery.includes('service comparison') ||
           lowerQuery.includes('show comparison') ||
           lowerQuery.includes('compare products') ||
@@ -579,7 +582,7 @@ class ApiService {
           }
         }
       }
-      
+
       return null;
     } catch (error) {
       console.error('Error checking for dynamic view:', error);
@@ -595,13 +598,13 @@ class ApiService {
   // Helper method to create a dynamic view from API response data
   createDynamicViewFromResponse(responseData: any): DynamicView | null {
     if (!responseData) return null;
-    
+
     try {
       // Check if the response includes viewSpec field
       if (responseData.responseType === 'view' && responseData.content?.viewSpec) {
         const viewSpec = responseData.content.viewSpec;
         const viewType = responseData.content.viewType || 'table';
-        
+
         // Create a dynamic view from the API-provided spec
         return {
           id: `dynamic-${Date.now()}`,
@@ -609,7 +612,7 @@ class ApiService {
           data: viewSpec
         };
       }
-      
+
       // Alternative format that might come from the API
       if (responseData.view) {
         return {
@@ -618,14 +621,14 @@ class ApiService {
           data: responseData.view.data || responseData.view
         };
       }
-      
+
       return null;
     } catch (error) {
       console.error('Error creating dynamic view from response:', error);
       return null;
     }
   }
-  
+
   // Update sendMessage to also check for dynamic view data in API response
   // This would be used in a real implementation, but for MVP we're using mock data
   private checkResponseForDynamicView(data: any): DynamicView | null {
@@ -633,7 +636,7 @@ class ApiService {
     if (data.responseType === 'view' && data.content?.viewSpec) {
       return this.createDynamicViewFromResponse(data);
     }
-    
+
     return null;
   }
 }

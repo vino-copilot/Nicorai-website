@@ -33,8 +33,8 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
           <div className="w-full h-full relative">
             <div className="absolute inset-0 flex items-end justify-around">
               {data.values.map((value: number, index: number) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="bg-blue-600 w-10 transition-all duration-500"
                   style={{ height: `${(value / Math.max(...data.values)) * 100}%` }}
                 >
@@ -84,16 +84,20 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
 
   // Table Renderer - Enhanced for Day 6 (Flexible data handling)
   const renderTable = (data: any) => {
+    // Unwrap nested data if present (for backend responses with data.data)
+    if (data && data.data && (data.data.columns || data.data.rows)) {
+      data = data.data;
+    }
     // Support different data formats from backend
     const title = data.title || 'Data Table';
     const description = data.description || '';
-    
+
     // Support various header/column naming conventions
     const headers: string[] = data.headers || data.columns || [];
-    
+
     // Support various row data formats
     let rows: any[][] = [];
-    
+
     if (Array.isArray(data.rows)) {
       // Standard rows format
       rows = data.rows;
@@ -104,22 +108,22 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
       // Items format (convert objects to arrays if needed)
       rows = data.items.map((item: any) => {
         if (Array.isArray(item)) return item;
-        
+
         // If items are objects, extract values based on headers
         if (typeof item === 'object' && headers.length > 0) {
           return headers.map(header => {
             // Try to match header with an object property (case insensitive)
-            const key = Object.keys(item).find(k => 
+            const key = Object.keys(item).find(k =>
               k.toLowerCase() === header.toLowerCase()
             );
             return key ? item[key] : '';
           });
         }
-        
+
         return [item]; // Fallback for primitive values
       });
     }
-    
+
     // Validate data structure
     if (headers.length === 0 || rows.length === 0) {
       return (
@@ -141,7 +145,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
             <p className="text-sm text-gray-500 mt-1">{description}</p>
           )}
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-blue-50">
@@ -159,13 +163,13 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {rows.map((row: any[], rowIndex: number) => (
-                <tr 
+                <tr
                   key={rowIndex}
                   className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-blue-50'}
                 >
                   {row.map((cell, cellIndex) => (
-                    <td 
-                      key={cellIndex} 
+                    <td
+                      key={cellIndex}
                       className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
                     >
                       {typeof cell === 'object' ? JSON.stringify(cell) : cell?.toString() || ''}
@@ -176,7 +180,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
             </tbody>
           </table>
         </div>
-        
+
         {/* Pagination or additional controls could go here */}
         {data.footer && (
           <div className="px-6 py-4 border-t border-gray-100 bg-blue-50 text-sm text-gray-500">
@@ -192,8 +196,8 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
     return (
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <h3 className="text-xl font-semibold mb-4">{data.title}</h3>
-        <div 
-          className="prose max-w-none text-gray-700" 
+        <div
+          className="prose max-w-none text-gray-700"
           dangerouslySetInnerHTML={{ __html: data.content }}
         />
       </div>
