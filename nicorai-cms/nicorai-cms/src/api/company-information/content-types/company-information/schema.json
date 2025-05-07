@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "company_informations",
+  "info": {
+    "singularName": "company-information",
+    "pluralName": "company-informations",
+    "displayName": "company_information",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "company_info": {
+      "type": "blocks"
+    }
+  }
+}

@@ -1,58 +1,97 @@
 import os
-from dotenv import load_dotenv
-from pinecone import Pinecone
+import logging
+from pinecone import Pinecone, ServerlessSpec
 from sentence_transformers import SentenceTransformer
+from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Configure logging for minimal output
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-# Initialize Pinecone
-api_key = os.getenv("PINECONE_API_KEY")
-if not api_key:
-    raise ValueError("PINECONE_API_KEY not found in environment variables")
-pc = Pinecone(api_key=api_key)
-index = pc.Index("nicorai-faq")
+class KnowledgeBase:
+    def __init__(self):
+        # Load environment variables
+        load_dotenv()
+        PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+        if not PINECONE_API_KEY:
+            logger.error("PINECONE_API_KEY is not set in .env file")
+            raise ValueError("Missing PINECONE_API_KEY")
 
-# Initialize embedding model
-embedder = SentenceTransformer("paraphrase-mpnet-base-v2")
+        # Initialize Pinecone
+        try:
+            self.pc = Pinecone(api_key=PINECONE_API_KEY)
+            logger.info("Connected to Pinecone")
+        except Exception as e:
+            logger.error(f"Failed to initialize Pinecone: {str(e)}")
+            raise
 
-def retrieve_from_pinecone(query: str, top_k: int = 3) -> dict:
-    """
-    Retrieve top-k relevant FAQs from Pinecone.
-    Returns format per contract 4.3.4: {results: [{id, content, metadata, relevanceScore}], totalResults}
-    """
-    try:
-        # Generate query embedding
-        query_embedding = embedder.encode(query).tolist()
+        # Check or create index
+        index_name = "nicorai-faq"
+        try:
+            if index_name not in [idx["name"] for idx in self.pc.list_indexes()]:
+                logger.info(f"Creating index {index_name}")
+                self.pc.create_index(
+                    name=index_name,
+                    dimension=768,
+                    metric="cosine",
+                    spec=ServerlessSpec(cloud="aws", region="us-east-1")
+                )
+            self.index = self.pc.Index(index_name)
+            logger.info(f"Connected to Pinecone index: {index_name}")
+        except Exception as e:
+            logger.error(f"Failed to create or access index {index_name}: {str(e)}")
+            raise
 
-        # Query Pinecone
-        result = index.query(vector=query_embedding, top_k=top_k, include_metadata=True)
-        matches = result.get("matches", [])
+        # Initialize sentence transformer
+        try:
+            self.model = SentenceTransformer("paraphrase-mpnet-base-v2")
+            logger.info("Loaded sentence transformer model")
+        except Exception as e:
+            logger.error(f"Failed to load sentence transformer: {str(e)}")
+            raise
 
-        # Format results
-        formatted_results = [
-            {
-                "id": match["id"],
-                "content": match["metadata"]["answer"],
-                "metadata": {
-                    "question": match["metadata"]["question"],
-                    "answer": match["metadata"]["answer"]
-                },
-                "relevanceScore": match["score"]
-            }
-            for match in matches
-        ]
+    def upsert_to_pinecone(self, vectors):
+        """Upsert vectors to Pinecone."""
+        try:
+            if vectors:
+                self.index.upsert(vectors=vectors)
+                logger.info(f"Upserted {len(vectors)} items to Pinecone")
+            else:
+                logger.warning("No items to upsert")
+        except Exception as e:
+            logger.error(f"Failed to upsert to Pinecone: {str(e)}")
+            raise
 
-        return {
-            "results": formatted_results,
-            "totalResults": len(formatted_results)
-        }
-    except Exception as e:
-        print(f"Error querying Pinecone: {e}")
-        return {"results": [], "totalResults": 0}
+    def retrieve_from_pinecone(self, query, top_k=5, min_relevance_score=0.5):
+        """Retrieve relevant items from Pinecone."""
+        try:
+            query_vector = self.model.encode(query).tolist()
+            results = self.index.query(
+                vector=query_vector,
+                top_k=top_k,
+                include_metadata=True
+            )
+            relevant_results = [
+                {
+                    "id": match["id"],
+                    "content": match["metadata"].get("answer", match["metadata"].get("text", "")),
+                    "metadata": match["metadata"],
+                    "relevanceScore": match["score"]
+                }
+                for match in results["matches"]
+                if match["score"] >= min_relevance_score
+            ]
+            logger.info(f"Retrieved {len(relevant_results)} relevant items for query")
+            return relevant_results
+        except Exception as e:
+            logger.error(f"Failed to retrieve from Pinecone: {str(e)}")
+            return []
 
-# Test function
 if __name__ == "__main__":
-    test_query = "What does NicorAi do?"
-    result = retrieve_from_pinecone(test_query)
-    print(result)
+    try:
+        kb = KnowledgeBase()
+        # Test index connectivity
+        stats = kb.index.describe_index_stats()
+        logger.info(f"Knowledge Base is running successfully. Index stats: {stats}")
+    except Exception as e:
+        logger.error(f"Failed to initialize Knowledge Base: {str(e)}")

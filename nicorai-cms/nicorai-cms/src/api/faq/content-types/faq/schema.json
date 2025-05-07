@@ -4,13 +4,14 @@
   "info": {
     "singularName": "faq",
     "pluralName": "faqs",
-    "displayName": "FAQ"
+    "displayName": "nicorai-cms",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
   },
   "attributes": {
-    "question": {
+    "questions": {
       "type": "text"
     },
     "answer": {
