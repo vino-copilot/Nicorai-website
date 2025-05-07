@@ -166,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView }) => {
       </nav>
 
       {/* Recent Chats Section */}
-      <div className="p-4 border-t border-gray-200 mt-2 flex-1 overflow-y-auto">
+      <div className="p-4 border-t border-gray-200 mt-2 flex-1 overflow-y-auto sidebar-scroll">
         <div className="flex justify-between items-center mb-3">
           <h2 className="font-semibold text-gray-800">Recent Chats</h2>
           {chatHistory.length > 0 && (
