@@ -128,7 +128,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView }) => {
     <div className="w-64 h-screen bg-white border-r border-gray-200 fixed left-0 top-0 flex flex-col">
       {/* Logo */}
       <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => {
+          // Reset to initial view by dispatching a chatChanged event with empty messages
+          const chatChangeEvent = new CustomEvent('chatChanged', { detail: { chatId: null, messages: [] } });
+          window.dispatchEvent(chatChangeEvent);
+        }}>
           <Image 
             src="/images/nicor-logo-black-removebg_without_text.png" 
             alt="NicorAI Logo" 

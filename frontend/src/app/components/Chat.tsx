@@ -237,8 +237,8 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
       
       <div className="w-full max-w-lg">
         <div className="mb-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome to <span className="text-blue-600">NicorAI</span> Assistant</h2>
-          <p className="text-gray-700">How can I help you today?</p>
+          <h2 className="text-4xl font-bold text-gray-800 mb-2">Welcome to <span className="text-blue-600">NicorAI</span> Assistant</h2>
+          <p className="text-gray-700 text-xl">How can I help you today?</p>
         </div>
         
         {/* Render dynamic view in initial view if available */}
@@ -349,10 +349,10 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
               
               <div className="flex flex-col">
                 <div 
-                  className={`rounded-2xl px-4 py-3 ${
+                  className={`rounded-2xl px-4 py-3 break-words break-all whitespace-pre-line max-w-[80vw] md:max-w-2xl ml-auto ${
                     message.sender === 'user' 
-                      ? 'bg-blue-600 text-white rounded-tr-none w-full min-w-[260px]' 
-                      : 'bg-blue-100 text-gray-800 rounded-tl-none max-w-[80%]'
+                      ? 'bg-blue-600 text-white rounded-tr-none' 
+                      : 'bg-blue-100 text-gray-800 rounded-tl-none ml-0'
                   }`}
                 >
                   {message.content}

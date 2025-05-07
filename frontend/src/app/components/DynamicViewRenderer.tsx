@@ -1,14 +1,14 @@
 import React, { useId, useEffect, useState, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { 
-  Brain, 
-  MessageSquare, 
-  BarChart3, 
-  Zap, 
-  Database, 
-  Bot, 
-  LineChart, 
+import {
+  Brain,
+  MessageSquare,
+  BarChart3,
+  Zap,
+  Database,
+  Bot,
+  LineChart,
   Sparkles,
   ChevronRight,
   Briefcase,
@@ -119,7 +119,7 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose }) => {
       }
     `;
     document.head.appendChild(style);
-    
+
     return () => {
       document.head.removeChild(style);
     };
@@ -138,7 +138,7 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose }) => {
           </svg>
         </button>
       </div>
-      
+
       {renderContent()}
     </div>
   );
@@ -165,7 +165,7 @@ const AIHeroSection = () => {
         <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full filter blur-3xl animate-float"></div>
         <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-indigo-100/20 to-blue-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
       </div>
-      
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1 max-w-2xl">
@@ -179,15 +179,15 @@ const AIHeroSection = () => {
                 AI-Powered Solutions
               </div>
               <h1 className="text-5xl font-bold text-gray-900 tracking-tight">
-                Transform Your Business <br/>
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">With AI Innovation</span>
+                Transform Your Business With <br />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">AI-Powered Solutions</span>
               </h1>
               <p className="mt-6 text-xl text-gray-600 leading-relaxed">
-                We leverage cutting-edge artificial intelligence and machine learning to deliver 
+                We leverage cutting-edge artificial intelligence and machine learning to deliver
                 powerful solutions that drive growth, efficiency, and innovation.
               </p>
               <div className="mt-8 flex gap-4">
-                <motion.button 
+                <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg shadow-md flex items-center"
@@ -195,7 +195,7 @@ const AIHeroSection = () => {
                   Explore Our Services
                   <ChevronRight size={18} className="ml-2" />
                 </motion.button>
-                <motion.button 
+                <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-6 py-3 bg-white text-gray-700 font-medium rounded-lg shadow-sm border border-gray-200"
@@ -205,7 +205,7 @@ const AIHeroSection = () => {
               </div>
             </motion.div>
           </div>
-          
+
           <div className="flex-1 max-w-lg">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -218,14 +218,14 @@ const AIHeroSection = () => {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <NetworkAnimation />
                 </div>
-                
+
                 {/* Floating element */}
-                <motion.div 
-                  animate={{ 
+                <motion.div
+                  animate={{
                     y: [0, -15, 0],
                   }}
-                  transition={{ 
-                    repeat: Infinity, 
+                  transition={{
+                    repeat: Infinity,
                     duration: 4,
                     ease: "easeInOut"
                   }}
@@ -233,22 +233,22 @@ const AIHeroSection = () => {
                 >
                   <Brain size={32} className="text-blue-600" />
                 </motion.div>
-                
-                <motion.div 
-                  animate={{ 
+
+                <motion.div
+                  animate={{
                     y: [0, 15, 0],
                   }}
-                  transition={{ 
-                    repeat: Infinity, 
+                  transition={{
+                    repeat: Infinity,
                     duration: 5,
-                    ease: "easeInOut", 
+                    ease: "easeInOut",
                     delay: 1
                   }}
                   className="absolute bottom-1/4 right-1/4 w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center"
                 >
                   <Cpu size={32} className="text-indigo-600" />
                 </motion.div>
-                
+
                 <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-blue-100/50">
                   <h3 className="font-semibold text-gray-900">AI Technologies</h3>
                   <p className="text-sm text-gray-600 mt-1">
@@ -279,38 +279,38 @@ const NetworkAnimation = () => {
               r="4"
               fill="#3b82f6"
               initial={{ opacity: 0.3 }}
-              animate={{ 
-                opacity: [0.3, 0.8, 0.3], 
+              animate={{
+                opacity: [0.3, 0.8, 0.3],
                 r: [4, 6, 4]
               }}
-              transition={{ 
-                duration: 3, 
-                repeat: Infinity, 
+              transition={{
+                duration: 3,
+                repeat: Infinity,
                 delay: i * 0.2,
                 ease: "easeInOut"
               }}
             />
           );
         })}
-        
+
         <motion.circle
           cx="160"
           cy="160"
           r="8"
           fill="#4f46e5"
           initial={{ opacity: 0.7 }}
-          animate={{ 
-            opacity: [0.7, 1, 0.7], 
+          animate={{
+            opacity: [0.7, 1, 0.7],
             r: [8, 10, 8]
           }}
-          transition={{ 
-            duration: 4, 
+          transition={{
+            duration: 4,
             repeat: Infinity,
             ease: "easeInOut"
           }}
         />
       </g>
-      
+
       <g className="connections" stroke="#3b82f6" strokeOpacity="0.2" strokeWidth="1">
         {Array.from({ length: 15 }).map((_, i) => {
           const x1 = 160 + Math.cos(i * (Math.PI * 2) / 15) * 120;
@@ -324,9 +324,9 @@ const NetworkAnimation = () => {
               y2={y1}
               initial={{ strokeOpacity: 0.1 }}
               animate={{ strokeOpacity: [0.1, 0.4, 0.1] }}
-              transition={{ 
-                duration: 3, 
-                repeat: Infinity, 
+              transition={{
+                duration: 3,
+                repeat: Infinity,
                 delay: i * 0.2,
                 ease: "easeInOut"
               }}
@@ -381,9 +381,9 @@ const AIServicesSection = () => {
   return (
     <section className="py-20 bg-white relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern"></div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -402,7 +402,7 @@ const AIServicesSection = () => {
             in the era of artificial intelligence.
           </p>
         </motion.div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <motion.div
@@ -430,7 +430,7 @@ interface ServiceCardProps {
 
 const ServiceCard: React.FC<ServiceCardProps> = ({ title, description, icon, color }) => {
   return (
-    <motion.div 
+    <motion.div
       whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
       className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300"
     >
@@ -465,7 +465,7 @@ const TechStackSection = () => {
   return (
     <section className="py-16 bg-gradient-to-b from-white to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -479,8 +479,8 @@ const TechStackSection = () => {
             We utilize cutting-edge technologies and frameworks
           </p>
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -548,9 +548,9 @@ const AIProcessSection = () => {
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/50 rounded-full filter blur-3xl"></div>
       <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-100/50 rounded-full filter blur-3xl"></div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -564,11 +564,11 @@ const AIProcessSection = () => {
             A systematic approach to successfully integrating AI into your business
           </p>
         </motion.div>
-        
+
         <div className="flex flex-col items-center">
           {processSteps.map((step, index) => (
             <React.Fragment key={step.title}>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -619,7 +619,7 @@ const CaseStudiesHero = () => {
         <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-purple-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "1s" }}></div>
         <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-purple-100/20 rounded-full filter blur-3xl animate-float"></div>
       </div>
-      
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -638,7 +638,7 @@ const CaseStudiesHero = () => {
             Explore our portfolio of AI and ML solutions that have transformed businesses across industries.
           </p>
         </motion.div>
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -675,7 +675,7 @@ const CaseStudiesHero = () => {
                 </div>
                 <div className="bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center p-8">
                   <motion.div
-                    animate={{ 
+                    animate={{
                       y: [0, -10, 0],
                       rotateZ: [0, 5, 0, -5, 0]
                     }}
@@ -769,9 +769,9 @@ const FeaturedProjects = () => {
   return (
     <section className="py-20 bg-white relative">
       <div className="absolute inset-0 bg-grid-pattern"></div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -785,7 +785,7 @@ const FeaturedProjects = () => {
             Our work spans across industries, showcasing the versatility and power of our AI solutions
           </p>
         </motion.div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {projects.map((project, index) => (
             <motion.div
@@ -811,10 +811,10 @@ const FeaturedProjects = () => {
                   <h3 className="text-2xl font-bold">{project.title}</h3>
                 </div>
               </div>
-              
+
               <div className="p-6">
                 <p className="text-gray-600 mb-6">{project.description}</p>
-                
+
                 <div className="flex flex-wrap gap-2 mb-6">
                   {project.tags.map(tag => (
                     <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
@@ -822,7 +822,7 @@ const FeaturedProjects = () => {
                     </span>
                   ))}
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   {project.metrics.map((metric, i) => (
                     <div key={i} className="bg-gray-50 rounded-lg p-3 text-center">
@@ -831,7 +831,7 @@ const FeaturedProjects = () => {
                     </div>
                   ))}
                 </div>
-                
+
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
@@ -860,7 +860,7 @@ const ClientSuccessMetrics = () => {
   return (
     <section className="py-16 bg-gradient-to-b from-white to-purple-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -874,7 +874,7 @@ const ClientSuccessMetrics = () => {
             We measure our success by the tangible outcomes we deliver for our clients
           </p>
         </motion.div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {metrics.map((metric, index) => (
             <motion.div
@@ -925,9 +925,9 @@ const TestimonialsSection = () => {
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-indigo-100/30 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-purple-100/30 rounded-full filter blur-3xl"></div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -941,7 +941,7 @@ const TestimonialsSection = () => {
             Success stories from organizations that have partnered with us
           </p>
         </motion.div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
@@ -966,7 +966,7 @@ const TestimonialsSection = () => {
             </motion.div>
           ))}
         </div>
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -1007,7 +1007,7 @@ const ContactHero = () => {
         <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-teal-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float"></div>
         <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-teal-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
       </div>
-      
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1040,21 +1040,24 @@ const ContactForm = () => {
     submitted: false,
     loading: false
   });
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormState({ ...formState, loading: true });
-    
+
     // Simulate form submission
     setTimeout(() => {
       setFormState({ ...formState, submitted: true, loading: false });
     }, 1500);
   };
-  
+
   return (
     <section className="py-12 relative">
+
+
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="flex justify-center items-center min-h-[80vh]">
           {/* Contact Form */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -1062,10 +1065,10 @@ const ContactForm = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 w-[500px]">
               <div className="p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h2>
-                
+
                 {formState.submitted ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -1095,12 +1098,12 @@ const ContactForm = () => {
                         id="name"
                         value={formState.name}
                         onChange={(e) => setFormState({ ...formState, name: e.target.value })}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                        className="w-full px-4 py-3 rounded-lg text-black border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all duration-200"
                         placeholder="Enter your name"
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-1">
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                         Email Address <span className="text-red-500">*</span>
@@ -1110,12 +1113,12 @@ const ContactForm = () => {
                         id="email"
                         value={formState.email}
                         onChange={(e) => setFormState({ ...formState, email: e.target.value })}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                        className="w-full px-4 py-3 rounded-lg text-black border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all duration-200"
                         placeholder="Enter your email"
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-1">
                       <label htmlFor="company" className="block text-sm font-medium text-gray-700">
                         Company
@@ -1125,11 +1128,11 @@ const ContactForm = () => {
                         id="company"
                         value={formState.company}
                         onChange={(e) => setFormState({ ...formState, company: e.target.value })}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                        className="w-full px-4 py-3 rounded-lg text-black border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all duration-200"
                         placeholder="Enter your company name"
                       />
                     </div>
-                    
+
                     <div className="space-y-1">
                       <label htmlFor="message" className="block text-sm font-medium text-gray-700">
                         How can we help? <span className="text-red-500">*</span>
@@ -1139,12 +1142,12 @@ const ContactForm = () => {
                         rows={5}
                         value={formState.message}
                         onChange={(e) => setFormState({ ...formState, message: e.target.value })}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 resize-none"
+                        className="w-full px-4 py-3 rounded-lg text-black border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all duration-200 resize-none"
                         placeholder="Tell us about your project or query..."
                         required
                       ></textarea>
                     </div>
-                    
+
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -1169,72 +1172,6 @@ const ContactForm = () => {
               </div>
             </div>
           </motion.div>
-          
-          {/* Contact Info */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="space-y-8"
-          >
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
-              
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center text-white shadow-md">
-                    <Phone className="h-5 w-5" />
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="text-lg font-semibold text-gray-900">Phone</h4>
-                    <p className="text-gray-700">+1 (555) 123-4567</p>
-                    <p className="text-sm text-gray-500 mt-1">Monday-Friday, 9AM-6PM EST</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center text-white shadow-md">
-                    <Mail className="h-5 w-5" />
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="text-lg font-semibold text-gray-900">Email</h4>
-                    <p className="text-gray-700">contact@nicorai.com</p>
-                    <p className="text-sm text-gray-500 mt-1">We'll respond as quickly as possible</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center text-white shadow-md">
-                    <MapPin className="h-5 w-5" />
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="text-lg font-semibold text-gray-900">Headquarters</h4>
-                    <p className="text-gray-700">123 Innovation Drive</p>
-                    <p className="text-gray-700">San Francisco, CA 94105</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Office Hours</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                  <span className="text-gray-900 font-medium">Monday - Friday</span>
-                  <span className="text-gray-700 bg-blue-50 px-3 py-1 rounded-full text-sm">9:00 AM - 6:00 PM</span>
-                </div>
-                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                  <span className="text-gray-900 font-medium">Saturday</span>
-                  <span className="text-gray-700 bg-blue-50 px-3 py-1 rounded-full text-sm">10:00 AM - 2:00 PM</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-900 font-medium">Sunday</span>
-                  <span className="text-gray-700 bg-red-50 px-3 py-1 rounded-full text-sm">Closed</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </div>
     </section>
@@ -1244,25 +1181,18 @@ const ContactForm = () => {
 const OfficeLocations = () => {
   const locations = [
     {
-      city: "San Francisco",
-      address: "123 Innovation Drive, San Francisco, CA 94105",
-      phone: "+1 (555) 123-4567",
-      email: "sf@nicorai.com",
+      city: "Kochi",
+      address: "Confident Gem, Rajagiri Valley, Kakkanad, Kochi, Kerala, India 682039",
+      phone: "+91 9876543210",
+      email: "nicorai@gmail.com",
       image: "🌉"
     },
     {
-      city: "New York",
-      address: "456 Tech Plaza, New York, NY 10001",
-      phone: "+1 (555) 987-6543",
-      email: "nyc@nicorai.com",
+      city: "Thiruvananthapuram",
+      address: "Sasthamangalam, Thiruvananthapuram, Kerala 695010, 8.5114381,76.9672403",
+      phone: "+91 9876543210",
+      email: "nicorai@gmail.com",
       image: "🗽"
-    },
-    {
-      city: "London",
-      address: "78 AI Square, London, UK EC1V 9FR",
-      phone: "+44 20 1234 5678",
-      email: "london@nicorai.com",
-      image: "🇬🇧"
     }
   ];
 
@@ -1271,9 +1201,9 @@ const OfficeLocations = () => {
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-teal-100/20 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-100/20 rounded-full filter blur-3xl"></div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -1281,14 +1211,14 @@ const OfficeLocations = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
-            Our Global Offices
+            Our Offices
           </h2>
           <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-            Visit us at one of our office locations around the world
+            Visit us at any of our office locations
           </p>
         </motion.div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <div className="flex flex-wrap justify-center gap-8 mt-8">
           {locations.map((location, index) => (
             <motion.div
               key={location.city}
@@ -1297,36 +1227,41 @@ const OfficeLocations = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300"
+              className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300 w-full max-w-xs md:w-96"
             >
-              <div className="h-32 bg-gradient-to-r from-blue-500 to-teal-500 flex items-center justify-center text-5xl">
-                {location.image}
-              </div>
+
               <div className="p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-3">{location.city}</h3>
                 <div className="space-y-3 text-gray-700">
                   <p className="flex items-start">
-                    <MapPin className="h-5 w-5 text-teal-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <MapPin className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
                     <span>{location.address}</span>
                   </p>
                   <p className="flex items-center">
-                    <Phone className="h-5 w-5 text-teal-500 mr-2 flex-shrink-0" />
+                    <Phone className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
                     <span>{location.phone}</span>
                   </p>
                   <p className="flex items-center">
-                    <Mail className="h-5 w-5 text-teal-500 mr-2 flex-shrink-0" />
+                    <Mail className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
                     <span>{location.email}</span>
                   </p>
                 </div>
                 <div className="mt-6">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg flex items-center justify-center text-sm font-medium transition-colors duration-300"
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full block"
                   >
-                    Get Directions
-                    <MapPin className="h-4 w-4 ml-2" />
-                  </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg flex items-center justify-center text-sm font-medium transition-colors duration-300"
+                    >
+                      Get Directions
+                      <MapPin className="h-4 w-4 ml-2" />
+                    </motion.button>
+                  </a>
                 </div>
               </div>
             </motion.div>
@@ -1358,7 +1293,7 @@ const AboutHero = () => {
         <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-indigo-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float"></div>
         <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-indigo-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
       </div>
-      
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1371,11 +1306,37 @@ const AboutHero = () => {
             About Us
           </div>
           <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
-            Pioneering AI Innovation for a Brighter Future
+            Pioneering Intelligent Solutions
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-            Meet the team that's revolutionizing how businesses leverage artificial intelligence and machine learning.
+            At NicorAI, we are a team of passionate innovators dedicated to pushing the boundaries of what's possible with Artificial Intelligence and Immersive Technologies. We're not just building AI; we're crafting intelligent solutions that transform businesses and shape the future. Inspired by the pioneering work of Nicolas Rashevsky, we approach AI with a deep understanding of the fundamental mathematical principles that underpin its power and potential.
           </p>
+          <br />
+          <br />
+
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">
+          We specialize in two core areas
+          </h1>
+          <p className="text-xl text-gray-600 leading-relaxed">
+          Cutting-edge Artificial Intelligence and immersive Augmented & Virtual Reality solutions
+          </p>
+          <br />
+
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">
+          AI/ML: Custom Solutions and Development
+          </h1>
+          <p className="text-xl text-gray-600 leading-relaxed">
+          We design and develop bespoke narrow AI models precisely tailored to address unique business challenges, moving beyond gene solutions. Our services encompass AI-augmented development, enabling businesses to leverage AI in every part of their operational framework. From detailed data analysis to seamless deployment, we handle every step in the development lifecycle.
+          </p>
+          <br />
+
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">
+          AR/VR: Immersive Application Development
+          </h1>
+          <p className="text-xl text-gray-600 leading-relaxed">
+          We craft immersive Augmented and Virtual Reality experiences designed to engage, educate, and transform how our clients connect with their audiences. From training simulations to virtual product demos, we use AR/VR to create innovative ways for businesses to engage their customers and stakeholders, ensuring memorable and impactful experiences.
+          </p>
+          <br /><br />
         </motion.div>
       </div>
     </section>
@@ -1410,15 +1371,15 @@ const OurStory = () => {
                     presence, serving clients across industries.
                   </p>
                   <p>
-                    What sets us apart is our client-centric approach. We don't just implement technology; 
-                    we partner with you to understand your business challenges and develop custom solutions 
+                    What sets us apart is our client-centric approach. We don't just implement technology;
+                    we partner with you to understand your business challenges and develop custom solutions
                     that address your specific needs.
                   </p>
                 </div>
               </div>
             </div>
           </motion.div>
-          
+
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -1433,10 +1394,10 @@ const OurStory = () => {
                 <h3 className="text-2xl font-bold ml-4">Our Mission</h3>
               </div>
               <p className="text-indigo-100 mb-8 text-lg">
-                To democratize artificial intelligence by making powerful AI solutions accessible, 
+                To democratize artificial intelligence by making powerful AI solutions accessible,
                 practical, and valuable for businesses of all sizes.
               </p>
-              
+
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                   <Target className="h-6 w-6 text-white" />
@@ -1444,7 +1405,7 @@ const OurStory = () => {
                 <h3 className="text-2xl font-bold ml-4">Our Vision</h3>
               </div>
               <p className="text-indigo-100 text-lg">
-                A world where AI enhances human potential, drives business innovation, and 
+                A world where AI enhances human potential, drives business innovation, and
                 creates solutions to our most pressing challenges.
               </p>
             </div>
@@ -1504,9 +1465,9 @@ const TeamSection = () => {
   return (
     <section className="py-20 bg-gradient-to-b from-white to-indigo-50 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern"></div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -1520,7 +1481,7 @@ const TeamSection = () => {
             Meet the experts behind our AI innovations
           </p>
         </motion.div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {team.map((member, index) => (
             <motion.div
@@ -1543,12 +1504,12 @@ const TeamSection = () => {
                 <div className="flex space-x-3">
                   <a href="#" className="text-gray-500 hover:text-indigo-600 transition-colors">
                     <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                     </svg>
                   </a>
                   <a href="#" className="text-gray-500 hover:text-blue-400 transition-colors">
                     <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                      <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
                     </svg>
                   </a>
                 </div>
@@ -1594,9 +1555,9 @@ const CoreValues = () => {
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-indigo-100/50 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-100/50 rounded-full filter blur-3xl"></div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -1610,7 +1571,7 @@ const CoreValues = () => {
             The principles that guide our work and shape our culture
           </p>
         </motion.div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {values.map((value, index) => (
             <motion.div
@@ -1633,7 +1594,7 @@ const CoreValues = () => {
             </motion.div>
           ))}
         </div>
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

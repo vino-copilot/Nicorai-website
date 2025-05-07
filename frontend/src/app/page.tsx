@@ -25,6 +25,13 @@ export default function Home() {
   // Listen for chat selection from history
   useEffect(() => {
     const handleChatChange = (e: CustomEvent) => {
+      // If messages are empty, reset to initial view
+      if (!e.detail.messages || e.detail.messages.length === 0) {
+        setActiveView(null);
+        setIsChatVisible(true);
+        setIsInitialView(true);
+        return;
+      }
       // Make sure the chat becomes visible when a chat is selected from history
       if (e.detail.messages && e.detail.messages.length > 0) {
         // Clear any active view when a chat is selected
