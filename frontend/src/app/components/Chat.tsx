@@ -323,9 +323,19 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
           </svg>
         </button>
       </div>
-      
       {/* Message container */}
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex-1 p-4 overflow-y-auto relative">
+        {/* Modal overlay for dynamic view (now only covers messages area) */}
+        {dynamicView && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white bg-opacity-30">
+            <div className="w-[100%] h-[90%] max-w-[95vw] max-h-[90vh] flex items-center justify-center">
+              <DynamicContentRenderer 
+                view={dynamicView} 
+                onClose={handleCloseDynamicView} 
+              />
+            </div>
+          </div>
+        )}
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             <p>No messages yet. Start a conversation!</p>
@@ -346,7 +356,6 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
                   />
                 </div>
               )}
-              
               <div className="flex flex-col">
                 <div 
                   className={`rounded-2xl px-4 py-3 break-words break-all whitespace-pre-line max-w-[80vw] md:max-w-2xl ml-auto ${
@@ -357,7 +366,6 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
                 >
                   {message.content}
                 </div>
-                
                 {/* Timestamp */}
                 <div 
                   className={`text-xs text-gray-500 mt-1 ${
@@ -370,7 +378,6 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
                   })}
                 </div>
               </div>
-              
               {/* User Avatar - only show for user messages */}
               {message.sender === 'user' && (
                 <div className="flex-shrink-0 h-8 w-8 rounded-full ml-1 bg-blue-600 flex items-center justify-center">
@@ -382,7 +389,6 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
             </div>
           ))
         )}
-        
         {/* Loading indicator */}
         {isLoading && (
           <div className="flex justify-start mb-4">
@@ -402,7 +408,6 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
             </div>
           </div>
         )}
-        
         {/* Error message */}
         {error && (
           <div className="flex justify-start mb-4">
@@ -417,7 +422,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
               <div className="bg-blue-100 rounded-2xl rounded-tl-none px-4 py-3 text-red-700">
                 <div className="flex items-center mb-1">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77-1.333.192 3 1.732 3z" />
                   </svg>
                   <p className="font-medium">Connection Error</p>
                 </div>
@@ -435,20 +440,9 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
             </div>
           </div>
         )}
-        
-        {/* Render dynamic view inside messages */}
-        {dynamicView && (
-          <div className="mb-4">
-            <DynamicContentRenderer 
-              view={dynamicView} 
-              onClose={handleCloseDynamicView} 
-            />
-          </div>
-        )}
-        
+        {/* Remove inline dynamic view rendering here */}
         <div ref={messagesEndRef} />
       </div>
-      
       {/* Input area - Updated to match the initial view styling */}
       <div className="p-4 border-t border-gray-200">
         <form onSubmit={handleSubmit}>
