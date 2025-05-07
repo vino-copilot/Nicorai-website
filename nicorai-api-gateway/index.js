@@ -8,7 +8,6 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const REDIS_URL = process.env.REDIS_URL;
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
-console.log('✅ N8N Webhook URL:', N8N_WEBHOOK_URL);
 
 const redisClient = createClient({
     url: REDIS_URL
