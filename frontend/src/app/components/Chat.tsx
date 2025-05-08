@@ -147,12 +147,9 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
       // Use the API service to get a response
       const aiResponse = await apiService.sendMessage(content);
       
-      // Set both user and AI messages at once
-      setMessages([...newMessages, aiResponse]);
-      // Force reload from the current chat session after state updates
-      setTimeout(() => {
-        setMessages(apiService.getCurrentChatMessages());
-      }, 0);
+      // Update messages with both user message and AI response
+      const updatedMessages = apiService.getCurrentChatMessages();
+      setMessages(updatedMessages);
 
       // First check if the API response already includes a dynamic view
       if (aiResponse.dynamicView) {
@@ -359,8 +356,8 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
       <div className="flex-1 p-4 overflow-y-auto relative">
         {/* Modal overlay for dynamic view (now only covers messages area) */}
         {dynamicView && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white bg-opacity-80">
-            <div className="w-[100%] h-[90%] max-w-[95vw] max-h-[90vh] flex items-center justify-center">
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white bg-opacity-80 p-4">
+            <div className="w-full h-full flex items-center justify-center">
               <DynamicContentRenderer 
                 view={dynamicView} 
                 onClose={handleCloseDynamicView} 

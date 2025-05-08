@@ -10,11 +10,11 @@ interface SidebarProps {
 
 // Custom CSS for the logo text to match the pixelated style
 const logoTextStyle = {
-  fontFamily: "'Pixelify Sans', 'PixelifyFallback', monospace",
+  fontFamily: "var(--font-press-start-2p)",
   letterSpacing: "0.05em",
-  fontWeight: 600,
+  fontWeight: 400,
   color: "#0f0f0f",
-  fontSize: "2rem",
+  fontSize: "1.5rem",
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView }) => {

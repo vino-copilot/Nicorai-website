@@ -1670,7 +1670,7 @@ const InspirationHero = () => (
             priority
           />
         </div>
-        <p className="text-xl text-gray-600 leading-relaxed">
+        <p className="text-xl text-gray-700 mb-4">
         At NicorAI, we believe that true innovation is built upon a foundation of groundbreaking ideas and visionary thinkers. Our journey into the world of artificial intelligence is deeply inspired by the pioneering work of Nicolas Rashevsky, a theoretical biophysicist whose ideas were far ahead of their time. Rashevsky's work wasn't just about biology; it was a profound exploration of how mathematical principles could unlock the secrets of complex systems â€" a vision that forms the core of our approach to AI today. He was, in many ways, a founding father of the AI revolution, and his legacy fuels our mission
         </p>
       </motion.div>

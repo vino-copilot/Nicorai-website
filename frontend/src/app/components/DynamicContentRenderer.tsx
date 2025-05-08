@@ -25,18 +25,47 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
 
   // Chart Renderer
   const renderChart = (data: any) => {
+    // Unwrap nested data if present
+    const chartData = data.data || data;
+    
+    // Extract values from datasets if present
+    let values: number[] = [];
+    let labels: string[] = [];
+    
+    if (chartData.datasets && chartData.datasets.length > 0) {
+      values = chartData.datasets[0].data || [];
+      labels = chartData.labels || [];
+    } else {
+      values = chartData.values || [];
+      labels = chartData.labels || [];
+    }
+    
+    const title = chartData.title || 'Chart';
+    const chartType = chartData.chartType || 'bar';
+
+    // Validate data
+    if (!values.length || !labels.length) {
+      return (
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <h3 className="text-xl font-semibold mb-4">{title}</h3>
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 text-blue-700">
+            <p className="text-sm">No data available to display in the chart.</p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="bg-white rounded-lg p-6 shadow-sm">
-        <h3 className="text-xl font-semibold mb-4">{data.title}</h3>
+        <h3 className="text-xl font-semibold mb-4">{title}</h3>
         <div className="h-64 bg-blue-50 rounded border border-blue-200 p-4 flex items-center justify-center">
-          {/* In a real app, you'd use a chart library like Chart.js, Recharts, etc. */}
           <div className="w-full h-full relative">
             <div className="absolute inset-0 flex items-end justify-around">
-              {data.values.map((value: number, index: number) => (
+              {values.map((value: number, index: number) => (
                 <div
                   key={index}
                   className="bg-blue-600 w-10 transition-all duration-500"
-                  style={{ height: `${(value / Math.max(...data.values)) * 100}%` }}
+                  style={{ height: `${(value / Math.max(...values)) * 100}%` }}
                 >
                   <div className="h-full w-full relative">
                     <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-sm font-medium text-gray-700">
@@ -48,9 +77,9 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
             </div>
           </div>
         </div>
-        <div className="mt-4 flex justify-center space-x-4">
-          {data.labels.map((label: string, index: number) => (
-            <div key={index} className="text-sm text-gray-700">
+        <div className="mt-4 flex flex-wrap justify-center gap-4">
+          {labels.map((label: string, index: number) => (
+            <div key={index} className="text-sm text-gray-700 text-center max-w-[150px]">
               {label}
             </div>
           ))}
@@ -61,23 +90,35 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
 
   // Card Renderer
   const renderCard = (data: any) => {
+    // Unwrap nested data if present (for backend responses with data.data)
+    const cardData = data.data || data;
+    const cards = cardData.cards || [cardData];
+
     return (
-      <div className="bg-white rounded-lg p-6 shadow-sm">
-        <h3 className="text-xl font-semibold mb-3">{data.title}</h3>
-        <p className="text-gray-700 mb-4">{data.content}</p>
-        {data.actions && (
-          <div className="flex space-x-2">
-            {data.actions.map((action: any, index: number) => (
-              <a
-                key={index}
-                href={action.url}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                {action.label}
-              </a>
-            ))}
-          </div>
-        )}
+      <div className="bg-white rounded-lg p-6 shadow-lg max-w-4xl w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {cards.map((card: any, index: number) => (
+            <div key={index} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <div className="flex flex-col h-full">
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">{card.title}</h3>
+                <p className="text-gray-700 mb-4 flex-grow">{card.content}</p>
+                {card.actions && (
+                  <div className="flex space-x-2 mt-auto pt-4">
+                    {card.actions.map((action: any, actionIndex: number) => (
+                      <a
+                        key={actionIndex}
+                        href={action.url}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        {action.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   };

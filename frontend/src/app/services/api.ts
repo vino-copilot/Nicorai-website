@@ -198,85 +198,46 @@ class ApiService {
         body: JSON.stringify(payload)
       });
 
-      console.log('API Gateway response status:', response.status);
-
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        throw new Error('API request failed');
       }
 
-      // Parse the API Gateway response (format 4.3.1)
-      let data;
-      const responseText = await response.text();
-      console.log('API Gateway raw response:', responseText);
+      const responseData = await response.json();
+      console.log('API Gateway response:', responseData);
 
-      try {
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        console.error('Failed to parse API response as JSON:', e);
-        throw new Error(`Invalid JSON response from API: ${responseText.substring(0, 100)}${responseText.length > 100 ? '...' : ''}`);
-      }
-
-      // Validate response format
-      if (!data || typeof data !== 'object') {
-        console.error('Empty or invalid response from API:', data);
-        throw new Error('Received empty or invalid response from API Gateway');
-      }
-
-      // Check if the response has empty content
-      data.content = data.content || {};
-      if (!data.content.text || data.content.text.trim() === '') {
-        if (data.responseType === 'view' && data.content.viewSpec) {
-          // If it's a view response with no text, set a friendly default or just an empty string
-          data.content.text = ''; // or 'See the table below:' if you want a message
-        } else {
-          // Only show error if there's truly nothing to show
-          data.content.text = `We couldn't process that request properly. The API returned an empty response. Please try a different question or check back later.`;
-        }
-      }
-
-      // Check if response contains dynamic view data
-      const dynamicView = this.checkResponseForDynamicView(data);
-
-      // Transform the API response to the ChatMessage format
+      // Create AI message from response
       const aiMessage: ChatMessageWithView = {
-        id: data.responseId || `msg-${Date.now()}-ai`,
-        content: data.content.text,
+        id: `msg-${Date.now()}-ai`,
+        content: responseData.content.text,
         sender: 'ai',
-        timestamp: new Date(data.timestamp || Date.now()),
-        dynamicView: dynamicView || undefined
+        timestamp: new Date()
       };
+
+      // Check for dynamic view in response
+      const dynamicView = this.checkResponseForDynamicView(responseData);
+      if (dynamicView) {
+        aiMessage.dynamicView = dynamicView;
+      }
 
       // Add AI message to current chat
       this.addMessageToCurrentChat(aiMessage);
+
       return aiMessage;
     } catch (error) {
-      console.error('Error calling API Gateway:', error);
+      console.error('Error sending message:', error);
+      
+      // Create error message
+      const errorMessage: ChatMessageWithView = {
+        id: `msg-${Date.now()}-ai`,
+        content: "I'm sorry, but I encountered an error processing your request. Please try again.",
+        sender: 'ai',
+        timestamp: new Date()
+      };
 
-      // Create a more detailed error message for fallback
-      let errorMessage = 'An error occurred while connecting to the server. ';
+      // Add error message to current chat
+      this.addMessageToCurrentChat(errorMessage);
 
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage += 'The API Gateway appears to be offline. Please check the server status and your connection.';
-      } else if (error instanceof Error) {
-        errorMessage += error.message;
-      }
-
-      if (DEVELOPMENT_MODE) {
-        // Create a fallback AI message with error details
-        const aiMessage: ChatMessageWithView = {
-          id: `msg-${Date.now()}-ai`,
-          content: `[ERROR FALLBACK] ${errorMessage}\n\nDEVELOPMENT MODE: ${this.generateResponse(message)}`,
-          sender: 'ai',
-          timestamp: new Date()
-        };
-
-        // Add AI message to current chat
-        this.addMessageToCurrentChat(aiMessage);
-        return aiMessage;
-      } else {
-        // In production, throw the error to be caught by the UI
-        throw error;
-      }
+      return errorMessage;
     }
   }
 
