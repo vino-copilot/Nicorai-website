@@ -64,6 +64,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
     // so we treat it as a new chat
     if (isInitialView) {
       setMessages([]);
+      setDynamicView(null);
     }
   }, [isInitialView]);
 
@@ -313,21 +314,23 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
     <div className="flex flex-col h-full relative">
       {/* Header section with close button */}
       <div className="p-3 flex justify-end border-b border-gray-100">
-        <button 
-          onClick={() => onMessageSent?.(true)}
-          className="p-2 rounded-full hover:bg-gray-200 transition-colors"
-          title="Close chat"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-600">
-            <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-          </svg>
-        </button>
+        {!dynamicView && (
+          <button 
+            onClick={() => onMessageSent?.(true)}
+            className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+            title="Close chat"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-600">
+              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+            </svg>
+          </button>
+        )}
       </div>
       {/* Message container */}
       <div className="flex-1 p-4 overflow-y-auto relative">
         {/* Modal overlay for dynamic view (now only covers messages area) */}
         {dynamicView && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white bg-opacity-30">
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-30">
             <div className="w-[100%] h-[90%] max-w-[95vw] max-h-[90vh] flex items-center justify-center">
               <DynamicContentRenderer 
                 view={dynamicView} 
