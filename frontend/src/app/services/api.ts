@@ -69,7 +69,10 @@ class ApiService {
   // Get all chat sessions from localStorage
   getChatHistory(): ChatSession[] {
     try {
-      const chatHistoryJSON = localStorage.getItem('nicoraiChatHistory');
+      let chatHistoryJSON = null;
+      if (typeof window !== 'undefined' && window.localStorage) {
+        chatHistoryJSON = localStorage.getItem('nicoraiChatHistory');
+      }
       if (!chatHistoryJSON) return [];
 
       const history = JSON.parse(chatHistoryJSON);
@@ -128,7 +131,9 @@ class ApiService {
       // Keep only the last 20 chats to prevent localStorage from growing too large
       const trimmedHistory = updatedHistory.slice(0, 20);
 
-      localStorage.setItem('nicoraiChatHistory', JSON.stringify(trimmedHistory));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('nicoraiChatHistory', JSON.stringify(trimmedHistory));
+      }
     } catch (error) {
       console.error('Error saving chat session:', error);
     }
@@ -410,7 +415,9 @@ class ApiService {
     const history = this.getChatHistory();
     const filteredHistory = history.filter(c => c.id !== chatId);
 
-    localStorage.setItem('nicoraiChatHistory', JSON.stringify(filteredHistory));
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('nicoraiChatHistory', JSON.stringify(filteredHistory));
+    }
 
     // If we deleted the current chat, set the current chat to the most recent one
     if (this.currentChatId === chatId) {
@@ -425,7 +432,9 @@ class ApiService {
 
   // Clear all chat history
   clearAllChats() {
-    localStorage.removeItem('nicoraiChatHistory');
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.removeItem('nicoraiChatHistory');
+    }
     this.createNewChat();
   }
 

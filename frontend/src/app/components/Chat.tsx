@@ -37,7 +37,10 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
     
     // Listen for chat change events
     const handleChatChange = (e: CustomEvent) => {
-      setMessages(e.detail.messages);
+      console.log('Chat change event received:', e.detail);
+      // Always reload messages from the API service
+      const updatedMessages = apiService.getCurrentChatMessages();
+      setMessages(updatedMessages);
     };
     
     // Add event listeners
@@ -58,6 +61,14 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
     };
   }, []);
 
+  // Special effect to reload messages when component becomes visible (additional fix)
+  useEffect(() => {
+    if (isVisible) {
+      const currentMessages = apiService.getCurrentChatMessages();
+      setMessages(currentMessages);
+    }
+  }, [isVisible]);
+
   // Listen for when isInitialView changes
   useEffect(() => {
     // If we're returning to the initial view, clear the messages
@@ -67,6 +78,12 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
       setDynamicView(null);
     }
   }, [isInitialView]);
+
+  // Always reload messages when the current chat ID changes
+  useEffect(() => {
+    const currentMessages = apiService.getCurrentChatMessages();
+    setMessages(currentMessages);
+  }, [apiService.getCurrentChatId()]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -84,6 +101,12 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
     setIsLoading(true);
     setError(null);
     
+    // Always create and set a new chat if there are no messages (new view or new chat)
+    if (messages.length === 0) {
+      const newChatId = apiService.createNewChat();
+      apiService.setCurrentChat(newChatId);
+    }
+    
     // Clear any previous dynamic view when sending a new message
     // Only keep it if the new message specifically requests a view
     const lowerContent = content.toLowerCase().trim();
@@ -100,11 +123,6 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
       setDynamicView(null);
     }
     
-    // If in initial view, create a new chat before sending
-    if (isInitialView) {
-      const newChatId = apiService.createNewChat();
-    }
-    
     // Notify parent that a message was sent
     onMessageSent?.(false);
     
@@ -117,14 +135,24 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
     };
     
     // Update UI immediately with the user message
-    setMessages(prevMessages => [...prevMessages, userMessage]);
+    let newMessages: ChatMessage[] = [];
+    setMessages(prevMessages => {
+      // Remove any pending user message with the same content to avoid duplicates
+      const filtered = prevMessages.filter(m => m.sender !== 'user' || m.content !== content);
+      newMessages = [...filtered, userMessage];
+      return newMessages;
+    });
     
     try {
       // Use the API service to get a response
       const aiResponse = await apiService.sendMessage(content);
       
-      // Update local messages state from the API service
-      setMessages(apiService.getCurrentChatMessages());
+      // Set both user and AI messages at once
+      setMessages([...newMessages, aiResponse]);
+      // Force reload from the current chat session after state updates
+      setTimeout(() => {
+        setMessages(apiService.getCurrentChatMessages());
+      }, 0);
 
       // First check if the API response already includes a dynamic view
       if (aiResponse.dynamicView) {
@@ -198,7 +226,8 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
   const handleFaqClick = (question: string) => {
     // If in initial view, create a new chat before sending FAQ
     if (isInitialView) {
-      apiService.createNewChat();
+      const newChatId = apiService.createNewChat();
+      apiService.setCurrentChat(newChatId);
     }
     
     sendMessage(question);
@@ -330,7 +359,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
       <div className="flex-1 p-4 overflow-y-auto relative">
         {/* Modal overlay for dynamic view (now only covers messages area) */}
         {dynamicView && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white bg-opacity-80">
             <div className="w-[100%] h-[90%] max-w-[95vw] max-h-[90vh] flex items-center justify-center">
               <DynamicContentRenderer 
                 view={dynamicView} 
@@ -361,7 +390,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
               )}
               <div className="flex flex-col">
                 <div 
-                  className={`rounded-2xl px-4 py-3 break-words break-all whitespace-pre-line max-w-[80vw] md:max-w-2xl ml-auto ${
+                  className={`rounded-2xl px-4 py-3 break-words whitespace-pre-line max-w-[80vw] md:max-w-2xl ml-auto ${
                     message.sender === 'user' 
                       ? 'bg-blue-600 text-white rounded-tr-none' 
                       : 'bg-blue-100 text-gray-800 rounded-tl-none ml-0'

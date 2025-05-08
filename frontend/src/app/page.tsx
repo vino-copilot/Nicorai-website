@@ -55,17 +55,13 @@ export default function Home() {
     if (!isClosing) {
       setHasMessages(true);
       setIsInitialView(false);
-      
+      setIsChatVisible(true); // Always show chat when a message is sent
       // If a view is active, hide it
       if (activeView) {
         setActiveView(null);
       }
-      
-      // Ensure chat is visible
-      setIsChatVisible(true);
     } else {
       // Handle closing the chat
-      
       // If no tab was selected (activeView is null) and we're not in initial view,
       // we should return to the initial view
       if (!activeView && !isInitialView) {
@@ -150,7 +146,7 @@ export default function Home() {
         )}
         
         {/* Render chat if visible */}
-        {isChatVisible && <Chat isVisible={true} onMessageSent={handleMessageSent} isInitialView={isInitialView} />}
+        {isChatVisible && <Chat key={activeView || 'default'} isVisible={true} onMessageSent={handleMessageSent} isInitialView={isInitialView} />}
         
         {/* If nothing is visible, show a fallback */}
         {!activeView && !isChatVisible && !isInitialView && (
@@ -180,7 +176,14 @@ export default function Home() {
         {/* Fixed chat input box at the bottom (visible on all pages except initial view) */}
         {!isInitialView && !isChatVisible && activeView && (
           <div className="fixed bottom-0 left-64 right-0 border-t border-gray-200 bg-white p-4 shadow-md z-10">
-            <ChatInput onMessageSent={handleMessageSent} />
+            <ChatInput onMessageSent={(isClosing) => {
+              // Enhanced callback to guarantee the chat becomes visible
+              if (!isClosing) {
+                setIsChatVisible(true);
+                setActiveView(null);
+              }
+              handleMessageSent(isClosing);
+            }} />
           </div>
         )}
       </div>

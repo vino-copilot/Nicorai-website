@@ -30,14 +30,21 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent }) => {
     });
     
     // Create a new chat when sending from the fixed input box
-    apiService.createNewChat();
+    const newChatId = apiService.createNewChat();
+    apiService.setCurrentChat(newChatId);
     
-    // Notify parent that a message was sent
-    onMessageSent?.(false);
+    // Notify parent that a message was sent - MOVED TO handleSubmit
+    // onMessageSent?.(false);
     
     try {
       // Use the API service to get a response
-      await apiService.sendMessage(content);
+      const aiResponse = await apiService.sendMessage(content);
+      
+      // Dispatch a chat changed event to update any listening components
+      const chatChangeEvent = new CustomEvent('chatChanged', { 
+        detail: { chatId: newChatId, messages: apiService.getCurrentChatMessages() }
+      });
+      window.dispatchEvent(chatChangeEvent);
       
       // Show success notification
       setNotification({
@@ -70,6 +77,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!inputValue.trim()) return;
+    
+    // First notify parent to show chat UI immediately 
+    // BEFORE sending the message
+    onMessageSent?.(false);
+    
+    // Then send the message
     sendMessage(inputValue);
   };
 
