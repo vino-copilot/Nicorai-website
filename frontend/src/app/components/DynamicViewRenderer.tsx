@@ -52,6 +52,8 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose }) => {
         return <ConnectPage onClose={onClose} />;
       case 'us':
         return <AboutUsPage onClose={onClose} />;
+      case 'inspiration':
+        return <InspirationPage onClose={onClose} />;
       default:
         return (
           <div className="flex items-center justify-center h-full">
@@ -1625,4 +1627,154 @@ const CoreValues = () => {
   );
 };
 
-export default DynamicViewRenderer; 
+// INSPIRATION PAGE
+const InspirationPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  return (
+    <div className="min-h-screen bg-white">
+      <InspirationHero />
+      <RashevskyStory />
+      <RashevskyImpact />
+      <VisionandImpact />
+      <InspirationCommitment />
+    </div>
+  );
+};
+
+const InspirationHero = () => (
+  <section className="relative pt-20 pb-16 overflow-hidden">
+    <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-50 to-white bg-grid-pattern"></div>
+      <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-purple-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float"></div>
+      <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-purple-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+    </div>
+    <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 border border-purple-100 mb-4">
+          <Sparkles size={14} className="mr-2" />
+          Our Inspiration
+        </div>
+        <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
+          The Legacy of <span className="text-blue-600">Nicolas Rashevsky</span>
+        </h1>
+        <div className="flex justify-center mb-6">
+          <Image
+            src="/images/Nicolas_Rashevsky.png"
+            alt="Nicolas Rashevsky"
+            width={280}
+            height={280}
+            className="rounded-2xl shadow-lg border border-purple-100 bg-white object-cover"
+            priority
+          />
+        </div>
+        <p className="text-xl text-gray-600 leading-relaxed">
+        At NicorAI, we believe that true innovation is built upon a foundation of groundbreaking ideas and visionary thinkers. Our journey into the world of artificial intelligence is deeply inspired by the pioneering work of Nicolas Rashevsky, a theoretical biophysicist whose ideas were far ahead of their time. Rashevsky's work wasn't just about biology; it was a profound exploration of how mathematical principles could unlock the secrets of complex systems â€" a vision that forms the core of our approach to AI today. He was, in many ways, a founding father of the AI revolution, and his legacy fuels our mission
+        </p>
+      </motion.div>
+    </div>
+  </section>
+);
+
+const RashevskyStory = () => (
+  <section className="py-16 relative">
+    <div className="absolute inset-0 bg-grid-pattern"></div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="bg-white rounded-2xl shadow-xl border border-purple-100 p-8"
+      >
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Story of Nicolas Rashevsky</h2>
+        <div className="space-y-4 text-gray-700">
+          <p>Nicolas Rashevsky wasn't a computer scientist in the traditional sense. Born in 1899, he was a brilliant scholar who applied the rigor of mathematics to the complexities of the human body and, in doing so, stumbled upon concepts that would become crucial to artificial intelligence. He was a polymath, straddling the worlds of mathematics, physics, and biology. In 1934, he left for Chicago and became the first professor of mathematical biophysics at the University of Chicago. He was ahead of his time, and he believed in the power of mathematics to unlock the secrets of life</p>
+          <p>Rashevsky's approach was to apply mathematical modeling to biological systems, seeing patterns and structures that were previously hidden. His work on neural networks, though initially framed within the context of the human brain, laid the theoretical groundwork for the artificial neural networks that are fundamental to today's deep learning and AI systems. He co-authored the book "Mathematical Biophysics" which included the famous "Theory of the Brain" which is considered a core component of AI development, he even anticipated many technologies and challenges of the present day through his work.</p>
+        </div>
+      </motion.div>
+    </div>
+  </section>
+);
+
+
+const RashevskyImpact = () => (
+  <section className="py-16 relative">
+    <div className="absolute inset-0 bg-grid-pattern"></div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="bg-white rounded-2xl shadow-xl border border-purple-100 p-8"
+      >
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Rashevsky's Lasting Impact</h2>
+        <p className='text-gray-700'>Rashevsky's insights weren't just confined to the lab. His commitment to using mathematical tools to understand and solve complex problems has become a cornerstone of our approach to AI. Like him, we believe that AI is not just about programming; it's about understanding the underlying systems and structures. This philosophy is embodied in our approach.</p><br />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h3 className="text-xl font-semibold mb-2 text-gray-700">Focus on Foundational Principles</h3>
+            <p className="text-gray-700">We take a mathematical and systematic approach to AI, following Rashevsky's lead.</p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold mb-2 text-gray-700">Emphasis on Systemic Understanding</h3>
+            <p className="text-gray-700">We don't just build AI models; we strive to understand the underlying mechanics of what we're building, which leads to more robust and meaningful solutions.</p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold mb-2 text-gray-700">Rigorous Training</h3>
+            <p className="text-gray-700">We rigorously train your AI models on relevant datasets, using proven methodology to ensure accuracy.</p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold mb-2 text-gray-700">Dedication to Innovation</h3>
+            <p className="text-gray-700">Like Rashevsky, we're dedicated to pushing the boundaries of what's possible, exploring new frontiers in AI and ML.</p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold mb-2 text-gray-700">Commitment to Rigorous Analysis</h3>
+            <p className="text-gray-700">Our work is backed by data and mathematical precision, ensuring a scientific and methodological approach, aligning with the principles of Rashevsky's work.</p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  </section>
+);
+
+const VisionandImpact = () => (
+  <section className="py-12 relative">
+    <div className="absolute inset-0 bg-grid-pattern pointer-events-none"></div>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="text-center"
+      >
+        <h2 className="text-4xl font-bold text-gray-900 mb-6">A Legacy of Vision and Impact</h2>
+        <p className="text-xl text-gray-700 mb-4">Rashevsky's story is one of scientific exploration and groundbreaking innovation. He embodied a spirit of intellectual curiosity and interdisciplinary thinking that inspired not only many mathematicians and physicists but also many in the field of AI. We continue to follow his lead and dedicate our efforts to transforming the potential of AI to solve real problems in the business world. His legacy of combining mathematics and science is our guide.</p>
+      </motion.div>
+    </div>
+  </section>
+);
+
+
+const InspirationCommitment = () => (
+  <section className="py-12 relative">
+    <div className="absolute inset-0 bg-grid-pattern pointer-events-none"></div>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="text-center"
+      >
+        <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Commitment</h2>
+        <p className="text-xl text-gray-700 mb-4">At NicorAI, we honor Rashevsky's legacy by embracing his methodical approach and unwavering commitment to scientific thinking. By focusing on these principles, we unlock AI's transformative potential and create solutions with lasting impact. We dedicate our efforts to building systems worthy of his legacy.</p>
+      </motion.div>
+    </div>
+  </section>
+);
+
+export default DynamicViewRenderer;

@@ -55,6 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView }) => {
     { id: 'what-weve-done', label: 'What We\'ve Done' },
     { id: 'connect', label: 'Connect' },
     { id: 'us', label: 'Us' },
+    { id: 'inspiration', label: 'Our Inspiration' },
   ];
 
   const handleNavClick = (id: string) => {
