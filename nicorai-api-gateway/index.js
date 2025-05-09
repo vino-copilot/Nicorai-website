@@ -9,31 +9,34 @@ const PORT = process.env.PORT || 4000;
 const REDIS_URL = process.env.REDIS_URL;
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
 
-let redisHealthy = true; // 🔥 flag to track Redis health
+let redisHealthy = true; // 🔥 Track Redis health
 
 const redisClient = createClient({
     url: REDIS_URL,
     socket: {
-        reconnectStrategy: false // 🔥 do not keep retrying forever
+        reconnectStrategy: (retries) => {
+            console.log(`🔄 Redis reconnect attempt #${retries}`);
+            return Math.min(retries * 50, 500); // 50ms, 100ms, 150ms → max 500ms
+        }
     }
 });
 
 redisClient.on('error', (err) => {
     console.error('❌ Redis Client Error:', err.message);
-    redisHealthy = false; // mark Redis as unhealthy
+    redisHealthy = false;
 });
 
 redisClient.on('connect', () => {
     console.log('✅ Redis connected!');
-    redisHealthy = true; // mark Redis as healthy
+    redisHealthy = true;
 });
 
 (async () => {
     try {
         await redisClient.connect();
-        console.log('✅ Redis connected!');
+        console.log('✅ Redis initial connection established!');
     } catch (err) {
-        console.error('❌ Failed to connect to Redis:', err.message);
+        console.error('❌ Failed to connect to Redis on startup:', err.message);
         redisHealthy = false;
     }
 })();
@@ -53,7 +56,7 @@ app.post('/chat', async (req, res) => {
     const cacheKey = `chat_cache:${message.trim().toLowerCase()}`;
     let cachedData;
 
-    // ✅ Only check Redis if marked healthy
+    // ✅ Check Redis only if healthy
     if (redisHealthy) {
         try {
             cachedData = await redisClient.get(cacheKey);
@@ -63,15 +66,15 @@ app.post('/chat', async (req, res) => {
             }
             console.log('⚠️ Cache miss. Proceeding to call n8n.');
         } catch (err) {
-            console.error('❌ Redis GET error (fallback to n8n):', err.message);
-            redisHealthy = false; // if error, mark as unhealthy
+            console.error('❌ Redis GET error, skipping to n8n:', err.message);
+            redisHealthy = false;
         }
     } else {
-        console.log('⚠️ Skipping Redis check: marked as unhealthy');
+        console.log('⚠️ Redis marked unhealthy — skipping Redis and going to n8n');
     }
 
     try {
-        // Prepare request for n8n
+        // 📡 Prepare request for n8n
         const n8nRequestBody = {
             requestId: `${Date.now()}`,
             userId,
@@ -83,11 +86,11 @@ app.post('/chat', async (req, res) => {
 
         console.log('➡️ Sending to n8n:', n8nRequestBody);
 
-        // Call n8n webhook
+        // 🌐 Call n8n webhook
         const n8nResponse = await axios.post(N8N_WEBHOOK_URL, n8nRequestBody);
         console.log('⬅️ Received from n8n:', n8nResponse.data);
 
-        // Transform to frontend format
+        // 🔄 Transform to frontend format
         const transformedResponse = {
             responseId: n8nResponse.data.responseId || `${Date.now()}`,
             responseType: n8nResponse.data.responseType || 'text',
@@ -97,10 +100,11 @@ app.post('/chat', async (req, res) => {
 
         console.log('⬅️ Sending to frontend:', transformedResponse);
 
-        // ✅ Only attempt Redis SET if healthy
+        // 💾 Cache in Redis only if healthy and response is valid
         if (redisHealthy) {
             try {
-                const hasValidContent = transformedResponse.content &&
+                const hasValidContent =
+                    transformedResponse.content &&
                     (transformedResponse.content.text || transformedResponse.content.viewSpec);
 
                 if (hasValidContent) {
@@ -112,7 +116,7 @@ app.post('/chat', async (req, res) => {
                     console.log('⚠️ Skipped caching empty or fallback response.');
                 }
             } catch (err) {
-                console.error('❌ Redis SET error (skipped caching):', err.message);
+                console.error('❌ Redis SET error, skipping cache:', err.message);
                 redisHealthy = false;
             }
         }
