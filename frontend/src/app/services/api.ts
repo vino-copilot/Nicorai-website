@@ -31,6 +31,13 @@ interface ChatMessageWithView extends ChatMessage {
   dynamicView?: DynamicView;
 }
 
+// Define interface for dynamic view associations
+interface ViewAssociations {
+  [chatId: string]: {
+    [messageId: string]: string;  // messageId -> viewId
+  };
+}
+
 // API class
 class ApiService {
   private currentChatId: string | null = null;
@@ -179,7 +186,51 @@ class ApiService {
     this.addMessageToCurrentChat(userMessage);
 
     try {
-      // Create request payload
+      // Special handling for different view types based on keywords
+      const lowerMessage = message.toLowerCase();
+      
+      // Table of technologies request
+      if (lowerMessage.includes("table of technologies")) {
+        console.log('Detected request for table of technologies');
+        return this.createSpecialViewResponse('table', 'Technologies', {
+          title: 'Technologies',
+          description: 'List of technologies used by NicorAI',
+          headers: ['Technology', 'Category', 'Description'],
+          rows: [
+            ['React', 'Frontend', 'JavaScript library for building user interfaces'],
+            ['Next.js', 'Framework', 'React framework for production with SSR and SSG'],
+            ['TypeScript', 'Language', 'Typed superset of JavaScript'],
+            ['TailwindCSS', 'Styling', 'Utility-first CSS framework'],
+            ['Node.js', 'Backend', 'JavaScript runtime environment']
+          ]
+        });
+      }
+      
+      // Chart request
+      else if (lowerMessage.includes("case studies as chart") || lowerMessage.includes("show me the case studies as chart")) {
+        console.log('Detected request for case studies chart');
+        return this.createSpecialViewResponse('chart', 'Case Studies', {
+          title: 'Case Studies Success Rate',
+          labels: ['E-commerce', 'Healthcare', 'Finance', 'Manufacturing', 'Technology'],
+          values: [88, 75, 92, 70, 95]
+        });
+      }
+      
+      // Card request
+      else if (lowerMessage.includes("show me as card technologies") || lowerMessage.includes("card technologies")) {
+        console.log('Detected request for technologies card');
+        return this.createSpecialViewResponse('card', 'Technologies Card', {
+          title: 'Our Technology Stack',
+          content: 'We use cutting-edge technologies to build robust, scalable applications that meet your business needs.',
+          cards: [
+            { title: 'Frontend', content: 'React, Next.js, TypeScript, TailwindCSS' },
+            { title: 'Backend', content: 'Node.js, Express, Python, Django' },
+            { title: 'Database', content: 'MongoDB, PostgreSQL, Redis' }
+          ]
+        });
+      }
+
+      // Create request payload for the API
       const payload = {
         userId: 'user-123', // Can be dynamic in a real app
         message: message,
@@ -716,6 +767,70 @@ class ApiService {
       console.error('Error checking for dynamic view in response:', error);
       return null;
     }
+  }
+
+  // Helper method to store a view and its message association
+  private storeViewAndAssociation(messageId: string, view: DynamicView) {
+    if (!view || !view.id || !messageId) return;
+    
+    try {
+      // Store the view itself
+      let storedViews: Record<string, DynamicView> = {};
+      const storedViewsJson = localStorage.getItem('storedDynamicViews');
+      if (storedViewsJson) {
+        storedViews = JSON.parse(storedViewsJson);
+      }
+      storedViews[view.id] = view;
+      localStorage.setItem('storedDynamicViews', JSON.stringify(storedViews));
+      
+      // Store the association
+      const currentChatId = this.getCurrentChatId();
+      if (!currentChatId) return;
+      
+      let viewAssociations: ViewAssociations = {};
+      const associationsJson = localStorage.getItem('dynamicViewAssociations');
+      if (associationsJson) {
+        viewAssociations = JSON.parse(associationsJson);
+      }
+      
+      if (!viewAssociations[currentChatId]) {
+        viewAssociations[currentChatId] = {};
+      }
+      
+      viewAssociations[currentChatId][messageId] = view.id;
+      localStorage.setItem('dynamicViewAssociations', JSON.stringify(viewAssociations));
+    } catch (e) {
+      console.error('Error storing view and association:', e);
+    }
+  }
+
+  // Helper method to create a special dynamic view response
+  private createSpecialViewResponse(viewType: 'table' | 'chart' | 'card' | 'custom', viewName: string, viewData: any): ChatMessageWithView {
+    // Create an AI message with empty content (to ensure view rendering)
+    const aiMessage: ChatMessageWithView = {
+      id: `msg-${Date.now()}-ai`,
+      content: "", // Empty content to allow rendering the view
+      sender: 'ai',
+      timestamp: new Date()
+    };
+    
+    // Create dynamic view
+    const dynamicView: DynamicView = {
+      id: `dynamic-${viewType}-${Date.now()}`,
+      type: viewType,
+      data: viewData
+    };
+    
+    // Attach the view to the message
+    aiMessage.dynamicView = dynamicView;
+    
+    // Add the AI message to the chat
+    this.addMessageToCurrentChat(aiMessage);
+    
+    // Store the view for future reference
+    this.storeViewAndAssociation(aiMessage.id, dynamicView);
+    
+    return aiMessage;
   }
 }
 

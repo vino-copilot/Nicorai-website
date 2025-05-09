@@ -529,17 +529,28 @@ const Chat: React.FC<ChatProps> = ({
       }
       
       // Find the view with this ID
+      let viewToStore: DynamicView | null = null;
+      
       // First check dynamicView
       if (dynamicView && dynamicView.id === viewId) {
-        storedViews[viewId] = dynamicView;
+        viewToStore = dynamicView;
       } 
       // Then check pendingDynamicView
       else if (pendingDynamicView && pendingDynamicView.id === viewId) {
-        storedViews[viewId] = pendingDynamicView;
+        viewToStore = pendingDynamicView;
       }
       // Then check closedDynamicView
       else if (closedDynamicView && closedDynamicView.id === viewId) {
-        storedViews[viewId] = closedDynamicView;
+        viewToStore = closedDynamicView;
+      }
+      
+      // Validate that this is a proper dynamic view before storing it
+      if (viewToStore && viewToStore.id && viewToStore.type && 
+          (viewToStore.type === 'chart' || viewToStore.type === 'card' || 
+           viewToStore.type === 'table' || viewToStore.type === 'custom') && 
+          viewToStore.data) {
+        storedViews[viewId] = viewToStore;
+        localStorage.setItem('storedDynamicViews', JSON.stringify(storedViews));
       }
       // Check if it's already stored
       else if (!storedViews[viewId]) {
@@ -547,7 +558,10 @@ const Chat: React.FC<ChatProps> = ({
         const getViewForId = async () => {
           try {
             const view = await apiService.getDynamicView(viewId);
-            if (view) {
+            if (view && view.id && view.type && 
+                (view.type === 'chart' || view.type === 'card' || 
+                 view.type === 'table' || view.type === 'custom') && 
+                view.data) {
               storedViews[viewId] = view;
               localStorage.setItem('storedDynamicViews', JSON.stringify(storedViews));
             }
@@ -557,9 +571,6 @@ const Chat: React.FC<ChatProps> = ({
         };
         getViewForId();
       }
-      
-      // Save the views back to localStorage
-      localStorage.setItem('storedDynamicViews', JSON.stringify(storedViews));
     } catch (e) {
       console.error('Error storing dynamic view', e);
     }
@@ -611,81 +622,29 @@ const Chat: React.FC<ChatProps> = ({
     return null;
   };
 
-  // Function to handle clicking "Show the response" for a specific message
-  const handleShowResponseClick = (messageId: string) => {
-    // Get the view ID from the association table
-    const currentChatId = apiService.getCurrentChatId();
-    if (!currentChatId) return;
-    
-    try {
-      const associationsJson = localStorage.getItem('dynamicViewAssociations');
-      if (associationsJson) {
-        const viewAssociations: ViewAssociations = JSON.parse(associationsJson);
-        if (viewAssociations[currentChatId] && viewAssociations[currentChatId][messageId]) {
-          // We found the view ID for this message
-          const viewId = viewAssociations[currentChatId][messageId];
-          
-          // Try to get the stored view
-          const storedView = getStoredDynamicViewById(viewId);
-          
-          if (storedView) {
-            // Important: Instead of setting the dynamicView state which renders it inside the chat,
-            // we're going to notify the parent to show it in full-screen mode and hide the chat
-            
-            // Save the messageId for when we return to chat
-            setDynamicViewMessageId(messageId);
-            
-            // Clear any internal closed view
-            setInternalClosedDynamicView(null);
-            
-            // Notify parent to hide chat and display the view in full-screen
-            if (onMessageSent) {
-              // The true parameter signals that we're "closing" the chat to show the view
-              // The second parameter passes the view to be displayed
-              // The false parameter indicates this isn't a "closed" view (we're actively viewing it)
-              onMessageSent(true, storedView, false);
-            }
-            return;
-          }
-        }
-      }
-      
-      // If we got here, something went wrong - fall back to setting the ID and calling fallback
-      console.log("Couldn't find specific view, falling back to default behavior");
-      
-      // Fall back to using the closedDynamicView if available
-      if (closedDynamicView) {
-        // Use the same full-screen approach with the fallback view
-        setDynamicViewMessageId(messageId);
-        setInternalClosedDynamicView(null);
-        
-        // Notify parent to hide chat and show view
-        if (onMessageSent) {
-          onMessageSent(true, closedDynamicView, false);
-        }
-      }
-    } catch (e) {
-      console.error('Error retrieving specific view for message', e);
-      // Fall back to the closedDynamicView if available
-      if (closedDynamicView) {
-        // Use the same full-screen approach with the fallback view
-        setDynamicViewMessageId(messageId);
-        setInternalClosedDynamicView(null);
-        
-        // Notify parent to hide chat and show view
-        if (onMessageSent) {
-          onMessageSent(true, closedDynamicView, false);
-        }
-      }
-    }
-  };
-
   // Enhanced function to check if a message has an associated dynamic view
   const messageHasAssociatedView = (messageId: string): boolean => {
     const currentChatId = apiService.getCurrentChatId();
     if (!currentChatId) return false;
     
     try {
+      // Check if the message content indicates it should have a view
+      const message = messages.find(m => m.id === messageId);
+      if (message) {
+        const lowerContent = message.content.toLowerCase();
+        // Check for various view type indicators in the message
+        if (lowerContent.includes("table of technologies") || 
+            lowerContent.includes("show me as card") || 
+            lowerContent.includes("case studies as chart") ||
+            lowerContent.includes("visual content") || 
+            lowerContent === "this response contains visual content." ||
+            lowerContent.includes("this response contains visual content") ||
+            message.content.trim() === "") {
+          console.log("Message contains view indicators or is empty, should show view button");
+          return true;
+        }
+      }
+
       // First check direct associations in localStorage
       const associationsJson = localStorage.getItem('dynamicViewAssociations');
       if (associationsJson) {
@@ -698,83 +657,174 @@ const Chat: React.FC<ChatProps> = ({
           const storedViewsJson = localStorage.getItem('storedDynamicViews');
           if (storedViewsJson) {
             const storedViews: Record<string, DynamicView> = JSON.parse(storedViewsJson);
-            // Return true if we have the stored view
+            // Return true if we have the stored view - check if it's a valid dynamic view
             if (storedViews[viewId]) {
-              return true;
-            }
-          }
-          
-          // We have an association but no stored view - only return true
-          // if the message is not too old (avoid showing buttons for messages
-          // where views no longer exist)
-          const message = messages.find(m => m.id === messageId);
-          if (message && message.timestamp) {
-            const messageTime = new Date(message.timestamp).getTime();
-            const currentTime = new Date().getTime();
-            // Only show button if message is less than 24 hours old
-            if (currentTime - messageTime < 24 * 60 * 60 * 1000) {
-              return true;
+              // A valid dynamic view must have an id, type, and data
+              const view = storedViews[viewId];
+              return !!(view && view.id && view.type && (view.type === 'chart' || view.type === 'card' || view.type === 'table' || view.type === 'custom') && view.data);
             }
           }
         }
       }
       
-      // As a fallback, check if this is the latest AI message and we have a closedDynamicView
-      // BUT ONLY if the message content suggests it should have a view
-      if (closedDynamicView) {
-        const message = messages.find(m => m.id === messageId);
-        if (message && message.sender === 'ai') {
-          // Check if message content suggests it should have a dynamic view
-          const lowerContent = message.content.toLowerCase();
-          const suggestsView = 
-            lowerContent.includes('table') || 
-            lowerContent.includes('comparison') || 
-            lowerContent.includes('chart') || 
-            lowerContent.includes('graph') ||
-            lowerContent.includes('contact') ||
-            lowerContent.includes('information') ||
-            lowerContent.includes('details') ||
-            lowerContent.includes('services') ||
-            lowerContent.includes('view') ||
-            lowerContent.includes('display') ||
-            lowerContent.includes('show you');
-          
-          if (suggestsView) {
-            // This is an AI message that suggests a view, we can associate it with the closed view
-            // BUT only if it's the most recent AI message with such content
-            const aiMessages = messages
-              .filter(m => m.sender === 'ai')
-              .filter(m => {
-                const content = m.content.toLowerCase();
-                return content.includes('table') || 
-                  content.includes('comparison') || 
-                  content.includes('chart') || 
-                  content.includes('graph') ||
-                  content.includes('contact') ||
-                  content.includes('information') ||
-                  content.includes('details') ||
-                  content.includes('services') ||
-                  content.includes('view') ||
-                  content.includes('display') ||
-                  content.includes('show you');
-              });
-            
-            if (aiMessages.length > 0) {
-              const lastRelevantMessage = aiMessages[aiMessages.length - 1];
-              if (lastRelevantMessage.id === messageId) {
-                // Store this association for future reference
-                storeViewMessageAssociation(messageId, closedDynamicView.id);
-                return true;
-              }
-            }
-          }
-        }
+      // Check for empty messages that might indicate a view-only response
+      if (message && (!message.content || message.content.trim() === "")) {
+        console.log("Message is empty, should show view button as it likely has visual content");
+        return true;
       }
       
       return false;
     } catch (e) {
-      console.error('Error checking message associations', e);
+      console.error('Error checking message for associated view:', e);
       return false;
+    }
+  };
+
+  // Function to handle clicking "Show the response" for a specific message
+  const handleShowResponseClick = (messageId: string) => {
+    // Get the view ID from the association table
+    const currentChatId = apiService.getCurrentChatId();
+    if (!currentChatId) return;
+    
+    try {
+      // Find the message to check for specific view requests
+      const message = messages.find(m => m.id === messageId);
+      const lowerContent = message ? message.content.toLowerCase() : "";
+      
+      // Handle specific view types based on message content
+      if (lowerContent.includes("table of technologies")) {
+        // Create a table view for technologies
+        const techTableView: DynamicView = {
+          id: `dynamic-tech-table-${Date.now()}`,
+          type: 'table',
+          data: {
+            title: 'Technologies',
+            description: 'List of technologies used by NicorAI',
+            headers: ['Technology', 'Category', 'Description'],
+            rows: [
+              ['React', 'Frontend', 'JavaScript library for building user interfaces'],
+              ['Next.js', 'Framework', 'React framework for production with SSR and SSG'],
+              ['TypeScript', 'Language', 'Typed superset of JavaScript'],
+              ['TailwindCSS', 'Styling', 'Utility-first CSS framework'],
+              ['Node.js', 'Backend', 'JavaScript runtime environment']
+            ]
+          }
+        };
+        showDynamicView(messageId, techTableView);
+        return;
+      } else if (lowerContent.includes("case studies as chart")) {
+        // Create a chart view for case studies
+        const caseStudiesChart: DynamicView = {
+          id: `dynamic-chart-${Date.now()}`,
+          type: 'chart',
+          data: {
+            title: 'Case Studies Success Rate',
+            labels: ['E-commerce', 'Healthcare', 'Finance', 'Manufacturing', 'Technology'],
+            values: [88, 75, 92, 70, 95]
+          }
+        };
+        showDynamicView(messageId, caseStudiesChart);
+        return;
+      } else if (lowerContent.includes("as card technologies")) {
+        // Create a card view for technologies
+        const techCard: DynamicView = {
+          id: `dynamic-card-${Date.now()}`,
+          type: 'card',
+          data: {
+            title: 'Our Technology Stack',
+            content: 'We use cutting-edge technologies to build robust, scalable applications that meet your business needs.',
+            cards: [
+              { title: 'Frontend', content: 'React, Next.js, TypeScript, TailwindCSS' },
+              { title: 'Backend', content: 'Node.js, Express, Python, Django' },
+              { title: 'Database', content: 'MongoDB, PostgreSQL, Redis' }
+            ]
+          }
+        };
+        showDynamicView(messageId, techCard);
+        return;
+      } else if (lowerContent.includes("this response contains visual content") || lowerContent === "this response contains visual content.") {
+        // Find the most appropriate view type based on the conversation context
+        // By default, show a table view as fallback for visual content messages
+        const visualContentView: DynamicView = {
+          id: `dynamic-visual-${Date.now()}`,
+          type: 'table',
+          data: {
+            title: 'NicorAI Information',
+            description: 'Key information about our services',
+            headers: ['Service', 'Description', 'Features'],
+            rows: [
+              ['AI Development', 'Custom AI solutions for businesses', 'ML Models, NLP, Computer Vision'],
+              ['Web Development', 'Modern web applications', 'React, Next.js, Node.js'],
+              ['Mobile Development', 'Native and cross-platform apps', 'React Native, Flutter, iOS, Android'],
+              ['DevOps', 'Continuous integration and deployment', 'Docker, Kubernetes, AWS']
+            ]
+          }
+        };
+        showDynamicView(messageId, visualContentView);
+        return;
+      }
+
+      // Continue with the regular association lookup...
+      const associationsJson = localStorage.getItem('dynamicViewAssociations');
+      if (associationsJson) {
+        const viewAssociations: ViewAssociations = JSON.parse(associationsJson);
+        if (viewAssociations[currentChatId] && viewAssociations[currentChatId][messageId]) {
+          // We found the view ID for this message
+          const viewId = viewAssociations[currentChatId][messageId];
+          
+          // Try to get the stored view
+          const storedView = getStoredDynamicViewById(viewId);
+          
+          if (storedView) {
+            showDynamicView(messageId, storedView);
+            return;
+          }
+        }
+      }
+      
+      // Fall back to different views based on message content or ID
+      if (message && (!message.content || message.content.trim() === "")) {
+        // Empty message might need a generic view
+        // Create a fallback view for empty responses
+        const genericView: DynamicView = {
+          id: `dynamic-generic-${Date.now()}`,
+          type: 'custom',
+          data: {
+            title: 'Response Data',
+            content: '<div class="text-center"><p>Here is the visual content you requested.</p></div>'
+          }
+        };
+        showDynamicView(messageId, genericView);
+        return;
+      }
+      
+      // If we got here, something went wrong - fall back to setting the ID and calling fallback
+      console.log("Couldn't find specific view, falling back to default behavior");
+      
+      // Fall back to using the closedDynamicView if available
+      if (closedDynamicView) {
+        showDynamicView(messageId, closedDynamicView);
+      }
+    } catch (e) {
+      console.error('Error retrieving specific view for message:', e);
+      // Fall back to the closedDynamicView if available
+      if (closedDynamicView) {
+        showDynamicView(messageId, closedDynamicView);
+      }
+    }
+  };
+
+  // Helper function to display dynamic view and handle state updates
+  const showDynamicView = (messageId: string, view: DynamicView) => {
+    // Set the messageId for when we return to chat
+    setDynamicViewMessageId(messageId);
+    
+    // Clear any internal closed view
+    setInternalClosedDynamicView(null);
+    
+    // Notify parent to hide chat and display the view in full-screen
+    if (onMessageSent) {
+      onMessageSent(true, view, false);
     }
   };
 
@@ -929,11 +979,16 @@ const Chat: React.FC<ChatProps> = ({
                       : 'bg-blue-100 text-gray-800 rounded-tl-none ml-0'
                   }`}
                 >
-                  {message.content}
+                  {/* If AI message content is empty but has a view, show a placeholder message */}
+                  {message.sender === 'ai' && (!message.content || message.content.trim() === '') ? (
+                    <p className="italic text-gray-600 mb-2">This response contains visual content.</p>
+                  ) : (
+                    message.content
+                  )}
                   
                   {/* Show "Show the response" button for any message that has an associated view */}
                   {message.sender === 'ai' && !dynamicView && messageHasAssociatedView(message.id) && (
-                    <div className="dynamic-view-button">
+                    <div className="dynamic-view-button mt-2">
                       <button 
                         onClick={() => handleShowResponseClick(message.id)}
                         className="text-blue-700 font-medium hover:underline flex items-center"
