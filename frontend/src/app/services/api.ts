@@ -217,7 +217,9 @@ class ApiService {
       }
       
       // Card request
-      else if (lowerMessage.includes("show me as card technologies") || lowerMessage.includes("card technologies")) {
+      else if (lowerMessage.includes("show me as card technologies") || 
+              lowerMessage.includes("card technologies") ||
+              lowerMessage.includes("technologies in card")) {
         console.log('Detected request for technologies card');
         return this.createSpecialViewResponse('card', 'Technologies Card', {
           title: 'Our Technology Stack',
@@ -357,6 +359,59 @@ class ApiService {
       // Wait a bit to simulate API call
       await new Promise(resolve => setTimeout(resolve, 300));
 
+      // Check if this is a dynamic ID (created at runtime) that we may not have stored
+      if (viewId.startsWith('dynamic-')) {
+        // If it's a card view
+        if (viewId.includes('card')) {
+          console.log(`Creating fallback card view for dynamic ID: ${viewId}`);
+          return {
+            id: viewId,
+            type: 'card',
+            data: {
+              title: 'Our Technology Stack',
+              content: 'We use cutting-edge technologies to build robust, scalable applications that meet your business needs.',
+              cards: [
+                { title: 'Frontend', content: 'React, Next.js, TypeScript, TailwindCSS' },
+                { title: 'Backend', content: 'Node.js, Express, Python, Django' },
+                { title: 'Database', content: 'MongoDB, PostgreSQL, Redis' }
+              ]
+            }
+          };
+        }
+        
+        // If it's a table view
+        if (viewId.includes('table')) {
+          console.log(`Creating fallback table view for dynamic ID: ${viewId}`);
+          return {
+            id: viewId,
+            type: 'table',
+            data: {
+              title: 'Technologies',
+              description: 'List of technologies used by NicorAI',
+              headers: ['Technology', 'Category', 'Description'],
+              rows: [
+                ['React', 'Frontend', 'JavaScript library for building user interfaces'],
+                ['Next.js', 'Framework', 'React framework for production with SSR and SSG'],
+                ['TypeScript', 'Language', 'Typed superset of JavaScript'],
+                ['TailwindCSS', 'Styling', 'Utility-first CSS framework'],
+                ['Node.js', 'Backend', 'JavaScript runtime environment']
+              ]
+            }
+          };
+        }
+        
+        // Generic fallback for any dynamic ID
+        console.log(`Creating generic fallback view for dynamic ID: ${viewId}`);
+        return {
+          id: viewId,
+          type: 'custom',
+          data: {
+            title: 'Dynamic Content',
+            content: '<div class="p-4 text-center"><p>This view was dynamically generated.</p></div>'
+          }
+        };
+      }
+
       // Create a view based on the requested ID
       switch (viewId) {
         case 'table-example':
@@ -425,8 +480,20 @@ class ApiService {
           };
 
         default:
-          console.warn(`Unknown view ID: ${viewId}`);
-          return null;
+          console.log(`Creating fallback view for unknown ID: ${viewId}`);
+          return {
+            id: viewId,
+            type: 'card',
+            data: {
+              title: 'NicorAI Information',
+              content: 'Information about our services and technologies',
+              cards: [
+                { title: 'Frontend Technologies', content: 'React, Next.js, TypeScript, TailwindCSS' },
+                { title: 'Backend Technologies', content: 'Node.js, Express, Python, Django' },
+                { title: 'Database Technologies', content: 'MongoDB, PostgreSQL, Redis' }
+              ]
+            }
+          };
       }
     } catch (error) {
       console.error('Error fetching dynamic view:', error);
@@ -774,19 +841,32 @@ class ApiService {
     if (!view || !view.id || !messageId) return;
     
     try {
+      // Ensure each messageId gets a unique viewId based on the message content
+      // This ensures different messages get different views
+      const currentChatId = this.getCurrentChatId();
+      if (!currentChatId) return;
+      
+      // Generate a unique view ID that includes the message ID to ensure uniqueness
+      const uniqueViewId = `view-for-message-${messageId}`;
+      
+      // Create a copy of the view with the unique ID
+      const uniqueView: DynamicView = {
+        ...view,
+        id: uniqueViewId
+      };
+      
       // Store the view itself
       let storedViews: Record<string, DynamicView> = {};
       const storedViewsJson = localStorage.getItem('storedDynamicViews');
       if (storedViewsJson) {
         storedViews = JSON.parse(storedViewsJson);
       }
-      storedViews[view.id] = view;
+      
+      // Store with unique ID to ensure each message has its own view
+      storedViews[uniqueViewId] = uniqueView;
       localStorage.setItem('storedDynamicViews', JSON.stringify(storedViews));
       
       // Store the association
-      const currentChatId = this.getCurrentChatId();
-      if (!currentChatId) return;
-      
       let viewAssociations: ViewAssociations = {};
       const associationsJson = localStorage.getItem('dynamicViewAssociations');
       if (associationsJson) {
@@ -797,8 +877,11 @@ class ApiService {
         viewAssociations[currentChatId] = {};
       }
       
-      viewAssociations[currentChatId][messageId] = view.id;
+      // Store the association with the unique view ID
+      viewAssociations[currentChatId][messageId] = uniqueViewId;
       localStorage.setItem('dynamicViewAssociations', JSON.stringify(viewAssociations));
+      
+      console.log(`Stored view ${uniqueViewId} for message ${messageId}`);
     } catch (e) {
       console.error('Error storing view and association:', e);
     }
@@ -814,9 +897,9 @@ class ApiService {
       timestamp: new Date()
     };
     
-    // Create dynamic view
+    // Create dynamic view with a message-specific ID
     const dynamicView: DynamicView = {
-      id: `dynamic-${viewType}-${Date.now()}`,
+      id: `dynamic-${viewType}-${viewName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
       type: viewType,
       data: viewData
     };
@@ -827,7 +910,7 @@ class ApiService {
     // Add the AI message to the chat
     this.addMessageToCurrentChat(aiMessage);
     
-    // Store the view for future reference
+    // Store the view for future reference with the unique ID
     this.storeViewAndAssociation(aiMessage.id, dynamicView);
     
     return aiMessage;

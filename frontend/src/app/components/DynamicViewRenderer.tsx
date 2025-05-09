@@ -80,83 +80,22 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
     }
   };
 
-  // Add animation styles to CSS
-  useEffect(() => {
-    // Add keyframes for fade-in animation
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-out forwards;
-      }
-      
-      @keyframes pulse {
-        0% { opacity: 0.6; }
-        50% { opacity: 1; }
-        100% { opacity: 0.6; }
-      }
-      .animate-soft-pulse {
-        animation: pulse 3s ease-in-out infinite;
-      }
-      
-      @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-        100% { transform: translateY(0px); }
-      }
-      .animate-float {
-        animation: float 5s ease-in-out infinite;
-      }
-      
-      @keyframes gradientBackground {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-      }
-      .animate-gradient {
-        background-size: 200% 200%;
-        animation: gradientBackground 8s ease infinite;
-      }
-      
-      .bg-grid-pattern {
-        background-size: 40px 40px;
-        background-image: 
-          linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-      }
-      
-      @keyframes move {
-        0% { transform: translateX(0) translateY(0); }
-        50% { transform: translateX(-5px) translateY(-5px); }
-        100% { transform: translateX(0) translateY(0); }
-      }
-      .animate-move {
-        animation: move 10s infinite ease;
-      }
-    `;
-    document.head.appendChild(style);
-
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
-
   return (
     <div className="relative flex-1 h-full overflow-auto bg-white pb-24">
-      <div className="sticky top-0 right-0 p-4 flex justify-end z-50">
-        <button
-          onClick={onClose}
-          className="p-2 text-gray-500 hover:text-gray-700 bg-white rounded-full shadow-sm"
-          aria-label="Close view"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+      {/* Remove close button for dynamic views to avoid duplication */}
+      {viewId !== 'dynamic-view' && (
+        <div className="sticky top-0 right-0 p-4 flex justify-end z-50">
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-500 hover:text-gray-700 bg-white rounded-full shadow-sm"
+            aria-label="Close view"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {renderContent()}
     </div>
