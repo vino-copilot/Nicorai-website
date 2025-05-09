@@ -9,12 +9,23 @@ const PORT = process.env.PORT || 4000;
 const REDIS_URL = process.env.REDIS_URL;
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
 
+let redisHealthy = true; // 🔥 flag to track Redis health
+
 const redisClient = createClient({
-    url: REDIS_URL
+    url: REDIS_URL,
+    socket: {
+        reconnectStrategy: false // 🔥 do not keep retrying forever
+    }
 });
 
 redisClient.on('error', (err) => {
     console.error('❌ Redis Client Error:', err.message);
+    redisHealthy = false; // mark Redis as unhealthy
+});
+
+redisClient.on('connect', () => {
+    console.log('✅ Redis connected!');
+    redisHealthy = true; // mark Redis as healthy
 });
 
 (async () => {
@@ -23,6 +34,7 @@ redisClient.on('error', (err) => {
         console.log('✅ Redis connected!');
     } catch (err) {
         console.error('❌ Failed to connect to Redis:', err.message);
+        redisHealthy = false;
     }
 })();
 
@@ -39,20 +51,23 @@ app.post('/chat', async (req, res) => {
     }
 
     const cacheKey = `chat_cache:${message.trim().toLowerCase()}`;
-    console.log(`🔍 Checking Redis cache for key: ${cacheKey}`);
-
     let cachedData;
 
-    // ✅ Safely check Redis cache
-    try {
-        cachedData = await redisClient.get(cacheKey);
-        if (cachedData) {
-            console.log('✅ Cache hit! Returning cached response.');
-            return res.json(JSON.parse(cachedData));
+    // ✅ Only check Redis if marked healthy
+    if (redisHealthy) {
+        try {
+            cachedData = await redisClient.get(cacheKey);
+            if (cachedData) {
+                console.log('✅ Cache hit! Returning cached response.');
+                return res.json(JSON.parse(cachedData));
+            }
+            console.log('⚠️ Cache miss. Proceeding to call n8n.');
+        } catch (err) {
+            console.error('❌ Redis GET error (fallback to n8n):', err.message);
+            redisHealthy = false; // if error, mark as unhealthy
         }
-        console.log('⚠️ Cache miss. Proceeding to call n8n.');
-    } catch (err) {
-        console.error('❌ Redis GET error (fallback to n8n):', err.message);
+    } else {
+        console.log('⚠️ Skipping Redis check: marked as unhealthy');
     }
 
     try {
@@ -82,21 +97,24 @@ app.post('/chat', async (req, res) => {
 
         console.log('⬅️ Sending to frontend:', transformedResponse);
 
-        // ✅ Safely try to cache response
-        try {
-            const hasValidContent = transformedResponse.content &&
-                (transformedResponse.content.text || transformedResponse.content.viewSpec);
+        // ✅ Only attempt Redis SET if healthy
+        if (redisHealthy) {
+            try {
+                const hasValidContent = transformedResponse.content &&
+                    (transformedResponse.content.text || transformedResponse.content.viewSpec);
 
-            if (hasValidContent) {
-                await redisClient.set(cacheKey, JSON.stringify(transformedResponse), {
-                    EX: 3600 // 1 hour TTL
-                });
-                console.log('✅ Stored response in Redis with 1-hour TTL.');
-            } else {
-                console.log('⚠️ Skipped caching empty or fallback response.');
+                if (hasValidContent) {
+                    await redisClient.set(cacheKey, JSON.stringify(transformedResponse), {
+                        EX: 3600 // 1 hour TTL
+                    });
+                    console.log('✅ Stored response in Redis with 1-hour TTL.');
+                } else {
+                    console.log('⚠️ Skipped caching empty or fallback response.');
+                }
+            } catch (err) {
+                console.error('❌ Redis SET error (skipped caching):', err.message);
+                redisHealthy = false;
             }
-        } catch (err) {
-            console.error('❌ Redis SET error (skipped caching):', err.message);
         }
 
         return res.json(transformedResponse);
