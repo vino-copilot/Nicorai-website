@@ -5,11 +5,13 @@ import Image from 'next/image';
 
 interface ChatProps {
   isVisible: boolean;
-  onMessageSent?: (isClosing?: boolean) => void;
+  onMessageSent?: (isClosing?: boolean, dynamicView?: DynamicView) => void;
   isInitialView?: boolean;
+  activeView?: string | null;
+  pendingDynamicView?: DynamicView | null;
 }
 
-const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) => {
+const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, activeView, pendingDynamicView }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +26,14 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
     "Show me a comparison of your products",
     "What industries do you specialize in?"
   ];
+
+  // Process pending dynamic view from parent
+  useEffect(() => {
+    if (pendingDynamicView) {
+      console.log('Received pending dynamic view:', pendingDynamicView);
+      setDynamicView(pendingDynamicView);
+    }
+  }, [pendingDynamicView]);
 
   // Load messages from the API service when the component mounts
   useEffect(() => {
@@ -208,8 +218,9 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
         }
       }
     } catch (error) {
-      setError('Failed to connect to the server. The API Gateway might be offline or experiencing issues. Please try again later.');
       console.error('Error sending message:', error);
+      setIsLoading(false);
+      setError("Sorry, we're having trouble connecting to the AI. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -232,13 +243,9 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
 
   const handleCloseDynamicView = () => {
     setDynamicView(null);
-    
-    // Clear the last dynamic view ID to prevent tracking a closed view
-    apiService.clearLastDynamicView();
-    
-    // If we're in initial view, keep showing initial view
-    if (isInitialView && onMessageSent) {
-      onMessageSent(false); // Ensure we're not closing the chat
+    // Also notify parent to clear any pending dynamic view
+    if (onMessageSent) {
+      onMessageSent(false);
     }
   };
 
@@ -354,9 +361,9 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView }) 
       </div>
       {/* Message container */}
       <div className="flex-1 p-4 overflow-y-auto relative">
-        {/* Modal overlay for dynamic view (now only covers messages area) */}
+        {/* Always show dynamic view on top when available, regardless of sidebar state */}
         {dynamicView && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white bg-opacity-80 p-4">
+          <div className={`absolute inset-0 z-30 flex items-center justify-center bg-white bg-opacity-80 p-4 ${activeView ? 'sticky top-0' : ''}`}>
             <div className="w-full h-full flex items-center justify-center">
               <DynamicContentRenderer 
                 view={dynamicView} 

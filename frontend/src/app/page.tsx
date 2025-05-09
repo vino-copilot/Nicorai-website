@@ -5,13 +5,14 @@ import Sidebar from './components/Sidebar';
 import Chat from './components/Chat';
 import ChatInput from './components/ChatInput';
 import DynamicViewRenderer from './components/DynamicViewRenderer';
-import apiService from './services/api';
+import apiService, { DynamicView } from './services/api';
 
 export default function Home() {
   const [activeView, setActiveView] = useState<string | null>(null);
   const [hasMessages, setHasMessages] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(true);
   const [isInitialView, setIsInitialView] = useState(true);
+  const [pendingDynamicView, setPendingDynamicView] = useState<DynamicView | null>(null);
 
   // Check if there are existing messages on initial load
   useEffect(() => {
@@ -51,11 +52,17 @@ export default function Home() {
 
   // Function to handle sending a message in the chat
   // This is now also used to handle closing the chat
-  const handleMessageSent = (isClosing = false) => {
+  const handleMessageSent = (isClosing = false, dynamicView?: DynamicView) => {
     if (!isClosing) {
       setHasMessages(true);
       setIsInitialView(false);
       setIsChatVisible(true); // Always show chat when a message is sent
+      
+      // Store the dynamic view if provided
+      if (dynamicView) {
+        setPendingDynamicView(dynamicView);
+      }
+      
       // If a view is active, hide it
       if (activeView) {
         setActiveView(null);
@@ -76,6 +83,9 @@ export default function Home() {
       else {
         setIsChatVisible(false);
       }
+      
+      // Clear any pending dynamic view when closing
+      setPendingDynamicView(null);
     }
   };
 
@@ -146,7 +156,14 @@ export default function Home() {
         )}
         
         {/* Render chat if visible */}
-        {isChatVisible && <Chat key={activeView || 'default'} isVisible={true} onMessageSent={handleMessageSent} isInitialView={isInitialView} />}
+        {isChatVisible && <Chat 
+          key={activeView || 'default'} 
+          isVisible={true} 
+          onMessageSent={handleMessageSent} 
+          isInitialView={isInitialView}
+          activeView={activeView}
+          pendingDynamicView={pendingDynamicView}
+        />}
         
         {/* If nothing is visible, show a fallback */}
         {!activeView && !isChatVisible && !isInitialView && (
@@ -176,13 +193,18 @@ export default function Home() {
         {/* Fixed chat input box at the bottom (visible on all pages except initial view) */}
         {!isInitialView && !isChatVisible && activeView && (
           <div className="fixed bottom-0 left-64 right-0 border-t border-gray-200 bg-white p-4 shadow-md z-10">
-            <ChatInput onMessageSent={(isClosing) => {
+            <ChatInput onMessageSent={(isClosing, dynamicView) => {
               // Enhanced callback to guarantee the chat becomes visible
               if (!isClosing) {
                 setIsChatVisible(true);
                 setActiveView(null);
+                
+                // Store dynamic view if provided
+                if (dynamicView) {
+                  setPendingDynamicView(dynamicView);
+                }
               }
-              handleMessageSent(isClosing);
+              handleMessageSent(isClosing, dynamicView);
             }} />
           </div>
         )}

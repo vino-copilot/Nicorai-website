@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import apiService from '../services/api';
+import apiService, { DynamicView } from '../services/api';
 
 interface ChatInputProps {
-  onMessageSent?: (isClosing?: boolean) => void;
+  onMessageSent?: (isClosing?: boolean, dynamicView?: DynamicView) => void;
 }
 
 type NotificationStatus = 'none' | 'sending' | 'success' | 'error';
@@ -33,9 +33,6 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent }) => {
     const newChatId = apiService.createNewChat();
     apiService.setCurrentChat(newChatId);
     
-    // Notify parent that a message was sent - MOVED TO handleSubmit
-    // onMessageSent?.(false);
-    
     try {
       // Use the API service to get a response
       const aiResponse = await apiService.sendMessage(content);
@@ -51,6 +48,32 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent }) => {
         status: 'success',
         message: 'Message sent!'
       });
+      
+      // Pass dynamic view to parent if it exists
+      if (aiResponse.dynamicView) {
+        console.log('Dynamic view found in ChatInput response:', aiResponse.dynamicView);
+        onMessageSent?.(false, aiResponse.dynamicView);
+        return;
+      }
+      
+      // If no direct dynamic view, check for content that might need a dynamic view
+      const lowerContent = content.toLowerCase().trim();
+      const isViewRequest = 
+        lowerContent.includes('contact') ||
+        lowerContent.includes('comparison') || 
+        lowerContent.includes('products') ||
+        lowerContent.includes('chart') || 
+        lowerContent.includes('table') ||
+        lowerContent.includes('about nicor') ||
+        lowerContent.includes('show');
+      
+      if (isViewRequest) {
+        const apiSuggestedView = await apiService.checkForDynamicView(content);
+        if (apiSuggestedView) {
+          console.log('Suggested view found in ChatInput:', apiSuggestedView);
+          onMessageSent?.(false, apiSuggestedView);
+        }
+      }
     } catch (error) {
       // Show error notification
       setNotification({
