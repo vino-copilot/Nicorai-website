@@ -41,16 +41,22 @@ app.post('/chat', async (req, res) => {
     const cacheKey = `chat_cache:${message.trim().toLowerCase()}`;
     console.log(`🔍 Checking Redis cache for key: ${cacheKey}`);
 
+    let cachedData;
+
+    // ✅ Safely check Redis cache
     try {
-        // 1️⃣ Check Redis cache
-        const cachedData = await redisClient.get(cacheKey);
+        cachedData = await redisClient.get(cacheKey);
         if (cachedData) {
             console.log('✅ Cache hit! Returning cached response.');
             return res.json(JSON.parse(cachedData));
         }
         console.log('⚠️ Cache miss. Proceeding to call n8n.');
+    } catch (err) {
+        console.error('❌ Redis GET error (fallback to n8n):', err.message);
+    }
 
-        // 2️⃣ Prepare request for n8n
+    try {
+        // Prepare request for n8n
         const n8nRequestBody = {
             requestId: `${Date.now()}`,
             userId,
@@ -62,11 +68,11 @@ app.post('/chat', async (req, res) => {
 
         console.log('➡️ Sending to n8n:', n8nRequestBody);
 
-        // 3️⃣ Call n8n webhook
+        // Call n8n webhook
         const n8nResponse = await axios.post(N8N_WEBHOOK_URL, n8nRequestBody);
         console.log('⬅️ Received from n8n:', n8nResponse.data);
 
-        // 4️⃣ Transform to frontend format
+        // Transform to frontend format
         const transformedResponse = {
             responseId: n8nResponse.data.responseId || `${Date.now()}`,
             responseType: n8nResponse.data.responseType || 'text',
@@ -76,20 +82,23 @@ app.post('/chat', async (req, res) => {
 
         console.log('⬅️ Sending to frontend:', transformedResponse);
 
-        // 5️⃣ Only cache if content is meaningful
-        const hasValidContent = transformedResponse.content &&
-            (transformedResponse.content.text || transformedResponse.content.viewSpec);
+        // ✅ Safely try to cache response
+        try {
+            const hasValidContent = transformedResponse.content &&
+                (transformedResponse.content.text || transformedResponse.content.viewSpec);
 
-        if (hasValidContent) {
-            await redisClient.set(cacheKey, JSON.stringify(transformedResponse), {
-                EX: 3600 // 1 hour TTL
-            });
-            console.log('✅ Stored response in Redis with 1-hour TTL.');
-        } else {
-            console.log('⚠️ Skipped caching empty or fallback response.');
+            if (hasValidContent) {
+                await redisClient.set(cacheKey, JSON.stringify(transformedResponse), {
+                    EX: 3600 // 1 hour TTL
+                });
+                console.log('✅ Stored response in Redis with 1-hour TTL.');
+            } else {
+                console.log('⚠️ Skipped caching empty or fallback response.');
+            }
+        } catch (err) {
+            console.error('❌ Redis SET error (skipped caching):', err.message);
         }
 
-        // 6️⃣ Send response
         return res.json(transformedResponse);
 
     } catch (err) {
