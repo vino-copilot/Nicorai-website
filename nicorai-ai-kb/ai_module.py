@@ -53,8 +53,8 @@ class AIUIGeneration:
             {context}
 
             Instructions:
-            - Choose "view" for queries requesting lists, tables, charts, cards, or structured data (e.g., 'services', 'case studies', 'technologies', 'show', 'list', 'display').
-            - Choose "text" for informational, conversational, or vague queries (e.g., 'what does NicorAI do?', 'how are you', 'hi').
+            - Choose "view" for queries requesting lists, tables, charts, cards, or structured data (e.g., 'services', 'case studies', 'technologies', 'show', 'list', 'display','card','table','chart').
+            - Choose "text" for informational, conversational, or vague queries (e.g., 'what does NicorAI do?', 'how are you', 'hi','hello').
             - Return JSON only, e.g., {{"responseType": "view"}} or {{"responseType": "text"}}.
             """
         elif mode == "view":
@@ -298,7 +298,7 @@ class AIUIGeneration:
         if re.match(casual_pattern, query.lower(), re.IGNORECASE):
             context = "NicorAI is a company specializing in custom AI agents, AR/VR solutions, and rapid MVP development."
             llm_output = self.call_perplexity_llm(query, context, mode="text")
-            text_response = llm_output.get("text", "Hey there! I'm NicorAI, ready to dive into your questions about our AI solutions. What's on your mind?") if isinstance(llm_output, dict) else llm_output
+            text_response = llm_output.get("text", "Hey! I’m NicorAI, your friendly assistant. Curious about NicorAI? I’ve got you covered! 🌟") if isinstance(llm_output, dict) else llm_output
             response = {
                 "responseId": response_id,
                 "responseType": "text",
@@ -358,7 +358,7 @@ class AIUIGeneration:
                 "responseId": response_id,
                 "responseType": "text",
                 "content": {
-                    "text": "I couldn't find relevant information. Try asking about NicorAI’s services, case studies, technologies, or company details!"
+                    "text": "Hmm, I don’t know that yet! 😅 But if you have questions about NicorAI, I’m all ears. Ask away!"
                 },
                 "metadata": {"modelUsed": "none", "tokensUsed": 0}
             }
