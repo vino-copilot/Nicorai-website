@@ -3,22 +3,42 @@ import apiService, { ChatMessage, DynamicView } from '../services/api';
 import DynamicContentRenderer from './DynamicContentRenderer';
 import Image from 'next/image';
 
+// Define interface for dynamic view associations
+interface ViewAssociations {
+  [chatId: string]: {
+    [messageId: string]: string;  // messageId -> viewId
+  };
+}
+
 interface ChatProps {
   isVisible: boolean;
-  onMessageSent?: (isClosing?: boolean, dynamicView?: DynamicView) => void;
+  onMessageSent?: (isClosing?: boolean, dynamicView?: DynamicView, isClosed?: boolean) => void;
   isInitialView?: boolean;
   activeView?: string | null;
   pendingDynamicView?: DynamicView | null;
+  closedDynamicView?: DynamicView | null;
 }
 
-const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, activeView, pendingDynamicView }) => {
+const Chat: React.FC<ChatProps> = ({ 
+  isVisible, 
+  onMessageSent, 
+  isInitialView, 
+  activeView, 
+  pendingDynamicView,
+  closedDynamicView: externalClosedDynamicView
+}) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dynamicView, setDynamicView] = useState<DynamicView | null>(null);
+  const [internalClosedDynamicView, setInternalClosedDynamicView] = useState<DynamicView | null>(null);
+  const [dynamicViewMessageId, setDynamicViewMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Use either external or internal closed dynamic view
+  const closedDynamicView = externalClosedDynamicView || internalClosedDynamicView;
 
   const faqSuggestions = [
     "How can AI help my business?",
@@ -32,8 +52,28 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
     if (pendingDynamicView) {
       console.log('Received pending dynamic view:', pendingDynamicView);
       setDynamicView(pendingDynamicView);
+      // Clear internal closed view when a new pending view arrives
+      setInternalClosedDynamicView(null);
+      
+      // If we have messages, associate the dynamic view with the latest AI message
+      if (messages.length > 0) {
+        const latestAiMessage = [...messages]
+          .filter(m => m.sender === 'ai')
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+        
+        if (latestAiMessage) {
+          setDynamicViewMessageId(latestAiMessage.id);
+        }
+      }
     }
   }, [pendingDynamicView]);
+
+  // Update internal state when external closed view changes
+  useEffect(() => {
+    if (externalClosedDynamicView) {
+      setInternalClosedDynamicView(null);
+    }
+  }, [externalClosedDynamicView]);
 
   // Load messages from the API service when the component mounts
   useEffect(() => {
@@ -85,7 +125,12 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
     // so we treat it as a new chat
     if (isInitialView) {
       setMessages([]);
-      setDynamicView(null);
+      // Don't clear closed dynamic view
+      if (dynamicView) {
+        setDynamicView(null);
+      }
+      // Also clear the message ID association
+      setDynamicViewMessageId(null);
     }
   }, [isInitialView]);
 
@@ -94,6 +139,121 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
     const currentMessages = apiService.getCurrentChatMessages();
     setMessages(currentMessages);
   }, [apiService.getCurrentChatId()]);
+
+  // Load externally stored dynamic views on mount
+  useEffect(() => {
+    // Try to load stored views from localStorage
+    try {
+      const storedViewsJson = localStorage.getItem('storedDynamicViews');
+      if (storedViewsJson) {
+        const storedViews: Record<string, DynamicView> = JSON.parse(storedViewsJson);
+        
+        // If we have a closedDynamicView from props but no internal one, check if it's stored
+        if (externalClosedDynamicView && !internalClosedDynamicView) {
+          // Already have external view, no need to load from storage
+          return;
+        }
+        
+        // Check if we have associations for the current chat
+        const currentChatId = apiService.getCurrentChatId();
+        if (currentChatId) {
+          const associationsJson = localStorage.getItem('dynamicViewAssociations');
+          if (associationsJson) {
+            const associations: ViewAssociations = JSON.parse(associationsJson);
+            
+            if (associations[currentChatId]) {
+              // We have associations for this chat
+              const messageIds = Object.keys(associations[currentChatId]);
+              
+              if (messageIds.length > 0) {
+                // Find the first stored view association
+                const viewId = associations[currentChatId][messageIds[0]];
+                const view = storedViews[viewId];
+                
+                if (view && !internalClosedDynamicView) {
+                  // Set as internal closed view
+                  setInternalClosedDynamicView(view);
+                  setDynamicViewMessageId(messageIds[0]);
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error loading stored dynamic views', e);
+    }
+  }, []);
+  
+  // Enhanced useEffect to properly restore message-view associations
+  useEffect(() => {
+    // Skip if we're in initial view or there are no messages
+    if (isInitialView || messages.length === 0) return;
+    
+    const currentChatId = apiService.getCurrentChatId();
+    if (!currentChatId) return;
+    
+    try {
+      // Load message-view associations from localStorage
+      const associationsJson = localStorage.getItem('dynamicViewAssociations');
+      if (!associationsJson) return;
+      
+      const viewAssociations: ViewAssociations = JSON.parse(associationsJson);
+      if (!viewAssociations[currentChatId]) return;
+      
+      // Load stored dynamic views
+      const storedViewsJson = localStorage.getItem('storedDynamicViews');
+      if (!storedViewsJson) return;
+      
+      const storedViews: Record<string, DynamicView> = JSON.parse(storedViewsJson);
+
+      // For each message in the current chat, check if it has a closed view association
+      for (const message of messages) {
+        // Only check AI messages
+        if (message.sender !== 'ai') continue;
+        
+        if (viewAssociations[currentChatId][message.id]) {
+          // This message had a dynamic view that was closed
+          const viewId = viewAssociations[currentChatId][message.id];
+          const view = storedViews[viewId];
+          
+          if (view && !dynamicView) {
+            // We found a stored view for this message - set it as closed view if we don't have one
+            if (!internalClosedDynamicView) {
+              setInternalClosedDynamicView(view);
+            }
+            
+            // Set the message ID to show the "Show the response" button
+            setDynamicViewMessageId(message.id);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error loading stored view associations', e);
+    }
+  }, [messages, apiService.getCurrentChatId(), isInitialView, dynamicView]);
+
+  // Store dynamic view in localStorage whenever it changes
+  useEffect(() => {
+    if (dynamicView) {
+      try {
+        // Get existing stored views
+        let storedViews: Record<string, DynamicView> = {};
+        const storedViewsJson = localStorage.getItem('storedDynamicViews');
+        if (storedViewsJson) {
+          storedViews = JSON.parse(storedViewsJson);
+        }
+        
+        // Add or update the current view
+        storedViews[dynamicView.id] = dynamicView;
+        
+        // Save back to localStorage
+        localStorage.setItem('storedDynamicViews', JSON.stringify(storedViews));
+      } catch (e) {
+        console.error('Error storing dynamic view', e);
+      }
+    }
+  }, [dynamicView]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -161,10 +321,22 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
       const updatedMessages = apiService.getCurrentChatMessages();
       setMessages(updatedMessages);
 
+      // Get the ID of the latest AI message for associating with dynamic view
+      const latestAiMessage = updatedMessages
+        .filter(m => m.sender === 'ai')
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+
       // First check if the API response already includes a dynamic view
       if (aiResponse.dynamicView) {
         console.log('Dynamic view found in API response:', aiResponse.dynamicView);
         setDynamicView(aiResponse.dynamicView);
+        // Store the message ID associated with this dynamic view
+        if (latestAiMessage) {
+          setDynamicViewMessageId(latestAiMessage.id);
+          
+          // Store association in localStorage
+          storeViewMessageAssociation(latestAiMessage.id, aiResponse.dynamicView.id);
+        }
         return;
       }
 
@@ -174,6 +346,13 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
         const apiSuggestedView = await apiService.checkForDynamicView(content);
         if (apiSuggestedView) {
           setDynamicView(apiSuggestedView);
+          // Store the message ID associated with this dynamic view
+          if (latestAiMessage) {
+            setDynamicViewMessageId(latestAiMessage.id);
+            
+            // Store association in localStorage
+            storeViewMessageAssociation(latestAiMessage.id, apiSuggestedView.id);
+          }
           return;
         }
 
@@ -186,6 +365,13 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
           const view = await apiService.getDynamicView('table-example');
           if (view) {
             setDynamicView(view);
+            // Store the message ID associated with this dynamic view
+            if (latestAiMessage) {
+              setDynamicViewMessageId(latestAiMessage.id);
+              
+              // Store association in localStorage
+              storeViewMessageAssociation(latestAiMessage.id, view.id);
+            }
           }
         } 
         else if (lowerContent.includes('contact') || 
@@ -196,6 +382,13 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
           const view = await apiService.getDynamicView('contact-info');
           if (view) {
             setDynamicView(view);
+            // Store the message ID associated with this dynamic view
+            if (latestAiMessage) {
+              setDynamicViewMessageId(latestAiMessage.id);
+              
+              // Store association in localStorage
+              storeViewMessageAssociation(latestAiMessage.id, view.id);
+            }
           }
         }
         else if (lowerContent.includes('chart') || 
@@ -205,6 +398,13 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
           const view = await apiService.getDynamicView('chart-example');
           if (view) {
             setDynamicView(view);
+            // Store the message ID associated with this dynamic view
+            if (latestAiMessage) {
+              setDynamicViewMessageId(latestAiMessage.id);
+              
+              // Store association in localStorage
+              storeViewMessageAssociation(latestAiMessage.id, view.id);
+            }
           }
         }
         else if (lowerContent.includes('info') || 
@@ -214,6 +414,13 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
           const view = await apiService.getDynamicView('card-example');
           if (view) {
             setDynamicView(view);
+            // Store the message ID associated with this dynamic view
+            if (latestAiMessage) {
+              setDynamicViewMessageId(latestAiMessage.id);
+              
+              // Store association in localStorage
+              storeViewMessageAssociation(latestAiMessage.id, view.id);
+            }
           }
         }
       }
@@ -241,11 +448,201 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
     sendMessage(question);
   };
 
+  // Helper function to store message-view associations in localStorage
+  const storeViewMessageAssociation = (messageId: string, viewId: string) => {
+    const currentChatId = apiService.getCurrentChatId();
+    if (!currentChatId) return;
+    
+    // Get existing associations or initialize new object
+    let viewAssociations: ViewAssociations = {};
+    try {
+      const stored = localStorage.getItem('dynamicViewAssociations');
+      if (stored) {
+        viewAssociations = JSON.parse(stored);
+      }
+    } catch (e) {
+      console.error('Error parsing stored view associations', e);
+    }
+    
+    // Update associations for current chat
+    if (!viewAssociations[currentChatId]) {
+      viewAssociations[currentChatId] = {};
+    }
+    
+    // Store the association: message ID -> view ID
+    viewAssociations[currentChatId][messageId] = viewId;
+    
+    // Save back to localStorage
+    localStorage.setItem('dynamicViewAssociations', JSON.stringify(viewAssociations));
+    
+    // Also store the dynamic view itself if it's not already stored
+    if (dynamicView) {
+      try {
+        // Get existing stored views
+        let storedViews: Record<string, DynamicView> = {};
+        const storedViewsJson = localStorage.getItem('storedDynamicViews');
+        if (storedViewsJson) {
+          storedViews = JSON.parse(storedViewsJson);
+        }
+        
+        // Add current view if not already stored
+        if (!storedViews[dynamicView.id]) {
+          storedViews[dynamicView.id] = dynamicView;
+          localStorage.setItem('storedDynamicViews', JSON.stringify(storedViews));
+        }
+      } catch (e) {
+        console.error('Error storing dynamic view', e);
+      }
+    }
+  };
+
+  // Function to handle closing a dynamic view
   const handleCloseDynamicView = () => {
+    // Only store closed view if we're in chat view (not initial view)
+    if (!isInitialView) {
+      // Store the current dynamic view before closing it
+      setInternalClosedDynamicView(dynamicView);
+      
+      // Check if we already have a message ID associated with this view
+      // If not, find the latest AI message to associate with
+      if (!dynamicViewMessageId) {
+        const lastAiMessage = [...messages].reverse().find(m => m.sender === 'ai');
+        if (lastAiMessage && dynamicView) {
+          setDynamicViewMessageId(lastAiMessage.id);
+          
+          // Store the association in localStorage (using our helper)
+          storeViewMessageAssociation(lastAiMessage.id, dynamicView.id);
+          
+          // Store the view itself in localStorage
+          try {
+            let storedViews: Record<string, DynamicView> = {};
+            const storedViewsJson = localStorage.getItem('storedDynamicViews');
+            if (storedViewsJson) {
+              storedViews = JSON.parse(storedViewsJson);
+            }
+            
+            // Add current view
+            storedViews[dynamicView.id] = dynamicView;
+            localStorage.setItem('storedDynamicViews', JSON.stringify(storedViews));
+          } catch (e) {
+            console.error('Error storing dynamic view', e);
+          }
+        }
+      }
+      // If we already have a message ID, keep using it - don't reassign to a new message
+      
+      // Also notify parent of the closed view
+      if (onMessageSent && dynamicView) {
+        onMessageSent(false, dynamicView, true);
+      }
+    }
+    
     setDynamicView(null);
-    // Also notify parent to clear any pending dynamic view
-    if (onMessageSent) {
-      onMessageSent(false);
+  };
+  
+  // Helper function to retrieve a stored dynamic view by ID
+  const getStoredDynamicViewById = (viewId: string): DynamicView | null => {
+    try {
+      const storedViewsJson = localStorage.getItem('storedDynamicViews');
+      if (storedViewsJson) {
+        const storedViews: Record<string, DynamicView> = JSON.parse(storedViewsJson);
+        return storedViews[viewId] || null;
+      }
+    } catch (e) {
+      console.error('Error retrieving stored view', e);
+    }
+    return null;
+  };
+
+  // Function to handle clicking "Show the response" for a specific message
+  const handleShowResponseClick = (messageId: string) => {
+    // Get the view ID from the association table
+    const currentChatId = apiService.getCurrentChatId();
+    if (!currentChatId) return;
+    
+    try {
+      const associationsJson = localStorage.getItem('dynamicViewAssociations');
+      if (associationsJson) {
+        const viewAssociations: ViewAssociations = JSON.parse(associationsJson);
+        if (viewAssociations[currentChatId] && viewAssociations[currentChatId][messageId]) {
+          // We found the view ID for this message
+          const viewId = viewAssociations[currentChatId][messageId];
+          
+          // Try to get the stored view
+          const storedView = getStoredDynamicViewById(viewId);
+          
+          if (storedView) {
+            // Set this specific view
+            setDynamicView(storedView);
+            setDynamicViewMessageId(messageId);
+            setInternalClosedDynamicView(null);
+            
+            // Notify parent if needed
+            if (onMessageSent) {
+              onMessageSent(false, storedView, false);
+            }
+            return;
+          }
+        }
+      }
+      
+      // If we got here, something went wrong - fall back to setting the ID and calling fallback
+      console.log("Couldn't find specific view, falling back to default behavior");
+      
+      // Fall back to using the closedDynamicView if available
+      if (closedDynamicView) {
+        setDynamicView(closedDynamicView);
+        setDynamicViewMessageId(messageId);
+        setInternalClosedDynamicView(null);
+        
+        // Notify parent
+        if (onMessageSent) {
+          onMessageSent(false, closedDynamicView, false);
+        }
+      }
+    } catch (e) {
+      console.error('Error retrieving specific view for message', e);
+      // Fall back to the closedDynamicView if available
+      if (closedDynamicView) {
+        setDynamicView(closedDynamicView);
+        setDynamicViewMessageId(messageId);
+        setInternalClosedDynamicView(null);
+        
+        // Notify parent
+        if (onMessageSent) {
+          onMessageSent(false, closedDynamicView, false);
+        }
+      }
+    }
+  };
+
+  // Function to check if a message has an associated dynamic view
+  const messageHasAssociatedView = (messageId: string): boolean => {
+    const currentChatId = apiService.getCurrentChatId();
+    if (!currentChatId) return false;
+    
+    try {
+      const associationsJson = localStorage.getItem('dynamicViewAssociations');
+      if (!associationsJson) return false;
+      
+      const viewAssociations: ViewAssociations = JSON.parse(associationsJson);
+      if (!viewAssociations[currentChatId]) return false;
+      
+      // Check if this message has an associated view ID
+      const viewId = viewAssociations[currentChatId][messageId];
+      if (!viewId) return false;
+      
+      // Additionally, check if this view actually exists in storage
+      const storedViewsJson = localStorage.getItem('storedDynamicViews');
+      if (!storedViewsJson) return false;
+      
+      const storedViews: Record<string, DynamicView> = JSON.parse(storedViewsJson);
+      
+      // Only return true if we actually have the stored view
+      return !!storedViews[viewId];
+    } catch (e) {
+      console.error('Error checking message associations', e);
+      return false;
     }
   };
 
@@ -377,7 +774,7 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
             <p>No messages yet. Start a conversation!</p>
           </div>
         ) : (
-          messages.map((message) => (
+          messages.map((message, index) => (
             <div 
               key={message.id} 
               className={`mb-4 flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -401,6 +798,21 @@ const Chat: React.FC<ChatProps> = ({ isVisible, onMessageSent, isInitialView, ac
                   }`}
                 >
                   {message.content}
+                  
+                  {/* Show "Show the response" button for any message that has an associated view */}
+                  {message.sender === 'ai' && !dynamicView && messageHasAssociatedView(message.id) && (
+                    <div className="mt-3 pt-3 border-t border-blue-200">
+                      <button 
+                        onClick={() => handleShowResponseClick(message.id)}
+                        className="text-blue-700 font-medium hover:underline flex items-center"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                        </svg>
+                        Show the response
+                      </button>
+                    </div>
+                  )}
                 </div>
                 {/* Timestamp */}
                 <div 

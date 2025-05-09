@@ -13,6 +13,7 @@ export default function Home() {
   const [isChatVisible, setIsChatVisible] = useState(true);
   const [isInitialView, setIsInitialView] = useState(true);
   const [pendingDynamicView, setPendingDynamicView] = useState<DynamicView | null>(null);
+  const [closedDynamicView, setClosedDynamicView] = useState<DynamicView | null>(null);
 
   // Check if there are existing messages on initial load
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function Home() {
 
   // Function to handle sending a message in the chat
   // This is now also used to handle closing the chat
-  const handleMessageSent = (isClosing = false, dynamicView?: DynamicView) => {
+  const handleMessageSent = (isClosing = false, dynamicView?: DynamicView, isClosed = false) => {
     if (!isClosing) {
       setHasMessages(true);
       setIsInitialView(false);
@@ -60,7 +61,13 @@ export default function Home() {
       
       // Store the dynamic view if provided
       if (dynamicView) {
-        setPendingDynamicView(dynamicView);
+        if (isClosed) {
+          setClosedDynamicView(dynamicView);
+          setPendingDynamicView(null);
+        } else {
+          setPendingDynamicView(dynamicView);
+          setClosedDynamicView(null);
+        }
       }
       
       // If a view is active, hide it
@@ -84,7 +91,8 @@ export default function Home() {
         setIsChatVisible(false);
       }
       
-      // Clear any pending dynamic view when closing
+      // Don't clear closed dynamic view when closing chat - we want to keep it
+      // so the "Show response" button can be clicked later
       setPendingDynamicView(null);
     }
   };
@@ -106,6 +114,11 @@ export default function Home() {
     // we're currently showing the chat or changing views
     if (isChatVisible || prevActiveView !== view) {
       setIsChatVisible(false);
+      
+      // Don't clear closedDynamicView, as we want to preserve it
+      // when the user returns to the chat
+      // Only clear pending dynamic view
+      setPendingDynamicView(null);
     }
   };
 
@@ -163,6 +176,7 @@ export default function Home() {
           isInitialView={isInitialView}
           activeView={activeView}
           pendingDynamicView={pendingDynamicView}
+          closedDynamicView={closedDynamicView}
         />}
         
         {/* If nothing is visible, show a fallback */}
@@ -202,6 +216,7 @@ export default function Home() {
                 // Store dynamic view if provided
                 if (dynamicView) {
                   setPendingDynamicView(dynamicView);
+                  setClosedDynamicView(null);
                 }
               }
               handleMessageSent(isClosing, dynamicView);
