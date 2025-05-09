@@ -369,57 +369,66 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiCompanyInformationCompanyInformation
+export interface ApiCompanyInfosCompanyInfos
   extends Struct.CollectionTypeSchema {
-  collectionName: 'company_informations';
+  collectionName: 'company_infoses';
   info: {
-    description: '';
-    displayName: 'company_information';
-    pluralName: 'company-informations';
-    singularName: 'company-information';
+    displayName: 'company-infos';
+    pluralName: 'company-infoses';
+    singularName: 'company-infos';
   };
   options: {
     draftAndPublish: true;
   };
   attributes: {
-    company_info: Schema.Attribute.Blocks;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    ids: Schema.Attribute.String & Schema.Attribute.Unique;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::company-information.company-information'
+      'api::company-infos.company-infos'
     > &
       Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
+    structured_data: Schema.Attribute.JSON;
+    text: Schema.Attribute.Text;
+    type: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'company_info'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
   };
 }
 
-export interface ApiFaqFaq extends Struct.CollectionTypeSchema {
-  collectionName: 'faqs';
+export interface ApiFaqsFaqs extends Struct.CollectionTypeSchema {
+  collectionName: 'faqses';
   info: {
-    description: '';
-    displayName: 'nicorai-cms';
-    pluralName: 'faqs';
-    singularName: 'faq';
+    displayName: 'faqs';
+    pluralName: 'faqses';
+    singularName: 'faqs';
   };
   options: {
     draftAndPublish: true;
   };
   attributes: {
-    answer: Schema.Attribute.Text;
+    answer: Schema.Attribute.Text & Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    ids: Schema.Attribute.String & Schema.Attribute.Unique;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::faq.faq'> &
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::faqs.faqs'> &
       Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
-    questions: Schema.Attribute.Text;
+    question: Schema.Attribute.Text & Schema.Attribute.Required;
+    type: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'faq'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -935,8 +944,8 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
-      'api::company-information.company-information': ApiCompanyInformationCompanyInformation;
-      'api::faq.faq': ApiFaqFaq;
+      'api::company-infos.company-infos': ApiCompanyInfosCompanyInfos;
+      'api::faqs.faqs': ApiFaqsFaqs;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

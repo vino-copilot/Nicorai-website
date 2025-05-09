@@ -1,10 +1,10 @@
 import os
-import logging
-from pinecone import Pinecone, ServerlessSpec
+from pinecone import Pinecone
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
+import logging
 
-# Configure logging for minimal output
+# Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -12,34 +12,19 @@ class KnowledgeBase:
     def __init__(self):
         # Load environment variables
         load_dotenv()
-        PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-        if not PINECONE_API_KEY:
+        self.pinecone_api_key = os.getenv("PINECONE_API_KEY")
+        if not self.pinecone_api_key:
             logger.error("PINECONE_API_KEY is not set in .env file")
             raise ValueError("Missing PINECONE_API_KEY")
 
         # Initialize Pinecone
         try:
-            self.pc = Pinecone(api_key=PINECONE_API_KEY)
-            logger.info("Connected to Pinecone")
+            self.pc = Pinecone(api_key=self.pinecone_api_key)
+            self.index_name = "company-info"
+            self.index = self.pc.Index(self.index_name)
+            logger.info("Connected to Pinecone index: company-info")
         except Exception as e:
-            logger.error(f"Failed to initialize Pinecone: {str(e)}")
-            raise
-
-        # Check or create index
-        index_name = "nicorai-faq"
-        try:
-            if index_name not in [idx["name"] for idx in self.pc.list_indexes()]:
-                logger.info(f"Creating index {index_name}")
-                self.pc.create_index(
-                    name=index_name,
-                    dimension=768,
-                    metric="cosine",
-                    spec=ServerlessSpec(cloud="aws", region="us-east-1")
-                )
-            self.index = self.pc.Index(index_name)
-            logger.info(f"Connected to Pinecone index: {index_name}")
-        except Exception as e:
-            logger.error(f"Failed to create or access index {index_name}: {str(e)}")
+            logger.error(f"Failed to connect to Pinecone: {str(e)}")
             raise
 
         # Initialize sentence transformer
@@ -47,51 +32,63 @@ class KnowledgeBase:
             self.model = SentenceTransformer("paraphrase-mpnet-base-v2")
             logger.info("Loaded sentence transformer model")
         except Exception as e:
-            logger.error(f"Failed to load sentence transformer: {str(e)}")
+            logger.error(f"Failed to load model: {str(e)}")
             raise
 
-    def upsert_to_pinecone(self, vectors):
-        """Upsert vectors to Pinecone."""
+    def retrieve_from_pinecone(self, query, top_k=5, min_relevance_score=0.2, metadata_filter=None):
+        """
+        Retrieve relevant items from Pinecone based on a query.
+        Args:
+            query (str): The query string.
+            top_k (int): Number of results to return.
+            min_relevance_score (float): Minimum cosine similarity score.
+            metadata_filter (dict): Optional Pinecone metadata filter.
+        Returns:
+            list: List of dictionaries with id, content, metadata, and relevanceScore.
+        """
         try:
-            if vectors:
-                self.index.upsert(vectors=vectors)
-                logger.info(f"Upserted {len(vectors)} items to Pinecone")
-            else:
-                logger.warning("No items to upsert")
-        except Exception as e:
-            logger.error(f"Failed to upsert to Pinecone: {str(e)}")
-            raise
-
-    def retrieve_from_pinecone(self, query, top_k=5, min_relevance_score=0.5):
-        """Retrieve relevant items from Pinecone."""
-        try:
-            query_vector = self.model.encode(query).tolist()
-            results = self.index.query(
-                vector=query_vector,
+            # Encode the query
+            query_embedding = self.model.encode(query, show_progress_bar=True).tolist()
+            
+            # Set default metadata filter if none provided
+            if metadata_filter is None:
+                metadata_filter = {}
+            
+            # Query Pinecone
+            query_response = self.index.query(
+                vector=query_embedding,
                 top_k=top_k,
-                include_metadata=True
+                include_metadata=True,
+                filter=metadata_filter
             )
-            relevant_results = [
-                {
-                    "id": match["id"],
-                    "content": match["metadata"].get("answer", match["metadata"].get("text", "")),
-                    "metadata": match["metadata"],
-                    "relevanceScore": match["score"]
-                }
-                for match in results["matches"]
-                if match["score"] >= min_relevance_score
-            ]
-            logger.info(f"Retrieved {len(relevant_results)} relevant items for query")
-            return relevant_results
+            
+            # Process results
+            results = []
+            for match in query_response.get("matches", []):
+                score = match.get("score", 0.0)
+                if score < min_relevance_score:
+                    continue
+                
+                metadata = match.get("metadata", {})
+                item_type = metadata.get("type", "unknown")
+                
+                # Determine content based on type
+                content = ""
+                if item_type == "faq":
+                    content = match.get("metadata", {}).get("answer", "")
+                elif item_type in ["company_info", "structured_data"]:
+                    content = match.get("metadata", {}).get("text", "")
+                
+                results.append({
+                    "id": match.get("id"),
+                    "content": content,
+                    "metadata": metadata,
+                    "relevanceScore": score
+                })
+            
+            logger.info(f"Retrieved {len(results)} relevant items for query")
+            return results
+        
         except Exception as e:
             logger.error(f"Failed to retrieve from Pinecone: {str(e)}")
             return []
-
-if __name__ == "__main__":
-    try:
-        kb = KnowledgeBase()
-        # Test index connectivity
-        stats = kb.index.describe_index_stats()
-        logger.info(f"Knowledge Base is running successfully. Index stats: {stats}")
-    except Exception as e:
-        logger.error(f"Failed to initialize Knowledge Base: {str(e)}")
