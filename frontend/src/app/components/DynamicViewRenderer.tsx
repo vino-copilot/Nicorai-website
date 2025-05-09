@@ -160,7 +160,7 @@ const WhatWeDoPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
 const AIHeroSection = () => {
   return (
-    <section className="relative overflow-hidden pt-20 pb-12">
+    <section className="relative overflow-hidden pt-10 pb-12">
       {/* Animated background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white bg-grid-pattern"></div>
@@ -614,7 +614,7 @@ const WhatWeveDonePage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
 const CaseStudiesHero = () => {
   return (
-    <section className="relative pt-20 pb-12 overflow-hidden">
+    <section className="relative pt-10 pb-12 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-purple-50 to-white bg-grid-pattern"></div>
@@ -1002,7 +1002,7 @@ const ConnectPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
 const ContactHero = () => {
   return (
-    <section className="relative pt-20 pb-16 overflow-hidden">
+    <section className="relative pt-10 pb-16 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white bg-grid-pattern"></div>
@@ -1055,10 +1055,10 @@ const ContactForm = () => {
 
   return (
     <section className="py-12 relative">
-
-
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Background pattern - positioned beneath the form */}
+      <div className="absolute inset-0 bg-grid-pattern z-0"></div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-center items-center min-h-[80vh]">
           {/* Contact Form */}
           <motion.div
@@ -1066,8 +1066,9 @@ const ContactForm = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
+            className="w-full max-w-[500px]"
           >
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 w-[500px]">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 relative z-20">
               <div className="p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h2>
 
@@ -1200,11 +1201,12 @@ const OfficeLocations = () => {
 
   return (
     <section className="py-20 bg-gradient-to-b from-white to-blue-50 relative overflow-hidden">
-      <div className="absolute inset-0 bg-grid-pattern"></div>
-      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-teal-100/20 rounded-full filter blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-100/20 rounded-full filter blur-3xl"></div>
+      {/* Background pattern */}
+      <div className="absolute inset-0 bg-grid-pattern z-0"></div>
+      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-teal-100/20 rounded-full filter blur-3xl z-0"></div>
+      <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-100/20 rounded-full filter blur-3xl z-0"></div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -1229,7 +1231,7 @@ const OfficeLocations = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300 w-full max-w-xs md:w-96"
+              className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300 w-full max-w-xs md:w-96 relative z-20"
             >
 
               <div className="p-6">
@@ -1288,7 +1290,7 @@ const AboutUsPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
 const AboutHero = () => {
   return (
-    <section className="relative pt-20 pb-16 overflow-hidden">
+    <section className="relative pt-10 pb-16 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-indigo-50 to-white bg-grid-pattern"></div>
@@ -1641,7 +1643,7 @@ const InspirationPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
 
 const InspirationHero = () => (
-  <section className="relative pt-20 pb-16 overflow-hidden">
+  <section className="relative pt-10 pb-16 overflow-hidden">
     <div className="absolute inset-0 z-0">
       <div className="absolute inset-0 bg-gradient-to-b from-purple-50 to-white bg-grid-pattern"></div>
       <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-purple-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float"></div>
@@ -1680,14 +1682,14 @@ const InspirationHero = () => (
 
 const RashevskyStory = () => (
   <section className="py-16 relative">
-    <div className="absolute inset-0 bg-grid-pattern"></div>
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <div className="absolute inset-0 bg-grid-pattern z-0"></div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-2xl shadow-xl border border-purple-100 p-8"
+        className="bg-white rounded-2xl shadow-xl border border-purple-100 p-8 relative z-20"
       >
         <h2 className="text-3xl font-bold text-gray-900 mb-6">Story of Nicolas Rashevsky</h2>
         <div className="space-y-4 text-gray-700">
@@ -1702,14 +1704,14 @@ const RashevskyStory = () => (
 
 const RashevskyImpact = () => (
   <section className="py-16 relative">
-    <div className="absolute inset-0 bg-grid-pattern"></div>
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <div className="absolute inset-0 bg-grid-pattern z-0"></div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-2xl shadow-xl border border-purple-100 p-8"
+        className="bg-white rounded-2xl shadow-xl border border-purple-100 p-8 relative z-20"
       >
         <h2 className="text-3xl font-bold text-gray-900 mb-6">Rashevsky's Lasting Impact</h2>
         <p className='text-gray-700'>Rashevsky's insights weren't just confined to the lab. His commitment to using mathematical tools to understand and solve complex problems has become a cornerstone of our approach to AI. Like him, we believe that AI is not just about programming; it's about understanding the underlying systems and structures. This philosophy is embodied in our approach.</p><br />
@@ -1742,8 +1744,8 @@ const RashevskyImpact = () => (
 
 const VisionandImpact = () => (
   <section className="py-12 relative">
-    <div className="absolute inset-0 bg-grid-pattern pointer-events-none"></div>
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <div className="absolute inset-0 bg-grid-pattern pointer-events-none z-0"></div>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -1761,8 +1763,8 @@ const VisionandImpact = () => (
 
 const InspirationCommitment = () => (
   <section className="py-12 relative">
-    <div className="absolute inset-0 bg-grid-pattern pointer-events-none"></div>
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <div className="absolute inset-0 bg-grid-pattern pointer-events-none z-0"></div>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
