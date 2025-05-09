@@ -572,14 +572,21 @@ const Chat: React.FC<ChatProps> = ({
           const storedView = getStoredDynamicViewById(viewId);
           
           if (storedView) {
-            // Set this specific view
-            setDynamicView(storedView);
+            // Important: Instead of setting the dynamicView state which renders it inside the chat,
+            // we're going to notify the parent to show it in full-screen mode and hide the chat
+            
+            // Save the messageId for when we return to chat
             setDynamicViewMessageId(messageId);
+            
+            // Clear any internal closed view
             setInternalClosedDynamicView(null);
             
-            // Notify parent if needed
+            // Notify parent to hide chat and display the view in full-screen
             if (onMessageSent) {
-              onMessageSent(false, storedView, false);
+              // The true parameter signals that we're "closing" the chat to show the view
+              // The second parameter passes the view to be displayed
+              // The false parameter indicates this isn't a "closed" view (we're actively viewing it)
+              onMessageSent(true, storedView, false);
             }
             return;
           }
@@ -591,26 +598,26 @@ const Chat: React.FC<ChatProps> = ({
       
       // Fall back to using the closedDynamicView if available
       if (closedDynamicView) {
-        setDynamicView(closedDynamicView);
+        // Use the same full-screen approach with the fallback view
         setDynamicViewMessageId(messageId);
         setInternalClosedDynamicView(null);
         
-        // Notify parent
+        // Notify parent to hide chat and show view
         if (onMessageSent) {
-          onMessageSent(false, closedDynamicView, false);
+          onMessageSent(true, closedDynamicView, false);
         }
       }
     } catch (e) {
       console.error('Error retrieving specific view for message', e);
       // Fall back to the closedDynamicView if available
       if (closedDynamicView) {
-        setDynamicView(closedDynamicView);
+        // Use the same full-screen approach with the fallback view
         setDynamicViewMessageId(messageId);
         setInternalClosedDynamicView(null);
         
-        // Notify parent
+        // Notify parent to hide chat and show view
         if (onMessageSent) {
-          onMessageSent(false, closedDynamicView, false);
+          onMessageSent(true, closedDynamicView, false);
         }
       }
     }
@@ -702,8 +709,8 @@ const Chat: React.FC<ChatProps> = ({
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your message here..."
-              className="w-full p-9 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-25 placeholder-gray-500 text-gray-900 sidebar-scroll"
+              placeholder="Ask any question about NicorAi..."
+              className="w-full p-9 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-25 placeholder-gray-500 text-gray-900"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -747,7 +754,7 @@ const Chat: React.FC<ChatProps> = ({
         {!dynamicView && (
           <button 
             onClick={() => onMessageSent?.(true)}
-            className="p-2 rounded-full hover:bg-gray-200 transition-colors bg-blue-200"
+            className="p-2 rounded-full hover:bg-blue-100 transition-colors bg-white"
             title="Close chat"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-600">
@@ -756,8 +763,8 @@ const Chat: React.FC<ChatProps> = ({
           </button>
         )}
       </div>
-      {/* Message container - adding sidebar-scroll class */}
-      <div className="flex-1 p-4 overflow-y-auto sidebar-scroll relative">
+      {/* Message container with custom scrollbar styling */}
+      <div className="flex-1 p-4 overflow-y-auto relative sidebar-scroll">
         {/* Always show dynamic view on top when available, regardless of sidebar state */}
         {dynamicView && (
           <div className={`absolute inset-0 z-30 flex items-center justify-center bg-white bg-opacity-80 p-4 ${activeView ? 'sticky top-0' : ''}`}>
@@ -801,7 +808,7 @@ const Chat: React.FC<ChatProps> = ({
                   
                   {/* Show "Show the response" button for any message that has an associated view */}
                   {message.sender === 'ai' && !dynamicView && messageHasAssociatedView(message.id) && (
-                    <div className="mt-3 pt-3 border-t border-blue-200">
+                    <div className="dynamic-view-button">
                       <button 
                         onClick={() => handleShowResponseClick(message.id)}
                         className="text-blue-700 font-medium hover:underline flex items-center"
@@ -900,7 +907,7 @@ const Chat: React.FC<ChatProps> = ({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask any question about NicorAi..."
-              className="w-full p-4 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-14 placeholder-gray-500 text-gray-900 sidebar-scroll"
+              className="w-full p-4 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-14 placeholder-gray-500 text-gray-900"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();

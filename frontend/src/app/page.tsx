@@ -14,6 +14,7 @@ export default function Home() {
   const [isInitialView, setIsInitialView] = useState(true);
   const [pendingDynamicView, setPendingDynamicView] = useState<DynamicView | null>(null);
   const [closedDynamicView, setClosedDynamicView] = useState<DynamicView | null>(null);
+  const [fullscreenDynamicView, setFullscreenDynamicView] = useState<DynamicView | null>(null);
 
   // Check if there are existing messages on initial load
   useEffect(() => {
@@ -52,9 +53,10 @@ export default function Home() {
   }, []);
 
   // Function to handle sending a message in the chat
-  // This is now also used to handle closing the chat
+  // This is now also used to handle closing the chat and showing dynamic views
   const handleMessageSent = (isClosing = false, dynamicView?: DynamicView, isClosed = false) => {
     if (!isClosing) {
+      // Normal message sending behavior
       setHasMessages(true);
       setIsInitialView(false);
       setIsChatVisible(true); // Always show chat when a message is sent
@@ -64,9 +66,11 @@ export default function Home() {
         if (isClosed) {
           setClosedDynamicView(dynamicView);
           setPendingDynamicView(null);
+          setFullscreenDynamicView(null);
         } else {
           setPendingDynamicView(dynamicView);
           setClosedDynamicView(null);
+          setFullscreenDynamicView(null);
         }
       }
       
@@ -75,20 +79,41 @@ export default function Home() {
         setActiveView(null);
       }
     } else {
-      // Handle closing the chat
+      // Special case: If we have a dynamicView to show, create a temporary view for it
+      if (dynamicView && !isClosed) {
+        // When we get a dynamicView with isClosing=true, it means we want to show the view in full screen
+        // Store the view in our fullscreen state
+        setFullscreenDynamicView(dynamicView);
+        
+        // Set active view to show the dynamic content
+        setActiveView('dynamic-view');
+        
+        // Hide the chat while viewing
+        setIsChatVisible(false);
+        
+        return;
+      }
+      
+      // Regular closing behavior
       // If no tab was selected (activeView is null) and we're not in initial view,
       // we should return to the initial view
       if (!activeView && !isInitialView) {
         setIsInitialView(true);
         setIsChatVisible(true); // Keep chat visible but in initial view
+        setFullscreenDynamicView(null);
       } 
       // If a tab was selected previously, make it visible again
       else if (activeView) {
         setIsChatVisible(false);
+        // Clear fullscreen view when closing
+        if (activeView === 'dynamic-view') {
+          setFullscreenDynamicView(null);
+        }
       }
       // Otherwise if we're already in initial view, just hide the chat
       else {
         setIsChatVisible(false);
+        setFullscreenDynamicView(null);
       }
       
       // Don't clear closed dynamic view when closing chat - we want to keep it
@@ -165,6 +190,7 @@ export default function Home() {
           <DynamicViewRenderer 
             viewId={activeView} 
             onClose={handleCloseView} 
+            dynamicViewContent={activeView === 'dynamic-view' ? fullscreenDynamicView : undefined}
           />
         )}
         

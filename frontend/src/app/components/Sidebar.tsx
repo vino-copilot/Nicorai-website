@@ -14,7 +14,7 @@ const logoTextStyle = {
   letterSpacing: "0.05em",
   fontWeight: 400,
   color: "#0f0f0f",
-  fontSize: "1.5rem",
+  fontSize: "1.2rem",
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView }) => {

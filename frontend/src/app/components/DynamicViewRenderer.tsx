@@ -1,6 +1,7 @@
 import React, { useId, useEffect, useState, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import DynamicContentRenderer from './DynamicContentRenderer';
 import {
   Brain,
   MessageSquare,
@@ -33,6 +34,7 @@ import {
 interface ViewProps {
   viewId: string;
   onClose: () => void;
+  dynamicViewContent?: any; // For dynamic content from chat
 }
 
 // Helper function for classNames conditional joining
@@ -40,9 +42,24 @@ const cn = (...classes: any[]) => {
   return classes.filter(Boolean).join(' ');
 };
 
-const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose }) => {
+const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicViewContent }) => {
   // Function to render content based on viewId
   const renderContent = () => {
+    // Check if this is a dynamic view from chat
+    if (viewId === 'dynamic-view' && dynamicViewContent) {
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center p-8">
+          <div className="w-full max-w-4xl">
+            <DynamicContentRenderer 
+              view={dynamicViewContent} 
+              onClose={onClose}
+            />
+          </div>
+        </div>
+      );
+    }
+    
+    // Regular static views
     switch (viewId) {
       case 'what-we-do':
         return <WhatWeDoPage onClose={onClose} />;
@@ -128,7 +145,7 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose }) => {
   }, []);
 
   return (
-    <div className="relative flex-1 h-full overflow-auto bg-white pb-24 sidebar-scroll">
+    <div className="relative flex-1 h-full overflow-auto bg-white pb-24">
       <div className="sticky top-0 right-0 p-4 flex justify-end z-50">
         <button
           onClick={onClose}
