@@ -214,8 +214,36 @@ class ApiService {
       };
 
       // Check for dynamic view in response
-      const dynamicView = this.checkResponseForDynamicView(responseData);
+      let dynamicView = null;
+      
+      // Method 1: Direct view in responseData
+      if (responseData.responseType === 'view') {
+        dynamicView = this.checkResponseForDynamicView(responseData);
+      } 
+      // Method 2: View in content field
+      else if (responseData.content && typeof responseData.content === 'object') {
+        // Check for items array in the content
+        if (responseData.content.items && Array.isArray(responseData.content.items)) {
+          dynamicView = {
+            id: `dynamic-${Date.now()}`,
+            type: 'custom',
+            data: responseData.content
+          };
+        }
+        // Check for dynamicView or view property
+        else if (responseData.content.dynamicView || responseData.content.view) {
+          const viewData = responseData.content.dynamicView || responseData.content.view;
+          dynamicView = {
+            id: `dynamic-${Date.now()}`,
+            type: viewData.type || 'custom',
+            data: viewData.data || viewData
+          };
+        }
+      }
+      
+      // Add the dynamic view to the message if found
       if (dynamicView) {
+        console.log('Dynamic view found in API response:', dynamicView);
         aiMessage.dynamicView = dynamicView;
       }
 
@@ -570,16 +598,35 @@ class ApiService {
     if (!responseData) return null;
 
     try {
-      // Check if the response includes viewSpec field
-      if (responseData.responseType === 'view' && responseData.content?.viewSpec) {
-        const viewSpec = responseData.content.viewSpec;
-        const viewType = responseData.content.viewType || 'table';
+      // For the console-visible format where responseType is 'view'
+      if (responseData.responseType === 'view' && responseData.content) {
+        // Handle both content as an object with viewSpec or direct data format
+        const viewData = responseData.content.viewSpec || responseData.content;
+        const viewType = responseData.content.viewType || 'custom'; // Default to custom if not specified
+
+        // For items array format seen in the console
+        if (viewType === 'custom' && responseData.content.data && responseData.content.data.items) {
+          return {
+            id: `dynamic-${Date.now()}`,
+            type: 'custom',
+            data: responseData.content.data
+          };
+        }
 
         // Create a dynamic view from the API-provided spec
         return {
           id: `dynamic-${Date.now()}`,
           type: viewType as any, // Cast to our supported types
-          data: viewSpec
+          data: viewData
+        };
+      }
+
+      // Direct dynamic view ID format
+      if (responseData.id && responseData.id.startsWith('dynamic-')) {
+        return {
+          id: responseData.id,
+          type: responseData.type || 'custom',
+          data: responseData.data
         };
       }
 
@@ -587,8 +634,18 @@ class ApiService {
       if (responseData.view) {
         return {
           id: `dynamic-${Date.now()}`,
-          type: responseData.view.type || 'table',
+          type: responseData.view.type || 'custom',
           data: responseData.view.data || responseData.view
+        };
+      }
+
+      // Check if the response itself matches our expected data structure
+      if (responseData.items && Array.isArray(responseData.items)) {
+        // This looks like the "items" array format seen in the console
+        return {
+          id: `dynamic-${Date.now()}`,
+          type: 'custom',
+          data: responseData
         };
       }
 
@@ -600,14 +657,65 @@ class ApiService {
   }
 
   // Update sendMessage to also check for dynamic view data in API response
-  // This would be used in a real implementation, but for MVP we're using mock data
   private checkResponseForDynamicView(data: any): DynamicView | null {
-    // Check if the response has a view type and view data
-    if (data.responseType === 'view' && data.content?.viewSpec) {
-      return this.createDynamicViewFromResponse(data);
+    if (!data) return null;
+    
+    try {
+      // Check common format with responseType and content
+      if (data.responseType === 'view' && data.content) {
+        return this.createDynamicViewFromResponse(data);
+      }
+      
+      // Check for direct dynamic view format
+      if (data.id && data.id.startsWith('dynamic-') && data.type) {
+        return {
+          id: data.id,
+          type: data.type,
+          data: data.data
+        };
+      }
+      
+      // Check for nested view property
+      if (data.view) {
+        return this.createDynamicViewFromResponse({ view: data.view });
+      }
+      
+      // Check for items array format that should be a custom view
+      if (data.items && Array.isArray(data.items)) {
+        // This looks like a custom view with items array
+        return {
+          id: `dynamic-${Date.now()}`,
+          type: 'custom',
+          data: data
+        };
+      }
+      
+      // Check the response for data payload of known formats
+      if (data.data) {
+        // If data contains nested items array
+        if (data.data.items && Array.isArray(data.data.items)) {
+          return {
+            id: `dynamic-${Date.now()}`,
+            type: 'custom',
+            data: data.data
+          };
+        }
+        
+        // Check if data contains table-like structure
+        if (data.data.headers || data.data.columns || data.data.rows) {
+          return {
+            id: `dynamic-${Date.now()}`,
+            type: 'table',
+            data: data.data
+          };
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error checking for dynamic view in response:', error);
+      return null;
     }
-
-    return null;
   }
 }
 

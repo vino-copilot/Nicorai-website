@@ -184,7 +184,7 @@ const AIHeroSection = () => {
                 Transform Your Business With <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">AI-Powered Solutions</span>
               </h1>
-              <p className="mt-6 text-xl text-gray-600 leading-relaxed">
+              <p className="mt-4 text-xl text-gray-600 leading-relaxed">
                 We leverage cutting-edge artificial intelligence and machine learning to deliver
                 powerful solutions that drive growth, efficiency, and innovation.
               </p>

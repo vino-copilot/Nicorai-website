@@ -234,13 +234,56 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
 
   // Custom Content Renderer
   const renderCustom = (data: any) => {
+    // Unwrap nested data if present
+    const customData = data.data || data;
+    
+    // Set up title
+    const title = customData.title || 'Information';
+    
+    // Check for paragraph/content format
+    if (customData.content) {
+      return (
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <h3 className="text-xl font-semibold mb-4">{title}</h3>
+          <div
+            className="prose max-w-none text-gray-700"
+            dangerouslySetInnerHTML={{ __html: customData.content }}
+          />
+        </div>
+      );
+    }
+    
+    // Check for items array format (similar to the one seen in the console)
+    if (customData.items && Array.isArray(customData.items)) {
+      return (
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <h3 className="text-xl font-semibold mb-4">{title}</h3>
+          <div className="space-y-4">
+            {customData.items.map((item: any, index: number) => (
+              <div key={index} className="p-4 border border-blue-100 rounded-lg bg-blue-50">
+                <h4 className="text-lg font-medium text-blue-800 mb-2">
+                  {item.title}
+                </h4>
+                <p className="text-gray-700">
+                  {item.details}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    
+    // Fallback for unknown formats
     return (
       <div className="bg-white rounded-lg p-6 shadow-sm">
-        <h3 className="text-xl font-semibold mb-4">{data.title}</h3>
-        <div
-          className="prose max-w-none text-gray-700"
-          dangerouslySetInnerHTML={{ __html: data.content }}
-        />
+        <h3 className="text-xl font-semibold mb-4">{title}</h3>
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 text-blue-700">
+          <p className="text-sm">Unable to display this content format.</p>
+          <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
+            {JSON.stringify(customData, null, 2)}
+          </pre>
+        </div>
       </div>
     );
   };
