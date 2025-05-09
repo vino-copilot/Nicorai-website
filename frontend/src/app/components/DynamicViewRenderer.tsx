@@ -128,7 +128,7 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose }) => {
   }, []);
 
   return (
-    <div className="relative flex-1 h-full overflow-auto bg-white pb-24">
+    <div className="relative flex-1 h-full overflow-auto bg-white pb-24 sidebar-scroll">
       <div className="sticky top-0 right-0 p-4 flex justify-end z-50">
         <button
           onClick={onClose}
@@ -356,7 +356,7 @@ const AIServicesSection = () => {
     },
     {
       title: "Computer Vision Solutions",
-      description: "Implement image recognition, object detection, and video analysis for various applications.",
+      description: "Implement image recognition, object detection, and video analysis and many more for various applications.",
       icon: <Search className="w-6 h-6 text-violet-600" />,
       color: "from-violet-50 to-violet-100/50"
     },

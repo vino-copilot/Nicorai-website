@@ -703,7 +703,7 @@ const Chat: React.FC<ChatProps> = ({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Type your message here..."
-              className="w-full p-9 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-25 placeholder-gray-500 text-gray-900"
+              className="w-full p-9 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-25 placeholder-gray-500 text-gray-900 sidebar-scroll"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -743,11 +743,11 @@ const Chat: React.FC<ChatProps> = ({
   const renderChatView = () => (
     <div className="flex flex-col h-full relative">
       {/* Header section with close button */}
-      <div className="p-3 flex justify-end border-b border-gray-100">
+      <div className="p-2 flex justify-end">
         {!dynamicView && (
           <button 
             onClick={() => onMessageSent?.(true)}
-            className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+            className="p-2 rounded-full hover:bg-gray-200 transition-colors bg-blue-200"
             title="Close chat"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-600">
@@ -756,8 +756,8 @@ const Chat: React.FC<ChatProps> = ({
           </button>
         )}
       </div>
-      {/* Message container */}
-      <div className="flex-1 p-4 overflow-y-auto relative">
+      {/* Message container - adding sidebar-scroll class */}
+      <div className="flex-1 p-4 overflow-y-auto sidebar-scroll relative">
         {/* Always show dynamic view on top when available, regardless of sidebar state */}
         {dynamicView && (
           <div className={`absolute inset-0 z-30 flex items-center justify-center bg-white bg-opacity-80 p-4 ${activeView ? 'sticky top-0' : ''}`}>
@@ -892,15 +892,15 @@ const Chat: React.FC<ChatProps> = ({
         <div ref={messagesEndRef} />
       </div>
       {/* Input area - Updated to match the initial view styling */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4">
         <form onSubmit={handleSubmit}>
           <div className="relative">
             <textarea
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your message here..."
-              className="w-full p-4 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-14 placeholder-gray-500 text-gray-900"
+              placeholder="Ask any question about NicorAi..."
+              className="w-full p-4 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-14 placeholder-gray-500 text-gray-900 sidebar-scroll"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();

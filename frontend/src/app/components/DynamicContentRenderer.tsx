@@ -187,7 +187,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
           )}
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto sidebar-scroll">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-blue-50">
               <tr>
@@ -280,7 +280,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
         <h3 className="text-xl font-semibold mb-4">{title}</h3>
         <div className="bg-blue-50 border-l-4 border-blue-400 p-4 text-blue-700">
           <p className="text-sm">Unable to display this content format.</p>
-          <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
+          <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto sidebar-scroll">
             {JSON.stringify(customData, null, 2)}
           </pre>
         </div>
@@ -304,7 +304,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
           </svg>
         </button>
       </div>
-      <div className="p-4 max-h-96 overflow-auto text-gray-800">
+      <div className="p-4 max-h-96 overflow-auto sidebar-scroll text-gray-800">
         {renderContent()}
       </div>
     </div>
