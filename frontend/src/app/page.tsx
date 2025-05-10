@@ -16,13 +16,12 @@ export default function Home() {
   const [closedDynamicView, setClosedDynamicView] = useState<DynamicView | null>(null);
   const [fullscreenDynamicView, setFullscreenDynamicView] = useState<DynamicView | null>(null);
 
-  // Check if there are existing messages on initial load
+  // On initial load, always show the initial landing page (isInitialView = true), regardless of chat history
   useEffect(() => {
-    const currentMessages = apiService.getCurrentChatMessages();
-    if (currentMessages.length > 0) {
-      setHasMessages(true);
-      setIsInitialView(false);
-    }
+    setIsInitialView(true);
+    setIsChatVisible(true);
+    setActiveView(null);
+    setFullscreenDynamicView(null);
   }, []);
   
   // Listen for chat selection from history

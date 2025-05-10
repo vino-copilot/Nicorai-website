@@ -27,11 +27,8 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
   const renderChart = (data: any) => {
     // Unwrap nested data if present
     const chartData = data.data || data;
-    
-    // Extract values from datasets if present
     let values: number[] = [];
     let labels: string[] = [];
-    
     if (chartData.datasets && chartData.datasets.length > 0) {
       values = chartData.datasets[0].data || [];
       labels = chartData.labels || [];
@@ -39,47 +36,37 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
       values = chartData.values || [];
       labels = chartData.labels || [];
     }
-    
     const title = chartData.title || 'Chart';
     const chartType = chartData.chartType || 'bar';
-
-    // Validate data
     if (!values.length || !labels.length) {
       return (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h3 className="text-xl font-semibold mb-4">{title}</h3>
-          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 text-blue-700">
-            <p className="text-sm">No data available to display in the chart.</p>
+        <div className="bg-white rounded-2xl p-8 shadow-xl border border-blue-100">
+          <h3 className="text-2xl font-bold mb-4 text-gray-900">{title}</h3>
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-4 text-blue-700 rounded-xl">
+            <p className="text-base">No data available to display in the chart.</p>
           </div>
         </div>
       );
     }
-
     return (
-      <div className="bg-white rounded-lg p-6 shadow-sm">
-        <h3 className="text-xl font-semibold mb-4">{title}</h3>
-        <div className="h-64 bg-blue-50 rounded border border-blue-200 p-4 flex items-center justify-center">
-          <div className="w-full h-full relative">
-            <div className="absolute inset-0 flex items-end justify-around">
-              {values.map((value: number, index: number) => (
-                <div
-                  key={index}
-                  className="bg-blue-600 w-10 transition-all duration-500"
-                  style={{ height: `${(value / Math.max(...values)) * 100}%` }}
-                >
-                  <div className="h-full w-full relative">
-                    <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-sm font-medium text-gray-700">
-                      {value}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+      <div className="bg-white rounded-2xl p-8 shadow-xl border border-blue-100">
+        <h3 className="text-2xl font-bold mb-6 text-gray-900">{title}</h3>
+        <div className="h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-6 flex items-end justify-center">
+          <div className="w-full h-full flex items-end justify-around gap-4">
+            {values.map((value: number, index: number) => (
+              <div
+                key={index}
+                className="bg-gradient-to-t from-blue-600 to-indigo-500 w-10 rounded-xl shadow-md flex flex-col items-center justify-end relative transition-all duration-500"
+                style={{ height: `${(value / Math.max(...values)) * 100}%` }}
+              >
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-base font-semibold text-blue-700 drop-shadow">{value}</span>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="mt-4 flex flex-wrap justify-center gap-4">
+        <div className="mt-6 flex flex-wrap justify-center gap-6">
           {labels.map((label: string, index: number) => (
-            <div key={index} className="text-sm text-gray-700 text-center max-w-[150px]">
+            <div key={index} className="text-sm text-gray-700 text-center max-w-[150px] font-medium">
               {label}
             </div>
           ))}
@@ -90,32 +77,28 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
 
   // Card Renderer
   const renderCard = (data: any) => {
-    // Unwrap nested data if present (for backend responses with data.data)
     const cardData = data.data || data;
     const cards = cardData.cards || [cardData];
-
     return (
-      <div className="bg-white rounded-lg p-6 shadow-lg max-w-4xl w-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="bg-white rounded-2xl p-8 shadow-xl border border-blue-100 max-w-5xl w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {cards.map((card: any, index: number) => (
-            <div key={index} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-              <div className="flex flex-col h-full">
-                <h3 className="text-xl font-semibold mb-3 text-gray-900">{card.title}</h3>
-                <p className="text-gray-700 mb-4 flex-grow">{card.content}</p>
-                {card.actions && (
-                  <div className="flex space-x-2 mt-auto pt-4">
-                    {card.actions.map((action: any, actionIndex: number) => (
-                      <a
-                        key={actionIndex}
-                        href={action.url}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        {action.label}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
+            <div key={index} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-md border border-blue-100 hover:shadow-xl transition-shadow flex flex-col h-full">
+              <h3 className="text-xl font-bold mb-3 text-gray-900">{card.title}</h3>
+              <p className="text-gray-700 mb-4 flex-grow text-base">{card.content}</p>
+              {card.actions && (
+                <div className="flex space-x-2 mt-auto pt-4">
+                  {card.actions.map((action: any, actionIndex: number) => (
+                    <a
+                      key={actionIndex}
+                      href={action.url}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-indigo-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      {action.label}
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -123,86 +106,68 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
     );
   };
 
-  // Table Renderer - Enhanced for Day 6 (Flexible data handling)
+  // Table Renderer
   const renderTable = (data: any) => {
-    // Unwrap nested data if present (for backend responses with data.data)
     if (data && data.data && (data.data.columns || data.data.rows)) {
       data = data.data;
     }
-    // Support different data formats from backend
     const title = data.title || 'Data Table';
     const description = data.description || '';
-
-    // Support various header/column naming conventions
     const headers: string[] = data.headers || data.columns || [];
-
-    // Support various row data formats
     let rows: any[][] = [];
-
     if (Array.isArray(data.rows)) {
-      // Standard rows format
       rows = data.rows;
     } else if (Array.isArray(data.data)) {
-      // Data array format
       rows = data.data;
     } else if (data.items && Array.isArray(data.items)) {
-      // Items format (convert objects to arrays if needed)
       rows = data.items.map((item: any) => {
         if (Array.isArray(item)) return item;
-
-        // If items are objects, extract values based on headers
         if (typeof item === 'object' && headers.length > 0) {
           return headers.map(header => {
-            // Try to match header with an object property (case insensitive)
             const key = Object.keys(item).find(k =>
               k.toLowerCase() === header.toLowerCase()
             );
             return key ? item[key] : '';
           });
         }
-
-        return [item]; // Fallback for primitive values
+        return [item];
       });
     }
-
-    // Validate data structure
     if (headers.length === 0 || rows.length === 0) {
       return (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h3 className="text-xl font-semibold mb-4">{title}</h3>
+        <div className="bg-white rounded-2xl p-8 shadow-xl border border-blue-100">
+          <h3 className="text-2xl font-bold mb-4 text-gray-900">{title}</h3>
           {description && <p className="text-gray-600 mb-4">{description}</p>}
-          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 text-blue-700">
-            <p className="text-sm">No data available to display in the table.</p>
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-4 text-blue-700 rounded-xl">
+            <p className="text-base">No data available to display in the table.</p>
           </div>
         </div>
       );
     }
-
     return (
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="p-6 pb-4 border-b border-gray-100">
-          <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
+      <div className="bg-white rounded-2xl shadow-xl border border-blue-100 overflow-hidden">
+        <div className="p-8 pb-4 border-b border-blue-100">
+          <h3 className="text-2xl font-bold text-gray-900">{title}</h3>
           {description && (
-            <p className="text-sm text-gray-500 mt-1">{description}</p>
+            <p className="text-base text-gray-500 mt-1">{description}</p>
           )}
         </div>
-
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-blue-50">
+          <table className="min-w-full divide-y divide-blue-100">
+            <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
               <tr>
                 {headers.map((header: string, index: number) => (
                   <th
                     key={index}
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider"
+                    className="px-6 py-4 text-left text-xs font-bold text-blue-700 uppercase tracking-wider"
                   >
                     {header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-blue-50">
               {rows.map((row: any[], rowIndex: number) => (
                 <tr
                   key={rowIndex}
@@ -211,7 +176,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
                   {row.map((cell, cellIndex) => (
                     <td
                       key={cellIndex}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
+                      className="px-6 py-4 whitespace-nowrap text-base text-gray-700"
                     >
                       {typeof cell === 'object' ? JSON.stringify(cell) : cell?.toString() || ''}
                     </td>
@@ -221,10 +186,8 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
             </tbody>
           </table>
         </div>
-
-        {/* Pagination or additional controls could go here */}
         {data.footer && (
-          <div className="px-6 py-4 border-t border-gray-100 bg-blue-50 text-sm text-gray-500">
+          <div className="px-8 py-4 border-t border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 text-base text-gray-500">
             {data.footer}
           </div>
         )}
