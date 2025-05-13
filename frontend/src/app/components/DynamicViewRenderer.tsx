@@ -430,7 +430,7 @@ const TechStackSection = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+          <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our Technology Stack
           </h2>
           <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
@@ -527,11 +527,11 @@ const AIProcessSection = () => {
           {processSteps.map((step, index) => (
             <React.Fragment key={step.title}>
               <motion.div
-                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="flex items-start gap-6 max-w-3xl"
+                className="flex items-start gap-6 max-w-3xl w-full"
               >
                 <div className="flex flex-col items-center">
                   <div className={`w-12 h-12 rounded-full ${step.color} flex items-center justify-center shadow-lg`}>
