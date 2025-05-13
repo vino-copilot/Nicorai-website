@@ -186,53 +186,7 @@ class ApiService {
     this.addMessageToCurrentChat(userMessage);
 
     try {
-      // Special handling for different view types based on keywords
-      const lowerMessage = message.toLowerCase();
-      
-      // Table of technologies request
-      if (lowerMessage.includes("table of technologies")) {
-        console.log('Detected request for table of technologies');
-        return this.createSpecialViewResponse('table', 'Technologies', {
-          title: 'Technologies',
-          description: 'List of technologies used by NicorAI',
-          headers: ['Technology', 'Category', 'Description'],
-          rows: [
-            ['React', 'Frontend', 'JavaScript library for building user interfaces'],
-            ['Next.js', 'Framework', 'React framework for production with SSR and SSG'],
-            ['TypeScript', 'Language', 'Typed superset of JavaScript'],
-            ['TailwindCSS', 'Styling', 'Utility-first CSS framework'],
-            ['Node.js', 'Backend', 'JavaScript runtime environment']
-          ]
-        });
-      }
-      
-      // Chart request
-      else if (lowerMessage.includes("case studies as chart") || lowerMessage.includes("show me the case studies as chart")) {
-        console.log('Detected request for case studies chart');
-        return this.createSpecialViewResponse('chart', 'Case Studies', {
-          title: 'Case Studies Success Rate',
-          labels: ['E-commerce', 'Healthcare', 'Finance', 'Manufacturing', 'Technology'],
-          values: [88, 75, 92, 70, 95]
-        });
-      }
-      
-      // Card request
-      else if (lowerMessage.includes("show me as card technologies") || 
-              lowerMessage.includes("card technologies") ||
-              lowerMessage.includes("technologies in card")) {
-        console.log('Detected request for technologies card');
-        return this.createSpecialViewResponse('card', 'Technologies Card', {
-          title: 'Our Technology Stack',
-          content: 'We use cutting-edge technologies to build robust, scalable applications that meet your business needs.',
-          cards: [
-            { title: 'Frontend', content: 'React, Next.js, TypeScript, TailwindCSS' },
-            { title: 'Backend', content: 'Node.js, Express, Python, Django' },
-            { title: 'Database', content: 'MongoDB, PostgreSQL, Redis' }
-          ]
-        });
-      }
-
-      // Create request payload for the API
+      // Always try the API first
       const payload = {
         userId: 'user-123', // Can be dynamic in a real app
         message: message,
@@ -259,16 +213,23 @@ class ApiService {
       console.log('API Gateway response:', responseData);
 
       // Create AI message from response
+      let aiContent = '';
+      if (responseData.responseType === 'text' && responseData.content && typeof responseData.content.text === 'string') {
+        aiContent = responseData.content.text;
+      } else if (responseData.responseType === 'view') {
+        aiContent = '';
+      } else if (responseData.content && typeof responseData.content === 'string') {
+        aiContent = responseData.content;
+      }
       const aiMessage: ChatMessageWithView = {
         id: `msg-${Date.now()}-ai`,
-        content: responseData.content.text,
+        content: aiContent,
         sender: 'ai',
         timestamp: new Date()
       };
 
       // Check for dynamic view in response
       let dynamicView = null;
-      
       // Method 1: Direct view in responseData
       if (responseData.responseType === 'view') {
         dynamicView = this.checkResponseForDynamicView(responseData);
@@ -293,20 +254,52 @@ class ApiService {
           };
         }
       }
-      
       // Add the dynamic view to the message if found
       if (dynamicView) {
         console.log('Dynamic view found in API response:', dynamicView);
         aiMessage.dynamicView = dynamicView;
       }
-
       // Add AI message to current chat
       this.addMessageToCurrentChat(aiMessage);
-
       return aiMessage;
     } catch (error) {
       console.error('Error sending message:', error);
-      
+      // If API fails, check for mock triggers
+      const lowerMessage = message.toLowerCase();
+      if (lowerMessage.includes("table of technologies")) {
+        return this.createSpecialViewResponse('table', 'Technologies', {
+          title: 'Technologies',
+          description: 'List of technologies used by NicorAI',
+          headers: ['Technology', 'Category', 'Description'],
+          rows: [
+            ['React', 'Frontend', 'JavaScript library for building user interfaces'],
+            ['Next.js', 'Framework', 'React framework for production with SSR and SSG'],
+            ['TypeScript', 'Language', 'Typed superset of JavaScript'],
+            ['TailwindCSS', 'Styling', 'Utility-first CSS framework'],
+            ['Node.js', 'Backend', 'JavaScript runtime environment']
+          ]
+        });
+      } else if (lowerMessage.includes("case studies as chart") || lowerMessage.includes("show me the case studies as chart")) {
+        return this.createSpecialViewResponse('chart', 'Case Studies', {
+          title: 'Case Studies Success Rate',
+          labels: ['E-commerce', 'Healthcare', 'Finance', 'Manufacturing', 'Technology'],
+          values: [88, 75, 92, 70, 95]
+        });
+      } else if (
+        lowerMessage.includes("show me as card technologies") || 
+        lowerMessage.includes("card technologies") ||
+        lowerMessage.includes("technologies in card")
+      ) {
+        return this.createSpecialViewResponse('card', 'Technologies Card', {
+          title: 'Our Technology Stack',
+          content: 'We use cutting-edge technologies to build robust, scalable applications that meet your business needs.',
+          cards: [
+            { title: 'Frontend', content: 'React, Next.js, TypeScript, TailwindCSS' },
+            { title: 'Backend', content: 'Node.js, Express, Python, Django' },
+            { title: 'Database', content: 'MongoDB, PostgreSQL, Redis' }
+          ]
+        });
+      }
       // Create error message
       const errorMessage: ChatMessageWithView = {
         id: `msg-${Date.now()}-ai`,
@@ -314,10 +307,8 @@ class ApiService {
         sender: 'ai',
         timestamp: new Date()
       };
-
       // Add error message to current chat
       this.addMessageToCurrentChat(errorMessage);
-
       return errorMessage;
     }
   }
@@ -386,7 +377,7 @@ class ApiService {
             id: viewId,
             type: 'table',
             data: {
-              title: 'Technologies',
+              title: 'Technologies(M)',
               description: 'List of technologies used by NicorAI',
               headers: ['Technology', 'Category', 'Description'],
               rows: [
@@ -419,7 +410,7 @@ class ApiService {
             id: 'table-example',
             type: 'table',
             data: {
-              title: 'NicorAI Services Comparison(MOCK)',
+              title: 'NicorAI Services Comparison(M)',
               headers: ['Service', 'Features', 'Use Case', 'Price'],
               rows: [
                 ['API Master', 'API Integration, Custom Endpoints, Documentation', 'Streamline API Management', 'Custom Pricing'],
@@ -435,7 +426,7 @@ class ApiService {
             id: 'contact-info',
             type: 'table',
             data: {
-              title: 'Contact NicorAI(MOCK)',
+              title: 'Contact NicorAI(M)',
               description: 'Reach out to us through any of these channels',
               headers: ['Contact Method', 'Details'],
               rows: [

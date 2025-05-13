@@ -108,31 +108,33 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
 
   // Table Renderer
   const renderTable = (data: any) => {
-    if (data && data.data && (data.data.columns || data.data.rows)) {
-      data = data.data;
+    // If data.table exists, use it as the source
+    const tableData = data.table ? data.table : data;
+
+    // Extract headers
+    let headers: string[] = [];
+    if (tableData.header && Array.isArray(tableData.header.rows)) {
+      headers = tableData.header.rows;
+    } else if (Array.isArray(tableData.headers)) {
+      headers = tableData.headers;
+    } else if (Array.isArray(tableData.columns)) {
+      headers = tableData.columns.map((col: any) => col.header);
+    } else if (tableData.header && (tableData.header.columns)) {
+      headers = tableData.header.columns;
     }
+
+    // Extract rows
+    let rows: any[][] = [];
+    if (Array.isArray(tableData.rows)) {
+      if (tableData.rows.length > 0 && tableData.rows[0].cells) {
+        rows = tableData.rows.map((row: any) => row.cells);
+      } else {
+        rows = tableData.rows;
+      }
+    }
+
     const title = data.title || 'Data Table';
     const description = data.description || '';
-    const headers: string[] = data.headers || data.columns || [];
-    let rows: any[][] = [];
-    if (Array.isArray(data.rows)) {
-      rows = data.rows;
-    } else if (Array.isArray(data.data)) {
-      rows = data.data;
-    } else if (data.items && Array.isArray(data.items)) {
-      rows = data.items.map((item: any) => {
-        if (Array.isArray(item)) return item;
-        if (typeof item === 'object' && headers.length > 0) {
-          return headers.map(header => {
-            const key = Object.keys(item).find(k =>
-              k.toLowerCase() === header.toLowerCase()
-            );
-            return key ? item[key] : '';
-          });
-        }
-        return [item];
-      });
-    }
     if (headers.length === 0 || rows.length === 0) {
       return (
         <div className="bg-white rounded-2xl p-8 shadow-xl border border-blue-100">
@@ -186,9 +188,9 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
             </tbody>
           </table>
         </div>
-        {data.footer && (
+        {tableData.footer && (
           <div className="px-8 py-4 border-t border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 text-base text-gray-500">
-            {data.footer}
+            {tableData.footer}
           </div>
         )}
       </div>

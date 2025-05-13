@@ -231,7 +231,7 @@ export default function Home() {
 
         {/* Fixed chat input box at the bottom (visible on all pages except initial view) */}
         {!isInitialView && !isChatVisible && activeView && (
-          <div className="fixed bottom-0 left-64 right-0 border-t border-gray-200 bg-white p-4 shadow-md z-10">
+          <div className="fixed bottom-0 left-64 right-0 bg-white p-4 shadow-md z-10">
             <ChatInput onMessageSent={(isClosing, dynamicView) => {
               // Enhanced callback to guarantee the chat becomes visible
               if (!isClosing) {

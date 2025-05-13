@@ -84,7 +84,7 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
     <div className="relative flex-1 h-full overflow-auto bg-white pb-24">
       {/* Remove close button for dynamic views to avoid duplication */}
       {viewId !== 'dynamic-view' && (
-      <div className="sticky top-0 right-0 p-4 flex justify-end z-50">
+      <div className="sticky top-0 right-0 p-4 flex justify-end z-50 bg-transparent">
         <button
           onClick={onClose}
           className="p-2 text-gray-500 hover:text-gray-700 bg-white rounded-full shadow-sm"

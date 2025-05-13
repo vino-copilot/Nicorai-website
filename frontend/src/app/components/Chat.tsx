@@ -269,7 +269,7 @@ const Chat: React.FC<ChatProps> = ({
     if (!currentChatId) return false;
     
     try {
-      console.log(`Checking if message ${messageId} has an associated view`);
+      // console.log(`Checking if message ${messageId} has an associated view`);
       
       // Step 1: Check direct localStorage associations (most specific match)
       const associationsJson = localStorage.getItem('dynamicViewAssociations');
@@ -279,7 +279,7 @@ const Chat: React.FC<ChatProps> = ({
         if (viewAssociations[currentChatId] && viewAssociations[currentChatId][messageId]) {
           // We found a view ID association for this message
           const viewId = viewAssociations[currentChatId][messageId];
-          console.log(`Found explicit view association: ${viewId} for message ${messageId}`);
+          // console.log(`Found explicit view association: ${viewId} for message ${messageId}`);
           
           // Verify if the view exists in storage
           const storedViewsJson = localStorage.getItem('storedDynamicViews');
@@ -650,7 +650,7 @@ const Chat: React.FC<ChatProps> = ({
       id: `dynamic-tech-table-${Date.now()}`,
       type: 'table',
       data: {
-        title: 'Technologies',
+        title: 'Technologies(M)',
         description: 'List of technologies used by NicorAI',
         headers: ['Technology', 'Category', 'Description'],
         rows: [
@@ -675,7 +675,7 @@ const Chat: React.FC<ChatProps> = ({
       id: `dynamic-tech-card-${Date.now()}`,
       type: 'card',
       data: {
-        title: 'Our Technology Stack',
+        title: 'Our Technology Stack(M)',
         content: 'We use cutting-edge technologies to build robust, scalable applications that meet your business needs.',
         cards: [
           { title: 'Frontend', content: 'React, Next.js, TypeScript, TailwindCSS' },
@@ -697,7 +697,7 @@ const Chat: React.FC<ChatProps> = ({
       id: `dynamic-chart-${Date.now()}`,
       type: 'chart',
       data: {
-        title: 'Case Studies Success Rate',
+        title: 'Case Studies Success Rate(M)',
         labels: ['E-commerce', 'Healthcare', 'Finance', 'Manufacturing', 'Technology'],
         values: [88, 75, 92, 70, 95]
       }
@@ -737,7 +737,7 @@ const Chat: React.FC<ChatProps> = ({
       id: `dynamic-generic-${Date.now()}`,
       type: 'card',
       data: {
-        title: 'NicorAI Information',
+        title: 'NicorAI Information(M)',
         content: 'Information about our services and technologies',
         cards: [
           { title: 'Services', content: 'Custom AI Solutions, Web Development, Mobile Apps, API Integration' },
@@ -759,7 +759,7 @@ const Chat: React.FC<ChatProps> = ({
       id: `dynamic-error-${Date.now()}`,
       type: 'custom',
       data: {
-        title: 'Error Retrieving Content',
+        title: 'Error Retrieving Content(M)',
         content: '<div class="p-4 bg-red-50 border border-red-200 rounded-lg text-center"><p class="text-red-600 mb-2">We encountered an error retrieving the content.</p><p class="text-gray-700">Please try refreshing the page or contact support if the issue persists.</p></div>'
       }
     };
