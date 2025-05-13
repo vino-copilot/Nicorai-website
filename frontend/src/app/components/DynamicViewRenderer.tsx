@@ -202,7 +202,7 @@ const AIHeroSection = () => {
                     ease: "easeInOut",
                     delay: 1
                   }}
-                  className="absolute bottom-1/4 right-1/4 w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center"
+                  className="absolute top-2/4 right-1/4 w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center"
                 >
                   <Cpu size={32} className="text-indigo-600" />
                 </motion.div>
