@@ -269,7 +269,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
           </svg>
         </button>
       </div>
-      <div className="p-4 max-h-96 overflow-auto text-gray-800">
+      <div className="p-4 max-h-110 overflow-auto text-gray-800">
         {renderContent()}
       </div>
     </div>

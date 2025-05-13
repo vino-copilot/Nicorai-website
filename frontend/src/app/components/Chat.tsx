@@ -43,7 +43,7 @@ const Chat: React.FC<ChatProps> = ({
   const faqSuggestions = [
     "How can AI help my business?",
     "What services does NicorAI offer?",
-    "Show me a comparison of your products",
+    "What are the technologies used by nicorAI? Show in a card",
     "What industries do you specialize in?"
   ];
 
