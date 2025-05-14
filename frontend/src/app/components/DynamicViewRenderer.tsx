@@ -153,13 +153,7 @@ const AIHeroSection = () => {
                   Explore Our Services
                   <ChevronRight size={18} className="ml-2" />
                 </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-6 py-3 bg-white text-gray-700 font-medium rounded-lg shadow-sm border border-gray-200"
-                >
-                  Schedule a Demo
-                </motion.button>
+                
               </div>
             </motion.div>
           </div>
