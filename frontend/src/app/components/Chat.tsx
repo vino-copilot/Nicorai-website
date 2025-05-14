@@ -48,6 +48,27 @@ const Chat: React.FC<ChatProps> = ({
     "What industries do you specialize in?"
   ];
 
+  // Check if we're on a mobile device
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Handle window resize to detect mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      const isMobileView = window.innerWidth < 768; // 768px is typical md breakpoint
+      setIsMobile(isMobileView);
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Listen for window resize
+    window.addEventListener('resize', checkIfMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
+
   // Process pending dynamic view from parent
   useEffect(() => {
     if (pendingDynamicView) {
@@ -795,7 +816,7 @@ const Chat: React.FC<ChatProps> = ({
   };
 
   const renderInitialView = () => (
-    <div className="flex flex-col items-center justify-center h-full">
+    <div className={`flex flex-col items-center justify-center h-full ${isMobile ? 'px-4' : ''}`}>
       {/* Show Close button if we're forced to show initial view but have messages */}
       {!isInitialView && messages.length > 0 && (
         <div className="absolute top-0 right-0 p-3">
@@ -814,7 +835,7 @@ const Chat: React.FC<ChatProps> = ({
         </div>
       )}
       
-      <div className="w-full max-w-lg">
+      <div className={`w-full max-w-lg`}>
         <div className="mb-8 text-center">
           <h2 className="text-4xl font-bold text-gray-800 mb-2">Welcome to <span className="text-blue-600">NicorAI</span> Assistant</h2>
           <p className="text-gray-700 text-xl leading-relaxed">How can I help you today?</p>
@@ -872,7 +893,7 @@ const Chat: React.FC<ChatProps> = ({
         
         <div className="space-y-3">
           <p className="text-sm font-medium text-gray-700">Frequently asked questions:</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${isMobile ? 'pb-8' : ''}`}>
             {faqSuggestions.map((question, index) => (
               <button
                 key={index}

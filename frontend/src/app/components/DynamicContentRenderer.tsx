@@ -16,6 +16,8 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
         return renderCard(view.data);
       case 'table':
         return renderTable(view.data);
+      case 'list':
+        return renderList(view.data);
       case 'custom':
         return renderCustom(view.data);
       default:
@@ -79,13 +81,35 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
   const renderCard = (data: any) => {
     const cardData = data.data || data;
     const cards = cardData.cards || [cardData];
+    
+    // Get theme and color scheme if available
+    const theme = data.style?.theme || 'light';
+    const colorScheme = data.style?.colorScheme || '#3b82f6'; // Default blue
+    
     return (
       <div className="bg-white rounded-2xl p-8 shadow-xl border border-blue-100 max-w-5xl w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {cards.map((card: any, index: number) => (
-            <div key={index} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-md border border-blue-100 hover:shadow-xl transition-shadow flex flex-col h-full">
-              <h3 className="text-xl font-bold mb-3 text-gray-900">{card.title}</h3>
-              <p className="text-gray-700 mb-4 flex-grow text-base">{card.content}</p>
+            <div 
+              key={index} 
+              className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-md border border-blue-100 hover:shadow-xl transition-shadow flex flex-col h-full"
+              style={{ 
+                background: theme === 'dark' ? '#1f2937' : undefined,
+                borderColor: colorScheme
+              }}
+            >
+              <h3 
+                className="text-xl font-bold mb-3 text-gray-900"
+                style={{ color: theme === 'dark' ? 'white' : undefined }}
+              >
+                {card.title}
+              </h3>
+              <p 
+                className="text-gray-700 mb-4 flex-grow text-base"
+                style={{ color: theme === 'dark' ? '#d1d5db' : undefined }}
+              >
+                {card.description || card.content}
+              </p>
               {card.actions && (
                 <div className="flex space-x-2 mt-auto pt-4">
                   {card.actions.map((action: any, actionIndex: number) => (
@@ -93,6 +117,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
                       key={actionIndex}
                       href={action.url}
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-indigo-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      style={{ background: colorScheme }}
                     >
                       {action.label}
                     </a>
@@ -193,6 +218,48 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
             {tableData.footer}
           </div>
         )}
+      </div>
+    );
+  };
+
+  // List Renderer
+  const renderList = (data: any) => {
+    const listData = data.data || data;
+    const items = listData.items || [];
+    
+    // Get theme and color scheme if available
+    const theme = data.style?.theme || 'light';
+    const colorScheme = data.style?.colorScheme || '#3b82f6'; // Default blue
+    
+    if (!items.length) {
+      return (
+        <div className="bg-white rounded-2xl p-8 shadow-xl border border-blue-100">
+          <h3 className="text-2xl font-bold mb-4 text-gray-900">List</h3>
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-4 text-blue-700 rounded-xl">
+            <p className="text-base">No items available to display in the list.</p>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div 
+        className="bg-white rounded-2xl p-8 shadow-xl border border-blue-100"
+        style={{ borderColor: colorScheme }}
+      >
+        <ul className="space-y-2 list-disc pl-5">
+          {items.map((item: string, index: number) => (
+            <li 
+              key={index} 
+              className="text-gray-700"
+              style={{ 
+                color: theme === 'dark' ? '#d1d5db' : undefined
+              }}
+            >
+              {item}
+            </li>
+          ))}
+        </ul>
       </div>
     );
   };

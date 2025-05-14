@@ -437,4 +437,4 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   );
 };
 
-export default Sidebar; 
+export default Sidebar;
