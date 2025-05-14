@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import apiService, { ChatMessage, DynamicView } from '../services/api';
 import DynamicContentRenderer from './DynamicContentRenderer';
 import Image from 'next/image';
+import LogoBackground from './LogoBackground';
 
 // Define interface for dynamic view associations
 interface ViewAssociations {
@@ -1087,7 +1088,9 @@ const Chat: React.FC<ChatProps> = ({
   }
 
   return (
-    <div className="flex-1 h-full flex flex-col">
+    <div className="flex-1 h-full flex flex-col relative">
+      {/* Only show LogoBackground in chat view, not in initial/welcome view */}
+      {!(messages.length === 0 || isInitialView) && <LogoBackground />}
       {(messages.length === 0 || isInitialView) ? renderInitialView() : renderChatView()}
     </div>
   );

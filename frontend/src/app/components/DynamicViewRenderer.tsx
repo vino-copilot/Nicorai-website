@@ -565,7 +565,7 @@ const WhatWeveDonePage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     </div>
   );
 };
-
+ 
 const CaseStudiesHero = () => {
   return (
     <section className="relative pt-10 pb-12 overflow-hidden">
@@ -575,7 +575,7 @@ const CaseStudiesHero = () => {
         <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-purple-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "1s" }}></div>
         <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-purple-100/20 rounded-full filter blur-3xl animate-float"></div>
       </div>
-
+ 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -590,11 +590,11 @@ const CaseStudiesHero = () => {
           <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
             Our AI Success Stories
           </h1>
-          <p className="text-xl text-gray-600 leading-[28 px]">
+          <p className="text-xl text-gray-600 leading-relaxed">
             Explore our portfolio of AI and ML solutions that have transformed businesses across industries.
           </p>
         </motion.div>
-
+ 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -655,7 +655,7 @@ const CaseStudiesHero = () => {
     </section>
   );
 };
-
+ 
 const FeaturedProjects = () => {
   const projects = [
     {
@@ -707,25 +707,25 @@ const FeaturedProjects = () => {
       ]
     }
   ];
-
+ 
   const colorMap: Record<string, string> = {
     blue: "from-blue-500 to-indigo-600",
     green: "from-emerald-500 to-teal-600",
     yellow: "from-amber-500 to-orange-600",
     purple: "from-purple-500 to-pink-600"
   };
-
+ 
   const bgColorMap: Record<string, string> = {
     blue: "bg-blue-50 text-blue-800",
     green: "bg-emerald-50 text-emerald-800",
     yellow: "bg-amber-50 text-amber-800",
     purple: "bg-purple-50 text-purple-800"
   };
-
+ 
   return (
     <section className="py-16 bg-gradient-to-b from-white relative to-purple-50">
       <div className="absolute inset-0 bg-grid-pattern"></div>
-
+ 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -737,11 +737,11 @@ const FeaturedProjects = () => {
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Featured AI Projects
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Our work spans across industries, showcasing the versatility and power of our AI solutions
           </p>
         </motion.div>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {projects.map((project, index) => (
             <motion.div
@@ -767,10 +767,10 @@ const FeaturedProjects = () => {
                   <h3 className="text-2xl font-bold">{project.title}</h3>
                 </div>
               </div>
-
+ 
               <div className="p-6 flex flex-col flex-1">
                 <p className="text-gray-600 mb-6">{project.description}</p>
-
+ 
                 <div className="flex flex-wrap gap-2 mb-6">
                   {project.tags.map(tag => (
                     <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-[14px] leading-5 font-medium">
@@ -778,7 +778,7 @@ const FeaturedProjects = () => {
                     </span>
                   ))}
                 </div>
-
+ 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   {project.metrics.map((metric, i) => (
                     <div key={i} className="bg-gray-50 rounded-lg p-3 text-center">
@@ -787,7 +787,7 @@ const FeaturedProjects = () => {
                     </div>
                   ))}
                 </div>
-
+ 
                 <div className="mt-auto">
                   <motion.button
                     whileHover={{ scale: 1.03 }}
@@ -806,8 +806,7 @@ const FeaturedProjects = () => {
     </section>
   );
 };
-
-
+ 
 const TestimonialsSection = () => {
   const testimonials = [
     {
@@ -829,13 +828,13 @@ const TestimonialsSection = () => {
       image: "👨‍💼"
     }
   ];
-
+ 
   return (
     <section className="py-20 bg-purple-50 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-indigo-100/30 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-purple-100/30 rounded-full filter blur-3xl"></div>
-
+ 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -847,11 +846,11 @@ const TestimonialsSection = () => {
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "36px", fontWeight: 700, letterSpacing: "-0.9px", lineHeight: "40px" }}>
             What Our Clients Say
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "20px", lineHeight: "28px" }}>
+          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "20px", }}>
             Success stories from organizations that have partnered with us
           </p>
         </motion.div>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
@@ -884,6 +883,7 @@ const TestimonialsSection = () => {
     </section>
   );
 };
+ 
 
 // CONNECT PAGE
 const ConnectPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -895,7 +895,7 @@ const ConnectPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     </div>
   );
 };
-
+ 
 const ContactHero = () => {
   return (
     <section className="relative pt-10 pb-16 overflow-hidden">
@@ -905,7 +905,7 @@ const ContactHero = () => {
         <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-teal-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float"></div>
         <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-teal-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
       </div>
-
+ 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -920,7 +920,7 @@ const ContactHero = () => {
           <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
             Let's Connect and Discuss Your AI Solutions
           </h1>
-          <p className="text-xl text-gray-600 leading-[28px]">
+          <p className="text-xl text-gray-600 leading-relaxed">
             Ready to transform your business with AI? Reach out to our team to explore how NicorAI can help you achieve your goals.
           </p>
         </motion.div>
@@ -928,7 +928,7 @@ const ContactHero = () => {
     </section>
   );
 };
-
+ 
 const ContactForm = () => {
   const [formState, setFormState] = useState({
     name: '',
@@ -938,22 +938,22 @@ const ContactForm = () => {
     submitted: false,
     loading: false
   });
-
+ 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormState({ ...formState, loading: true });
-
+ 
     // Simulate form submission
     setTimeout(() => {
       setFormState({ ...formState, submitted: true, loading: false });
     }, 1500);
   };
-
+ 
   return (
     <section className="py-12 relative">
       {/* Background pattern - positioned beneath the form */}
       <div className="absolute inset-0 bg-grid-pattern z-0"></div>
-
+     
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-center items-center min-h-[80vh]">
           {/* Contact Form */}
@@ -967,7 +967,7 @@ const ContactForm = () => {
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 relative z-20">
               <div className="p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h2>
-
+ 
                 {formState.submitted ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -1002,7 +1002,7 @@ const ContactForm = () => {
                         required
                       />
                     </div>
-
+ 
                     <div className="space-y-1">
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                         Email Address <span className="text-red-500">*</span>
@@ -1017,7 +1017,7 @@ const ContactForm = () => {
                         required
                       />
                     </div>
-
+ 
                     <div className="space-y-1">
                       <label htmlFor="company" className="block text-sm font-medium text-gray-700">
                         Company
@@ -1031,7 +1031,7 @@ const ContactForm = () => {
                         placeholder="Enter your company name"
                       />
                     </div>
-
+ 
                     <div className="space-y-1">
                       <label htmlFor="message" className="block text-sm font-medium text-gray-700">
                         How can we help? <span className="text-red-500">*</span>
@@ -1046,7 +1046,7 @@ const ContactForm = () => {
                         required
                       ></textarea>
                     </div>
-
+ 
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -1076,7 +1076,7 @@ const ContactForm = () => {
     </section>
   );
 };
-
+ 
 const OfficeLocations = () => {
   const locations = [
     {
@@ -1094,14 +1094,14 @@ const OfficeLocations = () => {
       image: "🗽"
     }
   ];
-
+ 
   return (
     <section className="py-20 bg-gradient-to-b from-white to-blue-50 relative overflow-hidden">
       {/* Background pattern */}
       <div className="absolute inset-0 bg-grid-pattern z-0"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-teal-100/20 rounded-full filter blur-3xl z-0"></div>
       <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-100/20 rounded-full filter blur-3xl z-0"></div>
-
+ 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1113,11 +1113,11 @@ const OfficeLocations = () => {
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our Offices
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Visit us at any of our office locations
           </p>
         </motion.div>
-
+ 
         <div className="flex flex-wrap justify-center gap-8 mt-8">
           {locations.map((location, index) => (
             <motion.div
@@ -1129,7 +1129,7 @@ const OfficeLocations = () => {
               whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
               className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300 w-full max-w-xs md:w-96 relative z-20"
             >
-
+ 
               <div className="p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-3">{location.city}</h3>
                 <div className="space-y-3 text-gray-700">
@@ -1171,6 +1171,7 @@ const OfficeLocations = () => {
     </section>
   );
 };
+
 
 // ABOUT US PAGE
 const AboutUsPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
