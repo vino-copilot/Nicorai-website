@@ -20,7 +20,7 @@ const logoTextStyle = {
 
 // Custom CSS for the navigation items to use Pixelify Sans font
 const navItemStyle = {
-  fontFamily: "var(--font-pixelify-sans)",
+  fontFamily: "var(--Sixtyfour Convergence-sans-serif)",
   letterSpacing: "0.02em",
   fontWeight: 400,
 };

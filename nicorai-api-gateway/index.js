@@ -92,7 +92,7 @@ const n8nRequestBody = {
         const transformedResponse = {
             responseId: n8nResponse.data.responseId || `${Date.now()}`,
             responseType: n8nResponse.data.responseType || 'text',
-            content: n8nResponse.data.content,
+            content: n8nResponse.data.content.text ,
             timestamp: n8nResponse.data.timestamp || new Date().toISOString()
         };
  
