@@ -924,7 +924,7 @@ const ContactHero = () => {
           <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
             Let's Connect and Discuss Your AI Solutions
           </h1>
-          <p className="text-xl text-gray-600 leading-relaxed">
+          <p className="text-xl text-gray-600 leading-[28px]">
             Ready to transform your business with AI? Reach out to our team to explore how NicorAI can help you achieve your goals.
           </p>
         </motion.div>
