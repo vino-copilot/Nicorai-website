@@ -229,7 +229,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                 {!isExpanded && !isMobile && (
                   <button
                     onClick={toggleSidebar}
-                    className="bg-white rounded-full p-1 focus:outline-none"
+                    className="bg-white rounded-full p-2 focus:outline-none hover:bg-blue-100"
                     aria-label="Expand sidebar"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-600">

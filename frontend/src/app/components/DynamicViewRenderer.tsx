@@ -1183,7 +1183,7 @@ const AboutUsPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     </div>
   );
 };
-
+ 
 const AboutHero = () => {
   return (
     <section className="relative pt-10 pb-16 overflow-hidden">
@@ -1193,7 +1193,7 @@ const AboutHero = () => {
         <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-indigo-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float"></div>
         <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-indigo-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
       </div>
-
+ 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1213,28 +1213,28 @@ const AboutHero = () => {
           </p>
           <br />
           <br />
-
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">
-            We specialize in two core areas
+ 
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-6">
+          We specialize in two core areas
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-            Cutting-edge Artificial Intelligence and immersive Augmented & Virtual Reality solutions
+          Cutting-edge Artificial Intelligence and immersive Augmented & Virtual Reality solutions
           </p>
           <br />
-
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">
-            AI/ML: Custom Solutions and Development
+ 
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-6">
+          AI/ML: Custom Solutions and Development
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-            We design and develop bespoke narrow AI models precisely tailored to address unique business challenges, moving beyond gene solutions. Our services encompass AI-augmented development, enabling businesses to leverage AI in every part of their operational framework. From detailed data analysis to seamless deployment, we handle every step in the development lifecycle.
+          We design and develop bespoke narrow AI models precisely tailored to address unique business challenges, moving beyond gene solutions. Our services encompass AI-augmented development, enabling businesses to leverage AI in every part of their operational framework. From detailed data analysis to seamless deployment, we handle every step in the development lifecycle.
           </p>
           <br />
-
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">
-            AR/VR: Immersive Application Development
+ 
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-6">
+          AR/VR: Immersive Application Development
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-            We craft immersive Augmented and Virtual Reality experiences designed to engage, educate, and transform how our clients connect with their audiences. From training simulations to virtual product demos, we use AR/VR to create innovative ways for businesses to engage their customers and stakeholders, ensuring memorable and impactful experiences.
+          We craft immersive Augmented and Virtual Reality experiences designed to engage, educate, and transform how our clients connect with their audiences. From training simulations to virtual product demos, we use AR/VR to create innovative ways for businesses to engage their customers and stakeholders, ensuring memorable and impactful experiences.
           </p>
           <br /><br />
         </motion.div>
@@ -1242,13 +1242,14 @@ const AboutHero = () => {
     </section>
   );
 };
-
+ 
+ 
 const OurStory = () => {
   return (
     <section className="py-16 relative">
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -1257,8 +1258,8 @@ const OurStory = () => {
           >
             <div className="relative">
               <div className="absolute -top-6 -left-6 w-full h-full rounded-2xl bg-indigo-100/50"></div>
-              <div className="relative bg-white rounded-2xl overflow-hidden shadow-xl border border-indigo-100 p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
+              <div className="relative bg-white rounded-2xl overflow-hidden shadow-xl border border-indigo-100 p-8 h-full flex flex-col">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Story</h2>
                 <div className="space-y-4 text-gray-700">
                   <p>
                     NicorAI was founded in 2019 with a vision to make artificial intelligence accessible and practical
@@ -1279,33 +1280,32 @@ const OurStory = () => {
               </div>
             </div>
           </motion.div>
-
+ 
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl shadow-xl overflow-hidden text-white p-8">
+            <div className="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl shadow-xl overflow-hidden text-white p-8 h-full flex flex-col">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                   <Sparkles className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold ml-4">Our Mission</h3>
               </div>
-              <p className="text-indigo-100 mb-8 text-lg">
-                To democratize artificial intelligence by making powerful AI solutions accessible,
-                practical, and valuable for businesses of all sizes.
+              <p className="text-indigo-100 mb-8 text-[16px]">
+                Our mission is to democratize artificial intelligence by making powerful, easy-to-use AI tools accessible and practical for businesses of all sizes. We aim to bridge the gap between innovation and real-world application, helping organizations unlock value, drive efficiency, and make smarter decisions through AI
               </p>
-
+ 
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                   <Target className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold ml-4">Our Vision</h3>
               </div>
-              <p className="text-indigo-100 text-lg">
-                A world where AI enhances human potential, drives business innovation, and
+              <p className="text-indigo-100 text-[16px]">
+                A world where AI enhances human potential, drives business innovation,solves real-world problems and
                 creates solutions to our most pressing challenges.
               </p>
             </div>
@@ -1315,7 +1315,7 @@ const OurStory = () => {
     </section>
   );
 };
-
+ 
 const TeamSection = () => {
   const team = [
     {
@@ -1361,11 +1361,11 @@ const TeamSection = () => {
       color: "from-rose-500 to-red-600"
     }
   ];
-
+ 
   return (
     <section className="py-20 bg-gradient-to-b from-white to-indigo-50 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern"></div>
-
+ 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1377,11 +1377,11 @@ const TeamSection = () => {
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our Leadership Team
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Meet the experts behind our AI innovations
           </p>
         </motion.div>
-
+ 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {team.map((member, index) => (
             <motion.div
@@ -1421,7 +1421,7 @@ const TeamSection = () => {
     </section>
   );
 };
-
+ 
 const CoreValues = () => {
   const values = [
     {
@@ -1449,13 +1449,13 @@ const CoreValues = () => {
       color: "bg-teal-50 text-teal-700 border-teal-100"
     }
   ];
-
+ 
   return (
     <section className="py-20 bg-indigo-50 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-indigo-100/50 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-100/50 rounded-full filter blur-3xl"></div>
-
+ 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1467,11 +1467,11 @@ const CoreValues = () => {
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our Core Values
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             The principles that guide our work and shape our culture
           </p>
         </motion.div>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {values.map((value, index) => (
             <motion.div
@@ -1494,7 +1494,7 @@ const CoreValues = () => {
             </motion.div>
           ))}
         </div>
-
+ 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -1524,6 +1524,7 @@ const CoreValues = () => {
     </section>
   );
 };
+ 
 
 // INSPIRATION PAGE
 const InspirationPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
