@@ -140,7 +140,7 @@ const AIHeroSection = () => {
                 Transform Your Business With <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">AI-Powered Solutions</span>
               </h1>
-              <p className="mt-4 text-xl text-gray-600 leading-relaxed">
+              <p className="mt-4 text-xl text-gray-600 leading-[28px]">
                 We leverage cutting-edge artificial intelligence and machine learning to deliver
                 powerful solutions that drive growth, efficiency, and innovation.
               </p>
@@ -323,7 +323,7 @@ const AIServicesSection = () => {
       color: "from-blue-50 to-blue-100/50"
     },
     {
-      title: "Custom ML Model Development",
+      title: "ML Model Development",
       description: "We build, train, and deploy custom machine learning models tailored to your specific needs.",
       icon: <Boxes className="w-6 h-6 text-indigo-600" />,
       color: "from-indigo-50 to-indigo-100/50"
@@ -393,12 +393,16 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ title, description, icon, col
       className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300"
     >
       <div className={`bg-gradient-to-br ${color} p-6`}>
-        <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center">
-          {icon}
+        <div className="flex items-center gap-4 min-h-[3rem]">
+          <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center flex-shrink-0">
+            {icon}
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 leading-[28px] flex items-center h-full">
+            <span className="block self-center">{title}</span>
+          </h3>
         </div>
       </div>
-      <div className="p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
+      <div className="p-6 pt-4">
         <p className="text-gray-600">{description}</p>
       </div>
     </motion.div>
@@ -590,7 +594,7 @@ const CaseStudiesHero = () => {
           <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
             Our AI Success Stories
           </h1>
-          <p className="text-xl text-gray-600 leading-relaxed">
+          <p className="text-xl text-gray-600 leading-[28 px]">
             Explore our portfolio of AI and ML solutions that have transformed businesses across industries.
           </p>
         </motion.div>
