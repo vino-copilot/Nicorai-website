@@ -816,7 +816,7 @@ const Chat: React.FC<ChatProps> = ({
       <div className="w-full max-w-lg">
         <div className="mb-8 text-center">
           <h2 className="text-4xl font-bold text-gray-800 mb-2">Welcome to <span className="text-blue-600">NicorAI</span> Assistant</h2>
-          <p className="text-gray-700 text-xl">How can I help you today?</p>
+          <p className="text-gray-700 text-xl leading-relaxed">How can I help you today?</p>
         </div>
         
         {/* Render dynamic view in initial view if available */}

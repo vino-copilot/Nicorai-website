@@ -50,15 +50,15 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
       return (
         <div className="min-h-screen bg-white flex items-center justify-center p-8">
           <div className="w-full max-w-4xl">
-            <DynamicContentRenderer 
-              view={dynamicViewContent} 
+            <DynamicContentRenderer
+              view={dynamicViewContent}
               onClose={onClose}
             />
           </div>
         </div>
       );
     }
-    
+
     // Regular static views
     switch (viewId) {
       case 'what-we-do':
@@ -84,17 +84,17 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
     <div className="relative flex-1 h-full overflow-auto bg-white pb-24">
       {/* Remove close button for dynamic views to avoid duplication */}
       {viewId !== 'dynamic-view' && (
-      <div className="sticky top-0 right-0 p-4 flex justify-end z-50 bg-transparent">
-        <button
-          onClick={onClose}
-          className="p-2 text-gray-500 hover:text-gray-700 bg-white rounded-full shadow-sm"
-          aria-label="Close view"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+        <div className="sticky top-0 right-0 p-4 flex justify-end z-50 bg-transparent">
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-500 hover:text-gray-700 bg-white rounded-full shadow-sm"
+            aria-label="Close view"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       )}
 
       {renderContent()}
@@ -140,7 +140,7 @@ const AIHeroSection = () => {
                 Transform Your Business With <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">AI-Powered Solutions</span>
               </h1>
-              <p className="mt-4 text-xl text-gray-600 leading-[28px]">
+              <p className="mt-4 text-xl text-gray-600 leading-relaxed">
                 We leverage cutting-edge artificial intelligence and machine learning to deliver
                 powerful solutions that drive growth, efficiency, and innovation.
               </p>
@@ -355,7 +355,7 @@ const AIServicesSection = () => {
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Comprehensive AI Solutions
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             We offer a wide range of AI services designed to help your business thrive
             in the era of artificial intelligence.
           </p>
@@ -369,6 +369,7 @@ const AIServicesSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="h-full flex"
             >
               <ServiceCard {...service} />
             </motion.div>
@@ -390,7 +391,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ title, description, icon, col
   return (
     <motion.div
       whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
-      className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300"
+      className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full"
     >
       <div className={`bg-gradient-to-br ${color} p-6`}>
         <div className="flex items-center gap-4 min-h-[3rem]">
@@ -437,7 +438,7 @@ const TechStackSection = () => {
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our Technology Stack
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             We utilize cutting-edge technologies and frameworks
           </p>
         </motion.div>
@@ -522,7 +523,7 @@ const AIProcessSection = () => {
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our AI Implementation Process
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             A systematic approach to successfully integrating AI into your business
           </p>
         </motion.div>
@@ -558,6 +559,7 @@ const AIProcessSection = () => {
     </section>
   );
 };
+
 
 // WHAT WE'VE DONE PAGE
 const WhatWeveDonePage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -839,7 +841,7 @@ const TestimonialsSection = () => {
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-indigo-100/30 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-purple-100/30 rounded-full filter blur-3xl"></div>
- 
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -855,7 +857,7 @@ const TestimonialsSection = () => {
             Success stories from organizations that have partnered with us
           </p>
         </motion.div>
- 
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
@@ -957,7 +959,7 @@ const ContactForm = () => {
     <section className="py-12 relative">
       {/* Background pattern - positioned beneath the form */}
       <div className="absolute inset-0 bg-grid-pattern z-0"></div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-center items-center min-h-[80vh]">
           {/* Contact Form */}
@@ -1219,26 +1221,26 @@ const AboutHero = () => {
           <br />
 
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">
-          We specialize in two core areas
+            We specialize in two core areas
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-          Cutting-edge Artificial Intelligence and immersive Augmented & Virtual Reality solutions
+            Cutting-edge Artificial Intelligence and immersive Augmented & Virtual Reality solutions
           </p>
           <br />
 
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">
-          AI/ML: Custom Solutions and Development
+            AI/ML: Custom Solutions and Development
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-          We design and develop bespoke narrow AI models precisely tailored to address unique business challenges, moving beyond gene solutions. Our services encompass AI-augmented development, enabling businesses to leverage AI in every part of their operational framework. From detailed data analysis to seamless deployment, we handle every step in the development lifecycle.
+            We design and develop bespoke narrow AI models precisely tailored to address unique business challenges, moving beyond gene solutions. Our services encompass AI-augmented development, enabling businesses to leverage AI in every part of their operational framework. From detailed data analysis to seamless deployment, we handle every step in the development lifecycle.
           </p>
           <br />
 
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-6">
-          AR/VR: Immersive Application Development
+            AR/VR: Immersive Application Development
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-          We craft immersive Augmented and Virtual Reality experiences designed to engage, educate, and transform how our clients connect with their audiences. From training simulations to virtual product demos, we use AR/VR to create innovative ways for businesses to engage their customers and stakeholders, ensuring memorable and impactful experiences.
+            We craft immersive Augmented and Virtual Reality experiences designed to engage, educate, and transform how our clients connect with their audiences. From training simulations to virtual product demos, we use AR/VR to create innovative ways for businesses to engage their customers and stakeholders, ensuring memorable and impactful experiences.
           </p>
           <br /><br />
         </motion.div>
@@ -1365,11 +1367,11 @@ const TeamSection = () => {
       color: "from-rose-500 to-red-600"
     }
   ];
- 
+
   return (
     <section className="py-20 bg-gradient-to-b from-white to-indigo-50 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern"></div>
- 
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1385,7 +1387,7 @@ const TeamSection = () => {
             Meet the experts behind our AI innovations
           </p>
         </motion.div>
- 
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {team.map((member, index) => (
             <motion.div
@@ -1572,8 +1574,8 @@ const InspirationHero = () => (
             priority
           />
         </div>
-        <p className="text-xl text-gray-700 mb-4">
-        At NicorAI, we believe that true innovation is built upon a foundation of groundbreaking ideas and visionary thinkers. Our journey into the world of artificial intelligence is deeply inspired by the pioneering work of Nicolas Rashevsky, a theoretical biophysicist whose ideas were far ahead of their time. Rashevsky's work wasn't just about biology; it was a profound exploration of how mathematical principles could unlock the secrets of complex systems â€" a vision that forms the core of our approach to AI today. He was, in many ways, a founding father of the AI revolution, and his legacy fuels our mission
+        <p className="text-xl text-gray-700 mb-4 leading-relaxed">
+          At NicorAI, we believe that true innovation is built upon a foundation of groundbreaking ideas and visionary thinkers. Our journey into the world of artificial intelligence is deeply inspired by the pioneering work of Nicolas Rashevsky, a theoretical biophysicist whose ideas were far ahead of their time. Rashevsky's work wasn't just about biology; it was a profound exploration of how mathematical principles could unlock the secrets of complex systems â€" a vision that forms the core of our approach to AI today. He was, in many ways, a founding father of the AI revolution, and his legacy fuels our mission
         </p>
       </motion.div>
     </div>
@@ -1591,7 +1593,7 @@ const RashevskyStory = () => (
         transition={{ duration: 0.5 }}
         className="bg-white rounded-2xl shadow-xl border border-purple-100 p-8 relative z-20"
       >
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">Story of Nicolas Rashevsky</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Story of Nicolas Rashevsky</h2>
         <div className="space-y-4 text-gray-700">
           <p>Nicolas Rashevsky wasn't a computer scientist in the traditional sense. Born in 1899, he was a brilliant scholar who applied the rigor of mathematics to the complexities of the human body and, in doing so, stumbled upon concepts that would become crucial to artificial intelligence. He was a polymath, straddling the worlds of mathematics, physics, and biology. In 1934, he left for Chicago and became the first professor of mathematical biophysics at the University of Chicago. He was ahead of his time, and he believed in the power of mathematics to unlock the secrets of life</p>
           <p>Rashevsky's approach was to apply mathematical modeling to biological systems, seeing patterns and structures that were previously hidden. His work on neural networks, though initially framed within the context of the human brain, laid the theoretical groundwork for the artificial neural networks that are fundamental to today's deep learning and AI systems. He co-authored the book "Mathematical Biophysics" which included the famous "Theory of the Brain" which is considered a core component of AI development, he even anticipated many technologies and challenges of the present day through his work.</p>
@@ -1613,7 +1615,7 @@ const RashevskyImpact = () => (
         transition={{ duration: 0.5 }}
         className="bg-white rounded-2xl shadow-xl border border-purple-100 p-8 relative z-20"
       >
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">Rashevsky's Lasting Impact</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Rashevsky's Lasting Impact</h2>
         <p className='text-gray-700'>Rashevsky's insights weren't just confined to the lab. His commitment to using mathematical tools to understand and solve complex problems has become a cornerstone of our approach to AI. Like him, we believe that AI is not just about programming; it's about understanding the underlying systems and structures. This philosophy is embodied in our approach.</p><br />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
@@ -1654,12 +1656,11 @@ const VisionandImpact = () => (
         className="text-center"
       >
         <h2 className="text-4xl font-bold text-gray-900 mb-6">A Legacy of Vision and Impact</h2>
-        <p className="text-xl text-gray-700 mb-4">Rashevsky's story is one of scientific exploration and groundbreaking innovation. He embodied a spirit of intellectual curiosity and interdisciplinary thinking that inspired not only many mathematicians and physicists but also many in the field of AI. We continue to follow his lead and dedicate our efforts to transforming the potential of AI to solve real problems in the business world. His legacy of combining mathematics and science is our guide.</p>
+        <p className="text-xl text-gray-700 mb-4 leading-relaxed">Rashevsky's story is one of scientific exploration and groundbreaking innovation. He embodied a spirit of intellectual curiosity and interdisciplinary thinking that inspired not only many mathematicians and physicists but also many in the field of AI. We continue to follow his lead and dedicate our efforts to transforming the potential of AI to solve real problems in the business world. His legacy of combining mathematics and science is our guide.</p>
       </motion.div>
     </div>
   </section>
 );
-
 
 const InspirationCommitment = () => (
   <section className="py-12 relative">
@@ -1673,10 +1674,11 @@ const InspirationCommitment = () => (
         className="text-center"
       >
         <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Commitment</h2>
-        <p className="text-xl text-gray-700 mb-4">At NicorAI, we honor Rashevsky's legacy by embracing his methodical approach and unwavering commitment to scientific thinking. By focusing on these principles, we unlock AI's transformative potential and create solutions with lasting impact. We dedicate our efforts to building systems worthy of his legacy.</p>
+        <p className="text-xl text-gray-700 mb-4 leading-relaxed">At NicorAI, we honor Rashevsky's legacy by embracing his methodical approach and unwavering commitment to scientific thinking. By focusing on these principles, we unlock AI's transformative potential and create solutions with lasting impact. We dedicate our efforts to building systems worthy of his legacy.</p>
       </motion.div>
     </div>
   </section>
 );
+
 
 export default DynamicViewRenderer;

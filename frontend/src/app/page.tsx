@@ -15,6 +15,7 @@ export default function Home() {
   const [pendingDynamicView, setPendingDynamicView] = useState<DynamicView | null>(null);
   const [closedDynamicView, setClosedDynamicView] = useState<DynamicView | null>(null);
   const [fullscreenDynamicView, setFullscreenDynamicView] = useState<DynamicView | null>(null);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   // On initial load, always show the initial landing page (isInitialView = true), regardless of chat history
   useEffect(() => {
@@ -163,6 +164,31 @@ export default function Home() {
     }
   };
 
+  // Handle sidebar expansion state change
+  const handleSidebarToggle = (expanded: boolean) => {
+    setIsSidebarExpanded(expanded);
+  };
+
+  // Check if we're on a mobile device
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Handle window resize to detect mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768); // 768px is typical md breakpoint
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Listen for window resize
+    window.addEventListener('resize', checkIfMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
+
   // Set up global keyboard handler for Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -180,10 +206,14 @@ export default function Home() {
   return (
     <main className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <Sidebar onNavClick={handleNavClick} activeView={activeView} />
+      <Sidebar onNavClick={handleNavClick} activeView={activeView} onToggle={handleSidebarToggle} />
 
-      {/* Main Content Area */}
-      <div className="flex-1 ml-64 h-screen overflow-hidden flex flex-col relative">
+      {/* Main Content Area - adjust margin based on sidebar state */}
+      <div className={`flex-1 h-screen overflow-hidden flex flex-col relative transition-all duration-300 
+        ${isMobile 
+          ? isSidebarExpanded ? 'ml-0' : 'ml-0' 
+          : isSidebarExpanded ? 'ml-64' : 'ml-12'}`}
+      >
         {/* Render active view */}
         {activeView && (
           <DynamicViewRenderer 
@@ -231,7 +261,11 @@ export default function Home() {
 
         {/* Fixed chat input box at the bottom (visible on all pages except initial view) */}
         {!isInitialView && !isChatVisible && activeView && (
-          <div className="fixed bottom-0 left-64 right-0 bg-white p-4 shadow-md z-10">
+          <div className={`fixed bottom-0 right-0 bg-white p-4 shadow-md z-10 transition-all duration-300
+            ${isMobile 
+              ? 'left-0' 
+              : isSidebarExpanded ? 'left-64' : 'left-12'}`}
+          >
             <ChatInput onMessageSent={(isClosing, dynamicView) => {
               // Enhanced callback to guarantee the chat becomes visible
               if (!isClosing) {
