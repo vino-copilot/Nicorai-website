@@ -430,7 +430,7 @@ const TechStackSection = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+          <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our Technology Stack
           </h2>
           <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
@@ -525,30 +525,29 @@ const AIProcessSection = () => {
 
         <div className="flex flex-col items-center">
           {processSteps.map((step, index) => (
-            <React.Fragment key={step.title}>
-              <motion.div
-                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="flex items-start gap-6 max-w-3xl"
-              >
-                <div className="flex flex-col items-center">
-                  <div className={`w-12 h-12 rounded-full ${step.color} flex items-center justify-center shadow-lg`}>
-                    {step.icon}
-                  </div>
-                  {index < processSteps.length - 1 && (
-                    <div className="w-1 h-16 bg-gray-200 my-2"></div>
-                  )}
+            <motion.div
+              key={step.title}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="flex w-full max-w-3xl mb-6"
+            >
+              <div className="flex flex-col items-center mr-6">
+                <div className={`w-12 h-12 rounded-full ${step.color} flex items-center justify-center shadow-lg`}>
+                  {step.icon}
                 </div>
-                <div className="flex-1 bg-white p-6 rounded-xl shadow-md border border-gray-100 mb-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {index + 1}. {step.title}
-                  </h3>
-                  <p className="text-gray-600">{step.description}</p>
-                </div>
-              </motion.div>
-            </React.Fragment>
+                {index < processSteps.length - 1 && (
+                  <div className="w-1 h-16 bg-gray-200 my-2"></div>
+                )}
+              </div>
+              <div className="flex-1 bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {index + 1}. {step.title}
+                </h3>
+                <p className="text-gray-600">{step.description}</p>
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -562,7 +561,6 @@ const WhatWeveDonePage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     <div className="min-h-screen bg-white">
       <CaseStudiesHero />
       <FeaturedProjects />
-      <ClientSuccessMetrics />
       <TestimonialsSection />
     </div>
   );
@@ -589,10 +587,10 @@ const CaseStudiesHero = () => {
             <Briefcase size={14} className="mr-2" />
             Case Studies
           </div>
-          <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6" style={{ fontFamily: "Arial, Helvetica, sans-serif", lineHeight: "48px", letterSpacing: "-1.2px", fontWeight: 700 }}>
+          <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
             Our AI Success Stories
           </h1>
-          <p className="text-xl text-gray-600" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "20px", lineHeight: "32.5px" }}>
+          <p className="text-xl text-gray-600 leading-relaxed">
             Explore our portfolio of AI and ML solutions that have transformed businesses across industries.
           </p>
         </motion.div>
@@ -612,10 +610,8 @@ const CaseStudiesHero = () => {
                     <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
                     <span className="text-sm font-medium text-gray-600">Featured Case Study</span>
                   </div>
-                  <h2 className="text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "36px", fontWeight: 700, letterSpacing: "-0.9px", lineHeight: "40px" }}>
-                    AI-Powered Predictive Maintenance
-                  </h2>
-                  <p className="text-gray-600 mb-6" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "16px", lineHeight: "24px" }}>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">AI-Powered Predictive Maintenance</h3>
+                  <p className="text-gray-600 mb-6">
                     We developed a machine learning system that predicts equipment failures for a manufacturing company,
                     reducing downtime by 37% and saving millions in maintenance costs.
                   </p>
@@ -727,7 +723,7 @@ const FeaturedProjects = () => {
   };
 
   return (
-    <section className="py-20 bg-white relative">
+    <section className="py-16 bg-gradient-to-b from-white relative to-purple-50">
       <div className="absolute inset-0 bg-grid-pattern"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -738,10 +734,10 @@ const FeaturedProjects = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-bold text-gray-900 tracking-tight" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "36px", fontWeight: 700, letterSpacing: "-0.9px", lineHeight: "40px" }}>
+          <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Featured AI Projects
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "20px", lineHeight: "32.5px" }}>
+          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
             Our work spans across industries, showcasing the versatility and power of our AI solutions
           </p>
         </motion.div>
@@ -755,7 +751,7 @@ const FeaturedProjects = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
-              className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md transition-all duration-300 flex flex-col h-full"
+              className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md transition-all duration-300"
             >
               <div className={`bg-gradient-to-r ${colorMap[project.color]} h-48 relative overflow-hidden`}>
                 <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-[size:16px_16px]"></div>
@@ -768,16 +764,12 @@ const FeaturedProjects = () => {
                   <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${bgColorMap[project.color]} mb-2`}>
                     {project.category}
                   </div>
-                  <h3 className="text-xl font-semibold text-white" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "20px", fontWeight: 600, lineHeight: "28px" }}>
-                    {project.title}
-                  </h3>
+                  <h3 className="text-2xl font-bold">{project.title}</h3>
                 </div>
               </div>
 
-              <div className="p-6 flex flex-col flex-1">
-                <p className="text-gray-600 mb-6" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "16px", lineHeight: "24px" }}>
-                  {project.description}
-                </p>
+              <div className="p-6">
+                <p className="text-gray-600 mb-6">{project.description}</p>
 
                 <div className="flex flex-wrap gap-2 mb-6">
                   {project.tags.map(tag => (
@@ -796,16 +788,14 @@ const FeaturedProjects = () => {
                   ))}
                 </div>
 
-                <div className="mt-auto">
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="w-full py-2 bg-gray-900 text-white rounded-lg shadow-sm flex items-center justify-center text-sm font-medium"
-                  >
-                    View Project Details
-                    <ChevronRight size={16} className="ml-1" />
-                  </motion.button>
-                </div>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full py-2 bg-gray-900 text-white rounded-lg shadow-sm flex items-center justify-center text-sm font-medium"
+                >
+                  View Project Details
+                  <ChevronRight size={16} className="ml-1" />
+                </motion.button>
               </div>
             </motion.div>
           ))}
@@ -815,60 +805,12 @@ const FeaturedProjects = () => {
   );
 };
 
-const ClientSuccessMetrics = () => {
-  const metrics = [
-    { value: "$42M+", label: "Revenue Generated", icon: <LineChart className="w-6 h-6" /> },
-    { value: "86%", label: "Avg. Efficiency Boost", icon: <Zap className="w-6 h-6" /> },
-    { value: "74", label: "Enterprise Clients", icon: <Briefcase className="w-6 h-6" /> },
-    { value: "25+", label: "Industries Served", icon: <Globe className="w-6 h-6" /> }
-  ];
-
-  return (
-    <section className="py-16 bg-gradient-to-b from-white to-purple-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl font-bold text-gray-900 tracking-tight" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "36px", fontWeight: 700, letterSpacing: "-0.9px", lineHeight: "40px" }}>
-            Transformative Results
-          </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "20px", lineHeight: "32.5px" }}>
-            We measure our success by the tangible outcomes we deliver for our clients
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {metrics.map((metric, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white rounded-2xl shadow-md border border-purple-100 p-6 text-center"
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
-                {metric.icon}
-              </div>
-              <div className="text-3xl font-bold text-gray-900 mb-1">{metric.value}</div>
-              <div className="text-sm text-gray-600">{metric.label}</div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
 
 const TestimonialsSection = () => {
   const testimonials = [
     {
       content: "NicorAI's predictive analytics solution completely transformed our inventory management. We've seen a 22% increase in sales and significantly reduced overstock issues.",
-      author: "Sarah robbing",
+      author: "Sarah Johnson",
       title: "CTO, RetailPlus Inc.",
       image: "👩‍💼"
     },
@@ -891,7 +833,7 @@ const TestimonialsSection = () => {
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-indigo-100/30 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-purple-100/30 rounded-full filter blur-3xl"></div>
-
+ 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -907,7 +849,7 @@ const TestimonialsSection = () => {
             Success stories from organizations that have partnered with us
           </p>
         </motion.div>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
@@ -1417,11 +1359,11 @@ const TeamSection = () => {
       color: "from-rose-500 to-red-600"
     }
   ];
-
+ 
   return (
     <section className="py-20 bg-gradient-to-b from-white to-indigo-50 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern"></div>
-
+ 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1437,7 +1379,7 @@ const TeamSection = () => {
             Meet the experts behind our AI innovations
           </p>
         </motion.div>
-
+ 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {team.map((member, index) => (
             <motion.div
