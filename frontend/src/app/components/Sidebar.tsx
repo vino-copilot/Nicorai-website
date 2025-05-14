@@ -142,6 +142,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
     if (onToggle) {
       onToggle(newExpandedState);
     }
+    
+    // For debugging
+    console.log("Toggle sidebar:", newExpandedState, "Mobile:", isMobile);
   };
 
   // Check if we're on a mobile device
@@ -150,7 +153,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   // Handle window resize to detect mobile
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768); // 768px is typical md breakpoint
+      const isMobileView = window.innerWidth < 768; // 768px is typical md breakpoint
+      setIsMobile(isMobileView);
+      console.log("Mobile detection:", isMobileView, window.innerWidth);
     };
     
     // Initial check
@@ -164,15 +169,17 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
     };
   }, []);
 
-  // Auto-collapse on mobile initially
+  // Auto-collapse on mobile initially - only on first render
   useEffect(() => {
     if (isMobile) {
+      console.log("Mobile detected, collapsing sidebar");
       setIsExpanded(false);
       if (onToggle) {
         onToggle(false);
       }
     }
-  }, [isMobile, onToggle]);
+  // Empty dependency array ensures this only runs once on mount
+  }, []);
 
   return (
     <>
@@ -180,17 +187,19 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
       {isExpanded && isMobile && (
         <div 
           className="fixed inset-0 bg-black/50 z-40" 
-          onClick={() => toggleSidebar()}
+          onClick={toggleSidebar}
+          style={{ touchAction: 'none' }}
         ></div>
       )}
 
       {/* Sidebar */}
       <div 
-        className={`fixed top-0 left-0 h-screen z-50 transition-all duration-300 flex flex-col
-          ${isExpanded ? 'w-64' : 'w-12'} 
+        className={`fixed top-0 left-0 h-screen transition-all duration-300 flex flex-col
+          ${isExpanded ? 'w-64 z-[90]' : 'w-12 z-50'} 
           ${isExpanded ? 'bg-white border-r border-gray-100' : isMobile ? 'bg-white' : 'bg-white border-r border-gray-100'}
           ${!isExpanded && isMobile ? '-translate-x-full' : 'translate-x-0'}
         `}
+        style={{ willChange: 'transform', maxWidth: isMobile ? '80%' : 'none' }}
       >
         {/* Only render sidebar content if expanded or on desktop */}
         {(isExpanded || !isMobile) && (
@@ -404,15 +413,25 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
       
       {/* Mobile toggle button - always visible when on mobile and sidebar is collapsed */}
       {isMobile && !isExpanded && (
-        <button
-          onClick={toggleSidebar}
-          className="fixed top-4 left-4 bg-white border border-gray-200 rounded-full p-2 shadow-lg z-50 focus:outline-none"
-          aria-label="Expand sidebar"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-600">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
+        <div className="fixed top-0 left-0 z-[100] p-4">
+          <button
+            onClick={() => {
+              console.log("Mobile button clicked, current state:", isExpanded);
+              // Force expanded state to true
+              setIsExpanded(true);
+              if (onToggle) {
+                onToggle(true);
+              }
+              console.log("After click, state set to:", true);
+            }}
+            className="bg-white border border-gray-200 rounded-full p-2 shadow-lg focus:outline-none hover:bg-blue-50"
+            aria-label="Expand sidebar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-blue-600">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          </button>
+        </div>
       )}
     </>
   );
