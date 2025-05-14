@@ -755,7 +755,7 @@ const FeaturedProjects = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
-              className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md transition-all duration-300"
+              className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md transition-all duration-300 flex flex-col h-full"
             >
               <div className={`bg-gradient-to-r ${colorMap[project.color]} h-48 relative overflow-hidden`}>
                 <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-[size:16px_16px]"></div>
@@ -765,19 +765,19 @@ const FeaturedProjects = () => {
                   </div>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${bgColorMap[project.color]} mb-2`}>
+                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-[14px] leading-5 font-medium ${bgColorMap[project.color]} mb-2`}>
                     {project.category}
                   </div>
                   <h3 className="text-2xl font-bold">{project.title}</h3>
                 </div>
               </div>
 
-              <div className="p-6">
+              <div className="p-6 flex flex-col flex-1">
                 <p className="text-gray-600 mb-6">{project.description}</p>
 
                 <div className="flex flex-wrap gap-2 mb-6">
                   {project.tags.map(tag => (
-                    <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                    <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-[14px] leading-5 font-medium">
                       {tag}
                     </span>
                   ))}
@@ -787,19 +787,21 @@ const FeaturedProjects = () => {
                   {project.metrics.map((metric, i) => (
                     <div key={i} className="bg-gray-50 rounded-lg p-3 text-center">
                       <div className="text-2xl font-bold text-gray-800">{metric.value}</div>
-                      <div className="text-xs text-gray-600">{metric.label}</div>
+                      <div className="text-[14px] leading-5 text-gray-600">{metric.label}</div>
                     </div>
                   ))}
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="w-full py-2 bg-gray-900 text-white rounded-lg shadow-sm flex items-center justify-center text-sm font-medium"
-                >
-                  View Project Details
-                  <ChevronRight size={16} className="ml-1" />
-                </motion.button>
+                <div className="mt-auto">
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full py-2 bg-gray-900 text-white rounded-lg shadow-sm flex items-center justify-center text-sm font-medium"
+                  >
+                    View Project Details
+                    <ChevronRight size={16} className="ml-1" />
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -849,7 +851,7 @@ const TestimonialsSection = () => {
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "36px", fontWeight: 700, letterSpacing: "-0.9px", lineHeight: "40px" }}>
             What Our Clients Say
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "20px", lineHeight: "32.5px" }}>
+          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "20px", lineHeight: "28px" }}>
             Success stories from organizations that have partnered with us
           </p>
         </motion.div>
