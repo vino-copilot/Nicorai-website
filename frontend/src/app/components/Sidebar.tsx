@@ -296,7 +296,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
             <div className={`${isExpanded ? 'p-4 border-t border-gray-200 mt-2' : 'p-2 mt-4'} flex-1 overflow-y-auto sidebar-scroll`}>
               {isExpanded && (
                 <div className="flex justify-between items-center mb-3 px-4">
-                  <h2 className="font-semibold text-gray-800">Recent Chats</h2>
+                  <h2 className="font-semibold text-gray-800">Recent Chat</h2>
                   {chatHistory.length > 0 && (
                     <button 
                       onClick={() => {
