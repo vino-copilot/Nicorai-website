@@ -102,7 +102,11 @@ const n8nRequestBody = {
         if (redisHealthy) {
             try {
                 const hasValidContent = transformedResponse.content &&
-                    (transformedResponse.content.text || transformedResponse.content.viewSpec);
+                    (transformedResponse.content.text ||
+                        transformedResponse.content.viewSpec ||
+                        transformedResponse.content.viewType ||
+                        transformedResponse.content.output || // ✅ your case
+                        transformedResponse.content.data);
  
                 if (hasValidContent) {
                     await redisClient.set(cacheKey, JSON.stringify(transformedResponse), {
