@@ -190,6 +190,10 @@ export default function Home() {
   // Handle sidebar expansion state change
   const handleSidebarToggle = (expanded: boolean) => {
     setIsSidebarExpanded(expanded);
+    // Force a re-render of the main content area
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 300); // Match the duration of the sidebar transition
   };
 
   // Check if we're on a mobile device
@@ -235,7 +239,8 @@ export default function Home() {
       <div className={`flex-1 h-screen overflow-hidden flex flex-col relative transition-all duration-300 
         ${isMobile 
           ? isSidebarExpanded ? 'ml-0' : 'ml-0' 
-          : isSidebarExpanded ? 'ml-64' : 'ml-12'}`}
+          : isSidebarExpanded ? 'ml-62' : 'ml-20'}`}
+        style={{ willChange: 'transform' }}
       >
         {/* Render active view */}
         {activeView && (
@@ -290,7 +295,7 @@ export default function Home() {
           <div className={`fixed bottom-0 right-0 bg-white p-4 shadow-md z-10 transition-all duration-300
             ${isMobile 
               ? 'left-0' 
-              : isSidebarExpanded ? 'left-64' : 'left-12'}`}
+              : isSidebarExpanded ? 'left-62' : 'left-20'}`}
           >
             <ChatInput 
               isChatExplicitlyClosed={isChatExplicitlyClosed}

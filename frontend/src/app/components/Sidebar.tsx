@@ -2,12 +2,21 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import apiService, { ChatSession } from '../services/api';
+import { Briefcase, CheckSquare, Mail, Users, Sparkles } from 'lucide-react';
 
 interface SidebarProps {
   onNavClick: (view: string) => void;
   activeView: string | null;
   onToggle?: (expanded: boolean) => void;
 }
+
+// Add this utility function at the top level, before the Sidebar component
+const isMobileDevice = () => {
+  if (typeof window !== 'undefined') {
+    return window.innerWidth < 768;
+  }
+  return false;
+};
 
 // Custom CSS for the logo text to match the pixelated style
 const logoTextStyle = {
@@ -29,6 +38,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(isMobileDevice());
+
+  // Notify parent about initial sidebar state
+  useEffect(() => {
+    if (onToggle) {
+      onToggle(isExpanded);
+    }
+  }, []);
 
   // Fetch chat history when component mounts or when localStorage changes
   useEffect(() => {
@@ -60,11 +78,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   }, []);
 
   const navItems = [
-    { id: 'what-we-do', label: 'What We Do' },
-    { id: 'what-weve-done', label: 'What We\'ve Done' },
-    { id: 'connect', label: 'Connect' },
-    { id: 'us', label: 'Us' },
-    { id: 'inspiration', label: 'Our Inspiration' },
+    { id: 'what-we-do', label: 'What We Do', icon: Briefcase },
+    { id: 'what-weve-done', label: "What We've Done", icon: CheckSquare },
+    { id: 'connect', label: 'Connect', icon: Mail },
+    { id: 'us', label: 'Us', icon: Users },
+    { id: 'inspiration', label: 'Our Inspiration', icon: Sparkles },
   ];
 
   const handleNavClick = (id: string) => {
@@ -84,6 +102,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
       detail: { chatId, messages: currentMessages }
     });
     window.dispatchEvent(chatChangeEvent);
+
+    // Ensure sidebar state is properly communicated when selecting chat
+    if (onToggle) {
+      onToggle(isExpanded);
+    }
   };
 
   // Format the date for display in the sidebar
@@ -147,14 +170,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
     console.log("Toggle sidebar:", newExpandedState, "Mobile:", isMobile);
   };
 
-  // Check if we're on a mobile device
-  const [isMobile, setIsMobile] = useState(false);
-  
-  // Handle window resize to detect mobile
+  // Update the mobile detection useEffect
   useEffect(() => {
     const checkIfMobile = () => {
-      const isMobileView = window.innerWidth < 768; // 768px is typical md breakpoint
+      const isMobileView = window.innerWidth < 768;
       setIsMobile(isMobileView);
+      setIsLoading(false); // Set loading to false after initial check
       console.log("Mobile detection:", isMobileView, window.innerWidth);
     };
     
@@ -177,6 +198,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
       if (onToggle) {
         onToggle(false);
       }
+    } else {
+      // Ensure desktop starts with proper expanded state
+      if (onToggle) {
+        onToggle(true);
+      }
     }
   // Empty dependency array ensures this only runs once on mount
   }, []);
@@ -194,111 +220,110 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
       {/* Sidebar */}
       <div 
-        className={`fixed top-0 left-0 h-screen transition-all duration-300 flex flex-col
-          ${isExpanded ? 'w-64 z-[90]' : 'w-12 z-50'} 
-          ${isExpanded ? 'bg-white border-r border-gray-100' : isMobile ? 'bg-white' : 'bg-white border-r border-gray-100'}
-          ${!isExpanded && isMobile ? '-translate-x-full' : 'translate-x-0'}
-        `}
-        style={{ willChange: 'transform', maxWidth: isMobile ? '80%' : 'none' }}
+        className={`fixed top-0 left-0 h-screen flex flex-col bg-white shadow-lg transition-all duration-300
+          ${isExpanded ? 'w-62' : 'w-20'} 
+          border-r border-gray-100 z-[80]
+          ${!isExpanded && isMobile ? '-translate-x-full opacity-0' : 'translate-x-0 opacity-100'}
+          ${isLoading ? 'invisible' : 'visible'}`}
       >
-        {/* Only render sidebar content if expanded or on desktop */}
-        {(isExpanded || !isMobile) && (
+        {/* Only render sidebar content if not loading */}
+        {!isLoading && (
           <>
-            {/* Logo with toggle button positioned relative to it */}
-            <div className="relative">
-              <div className={`p-4 h-[58px] flex items-center ${!isExpanded ? 'justify-center' : ''}`}>
-                {/* Only show logo when expanded or on mobile */}
-                {(isExpanded || isMobile) && (
-                  <div 
-                    className={`flex items-center gap-2 cursor-pointer ${!isExpanded ? 'justify-center' : ''}`} 
+            {/* Hamburger Toggle Button - now at the top right corner */}
+            <div className="flex flex-row justify-end items-center pt-4 pb-2 px-4">
+              <button
+                onClick={toggleSidebar}
+                className="bg-white rounded-full p-2 focus:outline-none hover:bg-blue-100 z-50"
+                aria-label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+              >
+                {isExpanded ? (
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="6" y1="6" x2="22" y2="22" stroke="#222" strokeWidth="2.2" strokeLinecap="round" />
+                    <line x1="22" y1="6" x2="6" y2="22" stroke="#222" strokeWidth="2.2" strokeLinecap="round" />
+                  </svg>
+                ) : (
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="6" y1="9" x2="22" y2="9" stroke="#222" strokeWidth="2.2" strokeLinecap="round" />
+                    <line x1="6" y1="14" x2="22" y2="14" stroke="#222" strokeWidth="2.2" strokeLinecap="round" />
+                    <line x1="6" y1="19" x2="22" y2="19" stroke="#222" strokeWidth="2.2" strokeLinecap="round" />
+                  </svg>
+                )}
+              </button>
+            </div>
+
+            {/* Logo/Profile Section - now directly below the hamburger button */}
+            <div 
+              className="flex flex-col items-center border-b border-gray-100 cursor-pointer"
+              onClick={() => {
+                // Reset to initial view
+                const chatChangeEvent = new CustomEvent('chatChanged', { 
+                  detail: { chatId: null, messages: [] }
+                });
+                window.dispatchEvent(chatChangeEvent);
+                
+                // Clear active view and ensure chat is visible
+                onNavClick('');
+                
+                // Create a new chat when clicking logo
+                const newChatId = apiService.createNewChat();
+                
+                // Notify components about the new chat
+                const newChatEvent = new CustomEvent('chatChanged', { 
+                  detail: { chatId: newChatId, messages: [] }
+                });
+                window.dispatchEvent(newChatEvent);
+                
+                // On mobile, close the sidebar after navigation
+                if (isMobile) {
+                  toggleSidebar();
+                }
+              }}
+            >
+              <Image
+                src="/images/nicorai-logo-black.svg"
+                alt="NicorAI Logo"
+                width={isExpanded ? 56 : 40}
+                height={isExpanded ? 56 : 40}
+                className="rounded-full object-contain transition-all duration-300 hover:opacity-80"
+                priority
+              />
+              {isExpanded && (
+                <span className="mt-2 text-lg text-gray-900 hover:text-blue-600 transition-colors" style={{ fontFamily: "var(--font-press-start-2p)" }}>NicorAI</span>
+              )}
+            </div>
+
+            {/* Menu Items */}
+            <nav className="flex flex-col items-center mt-4 w-full">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
                     onClick={() => {
-                      // Reset to initial view by dispatching a chatChanged event with empty messages
-                      const chatChangeEvent = new CustomEvent('chatChanged', { detail: { chatId: null, messages: [] } });
-                      window.dispatchEvent(chatChangeEvent);
-                      
-                      // On mobile, close the sidebar after navigation
+                      handleNavClick(item.id);
                       if (isMobile) {
                         toggleSidebar();
                       }
                     }}
+                    className={`flex items-center w-full px-4 py-3 my-1 rounded-lg transition-colors
+                      ${activeView === item.id ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'}
+                      ${isExpanded ? 'justify-start' : 'justify-center'}
+                    `}
                   >
-                    <Image 
-                      src="/images/nicor-logo-black-removebg_without_text.png" 
-                      alt="NicorAI Logo" 
-                      width={isExpanded ? 48 : 32} 
-                      height={isExpanded ? 48 : 32} 
-                      className="object-contain"
-                      priority
-                    />
-                    {isExpanded && <h1 className="pixelify-text" style={logoTextStyle}>NicorAI</h1>}
-                  </div>
-                )}
-                
-                {/* Show toggle button in the center when collapsed on desktop */}
-                {!isExpanded && !isMobile && (
-                  <button
-                    onClick={toggleSidebar}
-                    className="bg-white rounded-full p-2 focus:outline-none hover:bg-blue-100"
-                    aria-label="Expand sidebar"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-600">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                    </svg>
+                    <Icon className="w-6 h-6" />
+                    {isExpanded && <span className="ml-4 text-base font-medium">{item.label}</span>}
                   </button>
-                )}
-              </div>
-              
-              {/* Toggle button for desktop - positioned at the border - only when expanded */}
-              {!isMobile && isExpanded && (
-                <button
-                  onClick={toggleSidebar}
-                  className="absolute -right-4 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-full p-1.5 shadow-md z-50 focus:outline-none hover:bg-blue-100"
-                  aria-label="Collapse sidebar"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-blue-600">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                  </svg>
-                </button>
-              )}
-            </div>
+                );
+              })}
+            </nav>
 
-            {/* Navigation Links - only visible when expanded */}
-            {isExpanded && (
-              <nav className="p-4">
-                <ul className="space-y-2">
-                  {navItems.map((item) => (
-                    <li key={item.id}>
-                      <button
-                        onClick={() => {
-                          handleNavClick(item.id);
-                          
-                          // On mobile, close the sidebar after navigation
-                          if (isMobile) {
-                            toggleSidebar();
-                          }
-                        }}
-                        className={`w-full text-left px-4 py-2 rounded-lg transition-colors font-semibold ${
-                          activeView === item.id
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                        }`}
-                        style={navItemStyle}
-                      >
-                        {item.label}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            )}
-
-            {/* Recent Chats Section - only visible when expanded except for New Chat button */}
+            {/* Recent Chats Section */}
             <div className={`${isExpanded ? 'p-4 border-t border-gray-200 mt-2' : 'p-2 mt-4'} flex-1 overflow-y-auto sidebar-scroll`}>
               {isExpanded && (
-                <div className="flex justify-between items-center mb-3 px-4">
+                <div className="flex justify-between items-center mb-3">
                   <h2 className="font-semibold text-gray-800">Recent Chat</h2>
                   {chatHistory.length > 0 && (
-                    <button 
+                    <button
                       onClick={() => {
                         if (window.confirm('Clear all chat history? This cannot be undone.')) {
                           apiService.clearAllChats();
@@ -309,7 +334,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                           setCurrentChatId(newChatId);
                           
                           // Notify other components
-                          const chatChangeEvent = new CustomEvent('chatChanged', { 
+                          const chatChangeEvent = new CustomEvent('chatChanged', {
                             detail: { chatId: newChatId, messages: [] }
                           });
                           window.dispatchEvent(chatChangeEvent);
@@ -326,21 +351,21 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
               <ul className="space-y-2">
                 {/* New Chat Button styled like a chat history item */}
                 <li className="group">
-                  <div 
+                  <div
                     onClick={() => {
                       // Always create a new chat when clicking the New Chat button
                       const newChatId = apiService.createNewChat();
                       setCurrentChatId(newChatId);
-                      
+                     
                       // Notify other components
-                      const chatChangeEvent = new CustomEvent('chatChanged', { 
+                      const chatChangeEvent = new CustomEvent('chatChanged', {
                         detail: { chatId: newChatId, messages: [] }
                       });
                       window.dispatchEvent(chatChangeEvent);
-                      
+                     
                       // Reset to initial view
                       onNavClick('');
-                      
+                     
                       // On mobile, close the sidebar after creating a new chat
                       if (isMobile && isExpanded) {
                         toggleSidebar();
@@ -367,7 +392,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                     {chatHistory.length > 0 ? (
                       chatHistory.map((chat) => (
                         <li key={chat.id} className="group">
-                          <div 
+                          <div
                             onClick={() => {
                               handleSelectChat(chat.id);
                               
@@ -416,7 +441,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
       </div>
       
       {/* Mobile toggle button - always visible when on mobile and sidebar is collapsed */}
-      {isMobile && !isExpanded && (
+      {isMobile && !isExpanded && !isLoading && (
         <div className="fixed top-0 left-0 z-[100] p-4">
           <button
             onClick={() => {

@@ -898,14 +898,14 @@ const ConnectPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
  
 const ContactHero = () => {
   return (
-    <section className="relative pt-10 pb-16 overflow-hidden">
+    <section className="relative pt-4 pb-6 overflow-hidden"> {/* Reduced padding */}
       {/* Background elements */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white bg-grid-pattern"></div>
         <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-teal-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float"></div>
         <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-teal-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
       </div>
- 
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -915,10 +915,10 @@ const ContactHero = () => {
         >
           <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-teal-50 to-blue-50 text-teal-700 border border-teal-100 mb-4">
             <MessageSquare size={14} className="mr-2" />
-            Get in Touch
+            Let's connect
           </div>
           <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
-            Let's Connect and Discuss Your AI Solutions
+            Let's Connect !
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
             Ready to transform your business with AI? Reach out to our team to explore how NicorAI can help you achieve your goals.
@@ -950,12 +950,12 @@ const ContactForm = () => {
   };
  
   return (
-    <section className="py-12 relative">
+    <section className="py-6 relative"> {/* Reduced vertical padding */}
       {/* Background pattern - positioned beneath the form */}
       <div className="absolute inset-0 bg-grid-pattern z-0"></div>
      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex justify-center items-center min-h-[80vh]">
+        <div className="flex justify-center items-center min-h-[40vh]"> {/* Reduced min-height */}
           {/* Contact Form */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -1096,7 +1096,7 @@ const OfficeLocations = () => {
   ];
  
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-blue-50 relative overflow-hidden">
+    <section className="py-10 bg-gradient-to-b from-white to-blue-50 relative overflow-hidden"> {/* Reduced vertical padding */}
       {/* Background pattern */}
       <div className="absolute inset-0 bg-grid-pattern z-0"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-teal-100/20 rounded-full filter blur-3xl z-0"></div>
