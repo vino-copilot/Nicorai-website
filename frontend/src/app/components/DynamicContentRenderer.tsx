@@ -1,5 +1,7 @@
 import React from 'react';
 import { DynamicView } from '../services/api';
+import DynamicResponseRenderer from './DynamicResponseRenderer';
+import DynamicScreen from './DynamicScreen';
 
 interface DynamicContentRendererProps {
   view: DynamicView;
@@ -20,8 +22,12 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
         return renderList(view.data);
       case 'custom':
         return renderCustom(view.data);
+      case 'dynamicScreen':
+        return <DynamicScreen content={view.data} />;
       default:
-        return <div>Unsupported view type</div>;
+        const exhaustiveCheck: never = view.type;
+        console.warn(`Unsupported view type: ${exhaustiveCheck}`);
+        return <div>Unsupported view type: {view.type}</div>;
     }
   };
 
@@ -272,6 +278,15 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
     // Set up title
     const title = customData.title || 'Information';
     
+    // Check for output string format from backend
+    if (customData.output) {
+      return (
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <DynamicResponseRenderer output={customData.output} />
+        </div>
+      );
+    }
+    
     // Check for paragraph/content format
     if (customData.content) {
       return (
@@ -321,7 +336,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
   };
 
   return (
-    <div className="rounded-2xl shadow-sm w-full mb-4 overflow-hidden bg-blue-100">
+    <div className="rounded-2xl shadow-sm w-full mb-4 max-h-full overflow-hidden bg-blue-100">
       <div className="flex justify-between items-center p-4 border-b border-blue-200">
         <h2 className="text-lg font-semibold text-gray-800">
           {view.data.title || 'Dynamic Content'}
@@ -336,7 +351,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
           </svg>
         </button>
       </div>
-      <div className="p-4 max-h-110 overflow-auto text-gray-800">
+      <div className="p-4 overflow-auto text-gray-800">
         {renderContent()}
       </div>
     </div>

@@ -145,7 +145,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
         <button
           type="submit"
           disabled={isLoading}
-          className={`absolute right-3 bottom-3 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${
+          className={`absolute right-3 mb-1 bottom-3 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${
             isLoading ? 'opacity-50' : ''
           }`}
         >

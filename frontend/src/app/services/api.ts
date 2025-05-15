@@ -22,7 +22,7 @@ export interface ChatSession {
 
 export interface DynamicView {
   id: string;
-  type: 'chart' | 'card' | 'table' | 'list' | 'custom';
+  type: 'chart' | 'card' | 'table' | 'list' | 'custom' | 'dynamicScreen';
   data: any;
 }
 
@@ -709,13 +709,17 @@ class ApiService {
     try {
       // For the console-visible format where responseType is 'view'
       if (responseData.responseType === 'view' && responseData.content) {
-        // Handle both content as an object with viewSpec or direct data format
-        const viewType = responseData.content.viewType || 'custom'; // Default to custom if not specified
+        let viewType = 'custom'; // Default
+        if (responseData.content.viewType) {
+          viewType = responseData.content.viewType;
+        } else if (responseData.content.output && typeof responseData.content.output === 'string') {
+          // If we have an output string and no specific viewType, use 'dynamicScreen'
+          viewType = 'dynamicScreen';
+        }
         
-        // Create a dynamic view from the API-provided spec
         return {
           id: `dynamic-${Date.now()}`,
-          type: viewType as any, // Cast to our supported types
+          type: viewType as any, 
           data: responseData.content.viewSpec || responseData.content
         };
       }
