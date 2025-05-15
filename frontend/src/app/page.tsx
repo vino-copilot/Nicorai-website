@@ -295,7 +295,7 @@ export default function Home() {
           <div className={`fixed bottom-0 right-0 bg-white p-4 shadow-md z-10 transition-all duration-300
             ${isMobile 
               ? 'left-0' 
-              : isSidebarExpanded ? 'left-62' : 'left-20'}`}
+              : isSidebarExpanded ? 'left-0' : 'left-0'}`}
           >
             <ChatInput 
               isChatExplicitlyClosed={isChatExplicitlyClosed}

@@ -124,7 +124,7 @@ const AIHeroSection = () => {
   }, []);
 
   return (
-    <section className={`relative overflow-hidden ${isMobile ? 'pt-4 pb-4' : 'pt-10 pb-12'}`}>
+    <section className={`relative overflow-hidden ${isMobile ? 'py-8' : 'py-16'}`}>
       {/* Animated background - only show on desktop/tablet */}
       {!isMobile && (
         <div className="absolute inset-0 z-0">
@@ -135,26 +135,36 @@ const AIHeroSection = () => {
       )}
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-center gap-12">
-          <div className="flex-1 max-w-2xl">
+        <div className={`flex flex-col lg:flex-row items-center gap-12${isMobile ? ' items-center justify-center' : ''}`}> 
+          <div className={`flex-1 max-w-2xl${isMobile ? ' w-full flex flex-col items-center' : ''}`}> 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100 mb-4">
-                <Cpu size={14} className="mr-2" />
-                AI-Powered Solutions
-              </div>
-              <h1 className="text-5xl font-bold text-gray-900 tracking-tight">
+              {/* Center the banner on mobile */}
+              {isMobile ? (
+                <div className="flex justify-center w-full">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100 mb-4">
+                    <Cpu size={14} className="mr-2" />
+                    AI-Powered Solutions
+                  </div>
+                </div>
+              ) : (
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100 mb-4">
+                  <Cpu size={14} className="mr-2" />
+                  AI-Powered Solutions
+                </div>
+              )}
+              <h1 className={`text-5xl font-bold text-gray-900 tracking-tight${isMobile ? ' text-center' : ''}`}> 
                 Transform Your Business With <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">AI-Powered Solutions</span>
               </h1>
-              <p className="mt-4 text-xl text-gray-600 leading-relaxed">
+              <p className={`mt-4 text-xl text-gray-600 leading-relaxed${isMobile ? ' text-center' : ''}`}> 
                 We leverage cutting-edge artificial intelligence and machine learning to deliver
                 powerful solutions that drive growth, efficiency, and innovation.
               </p>
-              <div className="mt-8 flex gap-4">
+              <div className={`mt-8 flex gap-4${isMobile ? ' justify-center' : ''}`}> 
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -333,7 +343,7 @@ const AIServicesSection = () => {
   ];
 
   return (
-    <section className={`${isMobile ? 'py-8' : 'py-20'} bg-white relative overflow-hidden`}>
+    <section className={`${isMobile ? 'py-8' : 'py-16'} bg-white relative overflow-hidden`}>
       <div className="absolute inset-0 bg-grid-pattern"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -430,7 +440,7 @@ const TechStackSection = () => {
   ];
 
   return (
-    <section className={`${isMobile ? 'py-6' : 'py-16'} bg-gradient-to-b from-white to-blue-50`}>
+    <section className={`${isMobile ? 'py-8' : 'py-16'} bg-gradient-to-b from-white to-blue-50`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -519,7 +529,7 @@ const AIProcessSection = () => {
   ];
 
   return (
-    <section className={`${isMobile ? 'py-8' : 'py-20'} bg-blue-50 relative overflow-hidden`}>
+    <section className={`${isMobile ? 'py-8' : 'py-16'} bg-blue-50 relative overflow-hidden`}>
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/50 rounded-full filter blur-3xl"></div>
       <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-100/50 rounded-full filter blur-3xl"></div>
@@ -571,6 +581,7 @@ const AIProcessSection = () => {
     </section>
   );
 };
+
 
 
 // WHAT WE'VE DONE PAGE
@@ -1691,6 +1702,7 @@ const InspirationCommitment = () => (
         <p className="text-xl text-gray-700 mb-4 leading-relaxed">At NicorAI, we honor Rashevsky's legacy by embracing his methodical approach and unwavering commitment to scientific thinking. By focusing on these principles, we unlock AI's transformative potential and create solutions with lasting impact. We dedicate our efforts to building systems worthy of his legacy.</p>
       </motion.div>
     </div>
+    
   </section>
 );
 
