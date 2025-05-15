@@ -115,14 +115,24 @@ const WhatWeDoPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
 
 const AIHeroSection = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
-    <section className="relative overflow-hidden pt-10 pb-12">
-      {/* Animated background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white bg-grid-pattern"></div>
-        <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full filter blur-3xl animate-float"></div>
-        <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-indigo-100/20 to-blue-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
-      </div>
+    <section className={`relative overflow-hidden ${isMobile ? 'pt-4 pb-4' : 'pt-10 pb-12'}`}>
+      {/* Animated background - only show on desktop/tablet */}
+      {!isMobile && (
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white bg-grid-pattern"></div>
+          <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full filter blur-3xl animate-float"></div>
+          <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-indigo-100/20 to-blue-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
+        </div>
+      )}
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center gap-12">
@@ -153,7 +163,6 @@ const AIHeroSection = () => {
                   Explore Our Services
                   <ChevronRight size={18} className="ml-2" />
                 </motion.button>
-                
               </div>
             </motion.div>
           </div>
@@ -165,49 +174,36 @@ const AIHeroSection = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative w-full h-96 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50 shadow-xl">
-                {/* Nodes animation */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <NetworkAnimation />
+              {/* Animated/floating elements only on desktop/tablet */}
+              {!isMobile && (
+                <div className="relative w-full h-96 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50 shadow-xl">
+                  {/* Nodes animation */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <NetworkAnimation />
+                  </div>
+                  {/* Floating element */}
+                  <motion.div
+                    animate={{ y: [0, -15, 0] }}
+                    transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                    className="absolute top-1/4 left-1/4 w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center"
+                  >
+                    <Brain size={32} className="text-blue-600" />
+                  </motion.div>
+                  <motion.div
+                    animate={{ y: [0, 15, 0] }}
+                    transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
+                    className="absolute top-2/4 right-1/4 w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center"
+                  >
+                    <Cpu size={32} className="text-indigo-600" />
+                  </motion.div>
+                  <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-blue-100/50">
+                    <h3 className="font-semibold text-gray-900">AI Technologies</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Machine Learning • NLP • Neural Networks • Computer Vision
+                    </p>
+                  </div>
                 </div>
-
-                {/* Floating element */}
-                <motion.div
-                  animate={{
-                    y: [0, -15, 0],
-                  }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 4,
-                    ease: "easeInOut"
-                  }}
-                  className="absolute top-1/4 left-1/4 w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center"
-                >
-                  <Brain size={32} className="text-blue-600" />
-                </motion.div>
-
-                <motion.div
-                  animate={{
-                    y: [0, 15, 0],
-                  }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 5,
-                    ease: "easeInOut",
-                    delay: 1
-                  }}
-                  className="absolute top-2/4 right-1/4 w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center"
-                >
-                  <Cpu size={32} className="text-indigo-600" />
-                </motion.div>
-
-                <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-blue-100/50">
-                  <h3 className="font-semibold text-gray-900">AI Technologies</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Machine Learning • NLP • Neural Networks • Computer Vision
-                  </p>
-                </div>
-              </div>
+              )}
             </motion.div>
           </div>
         </div>
@@ -244,7 +240,6 @@ const NetworkAnimation = () => {
             />
           );
         })}
-
         <motion.circle
           cx="160"
           cy="160"
@@ -262,7 +257,6 @@ const NetworkAnimation = () => {
           }}
         />
       </g>
-
       <g className="connections" stroke="#3b82f6" strokeOpacity="0.2" strokeWidth="1">
         {Array.from({ length: 15 }).map((_, i) => {
           const x1 = 160 + Math.cos(i * (Math.PI * 2) / 15) * 120;
@@ -291,6 +285,14 @@ const NetworkAnimation = () => {
 };
 
 const AIServicesSection = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const services = [
     {
       title: "AI Strategy Consulting",
@@ -331,7 +333,7 @@ const AIServicesSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-white relative overflow-hidden">
+    <section className={`${isMobile ? 'py-8' : 'py-20'} bg-white relative overflow-hidden`}>
       <div className="absolute inset-0 bg-grid-pattern"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -405,6 +407,14 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ title, description, icon, col
 };
 
 const TechStackSection = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const techItems = [
     { name: "TensorFlow", category: "Framework" },
     { name: "PyTorch", category: "Framework" },
@@ -420,7 +430,7 @@ const TechStackSection = () => {
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-b from-white to-blue-50">
+    <section className={`${isMobile ? 'py-6' : 'py-16'} bg-gradient-to-b from-white to-blue-50`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -467,6 +477,14 @@ const TechStackSection = () => {
 };
 
 const AIProcessSection = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const processSteps = [
     {
       title: "Discovery",
@@ -501,7 +519,7 @@ const AIProcessSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-blue-50 relative overflow-hidden">
+    <section className={`${isMobile ? 'py-8' : 'py-20'} bg-blue-50 relative overflow-hidden`}>
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/50 rounded-full filter blur-3xl"></div>
       <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-100/50 rounded-full filter blur-3xl"></div>
