@@ -3,11 +3,12 @@ import apiService, { DynamicView } from '../services/api';
 
 interface ChatInputProps {
   onMessageSent?: (isClosing?: boolean, dynamicView?: DynamicView) => void;
+  isChatExplicitlyClosed?: boolean;
 }
 
 type NotificationStatus = 'none' | 'sending' | 'success' | 'error';
 
-const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyClosed = false }) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<{status: NotificationStatus, message: string}>({
@@ -29,9 +30,24 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent }) => {
       message: 'Sending message...'
     });
     
-    // Create a new chat when sending from the fixed input box
-    const newChatId = apiService.createNewChat();
-    apiService.setCurrentChat(newChatId);
+    // Create a new chat if:
+    // 1. There's no current chat ID, or
+    // 2. The current chat has no messages, or
+    // 3. The chat was explicitly closed (this is the key condition)
+    const currentChatId = apiService.getCurrentChatId();
+    const currentMessages = currentChatId ? apiService.getCurrentChatMessages() : [];
+    
+    // Always create a new chat when sending from a tab view after explicitly closing the chat
+    if (!currentChatId || currentMessages.length === 0 || isChatExplicitlyClosed) {
+      console.log('Creating new chat because:', 
+        !currentChatId ? 'no current chat' : 
+        currentMessages.length === 0 ? 'current chat has no messages' : 
+        'chat was explicitly closed');
+      const newChatId = apiService.createNewChat();
+      apiService.setCurrentChat(newChatId);
+    } else {
+      console.log('Using existing chat:', currentChatId);
+    }
     
     try {
       // Use the API service to get a response
@@ -39,7 +55,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent }) => {
       
       // Dispatch a chat changed event to update any listening components
       const chatChangeEvent = new CustomEvent('chatChanged', { 
-        detail: { chatId: newChatId, messages: apiService.getCurrentChatMessages() }
+        detail: { chatId: apiService.getCurrentChatId(), messages: apiService.getCurrentChatMessages() }
       });
       window.dispatchEvent(chatChangeEvent);
       

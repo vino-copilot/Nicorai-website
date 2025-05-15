@@ -356,7 +356,7 @@ const Chat: React.FC<ChatProps> = ({
     if (!content.trim()) return;
     
     setInputValue('');
-    setIsLoading(true);
+    setIsLoading(true); // Set loading state before sending message
     setError(null);
     
     // Always create and set a new chat if there are no messages (new view or new chat)
@@ -409,11 +409,11 @@ const Chat: React.FC<ChatProps> = ({
       if (aiResponse.dynamicView) {
         console.log('Dynamic view found in AI response:', aiResponse.dynamicView);
 
-      // Get the ID of the latest AI message for associating with dynamic view
+        // Get the ID of the latest AI message for associating with dynamic view
         const updatedMessages = apiService.getCurrentChatMessages();
-      const latestAiMessage = updatedMessages
-        .filter(m => m.sender === 'ai')
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+        const latestAiMessage = updatedMessages
+          .filter(m => m.sender === 'ai')
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
 
         if (latestAiMessage) {
           // Generate a unique view ID specifically for this message
@@ -429,7 +429,7 @@ const Chat: React.FC<ChatProps> = ({
           storeViewMessageAssociation(latestAiMessage.id, uniqueViewId, uniqueView);
           
           // Show the view
-            setDynamicViewMessageId(latestAiMessage.id);
+          setDynamicViewMessageId(latestAiMessage.id);
             
           // Notify parent to hide chat and show view
           if (onMessageSent) {
@@ -445,9 +445,9 @@ const Chat: React.FC<ChatProps> = ({
       setTimeout(scrollToBottom, 100);
     } catch (error) {
       console.error('Error sending message:', error);
-      setIsLoading(false);
       setError("Sorry, we're having trouble connecting to the AI. Please try again.");
     } finally {
+      // Always set loading to false when done, whether successful or not
       setIsLoading(false);
     }
   };
@@ -871,7 +871,7 @@ const Chat: React.FC<ChatProps> = ({
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask any question about NicorAi..."
+              placeholder="Ask any question about NicorAI..."
               className="w-full p-9 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-25 placeholder-gray-500 text-gray-900"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -882,14 +882,43 @@ const Chat: React.FC<ChatProps> = ({
             />
             <button
               type="submit"
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700"
+              disabled={isLoading}
+              className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-              </svg>
+              {isLoading ? (
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                </svg>
+              )}
             </button>
           </div>
         </form>
+        
+        {/* Loading indicator for initial view */}
+        {isLoading && (
+          <div className="flex justify-start mb-8">
+            <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden">
+              <img 
+                src="/nicor-ai-avatar.png" 
+                alt="NicorAI" 
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="bg-blue-100 rounded-2xl rounded-tl-none px-4 py-3 flex items-center max-w-[80%]">
+              <span className="text-gray-600 mr-2">Thinking</span>
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="space-y-3">
           <p className="text-sm font-medium text-gray-700">Frequently asked questions:</p>
@@ -1022,10 +1051,11 @@ const Chat: React.FC<ChatProps> = ({
               />
             </div>
             <div className="bg-blue-100 rounded-2xl rounded-tl-none px-4 py-3 flex items-center max-w-[80%]">
+              <span className="text-gray-600 mr-2">Thinking</span>
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
             </div>
           </div>
@@ -1073,7 +1103,7 @@ const Chat: React.FC<ChatProps> = ({
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask any question about NicorAi..."
+              placeholder="Ask any question about NicorAI..."
               className="w-full p-4 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-14 placeholder-gray-500 text-gray-900"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -1085,7 +1115,7 @@ const Chat: React.FC<ChatProps> = ({
             <button
               type="submit"
               disabled={isLoading}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700"
+              className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isLoading ? (
                 <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

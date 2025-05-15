@@ -20,7 +20,7 @@ const logoTextStyle = {
 
 // Custom CSS for the navigation items to use Pixelify Sans font
 const navItemStyle = {
-  fontFamily: "var(--Sixtyfour Convergence-sans-serif)",
+  fontFamily: "var(--font-pixelify-sans)",
   letterSpacing: "0.02em",
   fontWeight: 400,
 };
@@ -252,10 +252,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
               {!isMobile && isExpanded && (
                 <button
                   onClick={toggleSidebar}
-                  className="absolute -right-3 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-full p-1 shadow-md z-50 focus:outline-none hover:bg-blue-100"
+                  className="absolute -right-4 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-full p-1.5 shadow-md z-50 focus:outline-none hover:bg-blue-100"
                   aria-label="Collapse sidebar"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-blue-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-blue-600">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                   </svg>
                 </button>
@@ -328,6 +328,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                 <li className="group">
                   <div 
                     onClick={() => {
+                      // Always create a new chat when clicking the New Chat button
                       const newChatId = apiService.createNewChat();
                       setCurrentChatId(newChatId);
                       
@@ -337,12 +338,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                       });
                       window.dispatchEvent(chatChangeEvent);
                       
+                      // Reset to initial view
+                      onNavClick('');
+                      
                       // On mobile, close the sidebar after creating a new chat
                       if (isMobile && isExpanded) {
                         toggleSidebar();
                       }
                     }}
-                    className={`flex items-start ${isExpanded ? 'p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer border border-dashed border-gray-300' : 'p-1 justify-center'}`}
+                    className={`flex items-start ${isExpanded ? 'p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer border border-dashed border-gray-300' : 'p-0.5 justify-center'}`}
                   >
                     <div className={`flex-1 min-w-0 flex ${isExpanded ? 'items-center' : 'justify-center'}`}>
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`${isExpanded ? 'w-4 h-4 mr-2' : 'w-6 h-6'} text-blue-600`}>

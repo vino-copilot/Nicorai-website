@@ -16,6 +16,7 @@ export default function Home() {
   const [closedDynamicView, setClosedDynamicView] = useState<DynamicView | null>(null);
   const [fullscreenDynamicView, setFullscreenDynamicView] = useState<DynamicView | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isChatExplicitlyClosed, setIsChatExplicitlyClosed] = useState(false);
 
   // On initial load, always show the initial landing page (isInitialView = true), regardless of chat history
   useEffect(() => {
@@ -41,6 +42,8 @@ export default function Home() {
         setActiveView(null);
         setIsChatVisible(true);
         setIsInitialView(false);
+        // Reset the explicit close state when showing chat
+        setIsChatExplicitlyClosed(false);
       }
     };
     
@@ -53,35 +56,21 @@ export default function Home() {
   }, []);
 
   // Function to handle sending a message in the chat
-  // This is now also used to handle closing the chat and showing dynamic views
-  const handleMessageSent = (isClosing = false, dynamicView?: DynamicView, isClosed = false) => {
-    if (!isClosing) {
-      // Normal message sending behavior
-      setHasMessages(true);
-      setIsInitialView(false);
-      setIsChatVisible(true); // Always show chat when a message is sent
-      
-      // Store the dynamic view if provided
+  const handleMessageSent = (isClosing?: boolean, dynamicView?: DynamicView, isClosed?: boolean) => {
+    // Update the hasMessages state
+    setHasMessages(true);
+    
+    // If this is a closing action, handle it
+    if (isClosing) {
+      // If the message included a dynamic view, show it
       if (dynamicView) {
+        // If the view was closed, store it so we can show the "Show response" button
         if (isClosed) {
           setClosedDynamicView(dynamicView);
           setPendingDynamicView(null);
-          setFullscreenDynamicView(null);
-        } else {
-          setPendingDynamicView(dynamicView);
-          setClosedDynamicView(null);
-          setFullscreenDynamicView(null);
+          return;
         }
-      }
-      
-      // If a view is active, hide it
-      if (activeView) {
-        setActiveView(null);
-      }
-    } else {
-      // Special case: If we have a dynamicView to show, create a temporary view for it
-      if (dynamicView && !isClosed) {
-        // When we get a dynamicView with isClosing=true, it means we want to show the view in full screen
+        
         // Store the view in our fullscreen state
         setFullscreenDynamicView(dynamicView);
         
@@ -101,6 +90,8 @@ export default function Home() {
         setIsInitialView(true);
         setIsChatVisible(true); // Keep chat visible but in initial view
         setFullscreenDynamicView(null);
+        // Mark chat as explicitly closed
+        setIsChatExplicitlyClosed(true);
       } 
       // If a tab was selected previously, make it visible again
       else if (activeView) {
@@ -109,16 +100,45 @@ export default function Home() {
         if (activeView === 'dynamic-view') {
           setFullscreenDynamicView(null);
         }
+        // Mark chat as explicitly closed
+        setIsChatExplicitlyClosed(true);
       }
       // Otherwise if we're already in initial view, just hide the chat
       else {
         setIsChatVisible(false);
         setFullscreenDynamicView(null);
+        // Mark chat as explicitly closed
+        setIsChatExplicitlyClosed(true);
       }
       
       // Don't clear closed dynamic view when closing chat - we want to keep it
       // so the "Show response" button can be clicked later
       setPendingDynamicView(null);
+    } else {
+      // Normal message sending behavior - not closing
+      setIsInitialView(false);
+      setIsChatVisible(true); // Always show chat when a message is sent
+      
+      // Reset the explicit close state when sending a message
+      setIsChatExplicitlyClosed(false);
+      
+      // Store the dynamic view if provided
+      if (dynamicView) {
+        if (isClosed) {
+          setClosedDynamicView(dynamicView);
+          setPendingDynamicView(null);
+          setFullscreenDynamicView(null);
+        } else {
+          setPendingDynamicView(dynamicView);
+          setClosedDynamicView(null);
+          setFullscreenDynamicView(null);
+        }
+      }
+      
+      // If a view is active, hide it
+      if (activeView) {
+        setActiveView(null);
+      }
     }
   };
 
@@ -127,7 +147,6 @@ export default function Home() {
     // Store previous active view
     const prevActiveView = activeView;
     
-    // Update the active view
     setActiveView(view);
     
     // If this is the first tab click, mark as no longer in initial view
@@ -144,6 +163,10 @@ export default function Home() {
       // when the user returns to the chat
       // Only clear pending dynamic view
       setPendingDynamicView(null);
+      
+      // Important: Don't reset isChatExplicitlyClosed when navigating to a tab
+      // This ensures that if the chat was closed using the close button,
+      // it remains marked as closed when navigating between tabs
     }
   };
 
@@ -251,6 +274,9 @@ export default function Home() {
                 // Show chat view
                 setIsChatVisible(true);
                 setIsInitialView(true); // Show initial welcome view for the new chat
+                
+                // Reset the explicit close state when starting a new chat
+                setIsChatExplicitlyClosed(false);
               }}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
@@ -266,7 +292,9 @@ export default function Home() {
               ? 'left-0' 
               : isSidebarExpanded ? 'left-64' : 'left-12'}`}
           >
-            <ChatInput onMessageSent={(isClosing, dynamicView) => {
+            <ChatInput 
+              isChatExplicitlyClosed={isChatExplicitlyClosed}
+              onMessageSent={(isClosing, dynamicView) => {
               // Enhanced callback to guarantee the chat becomes visible
               if (!isClosing) {
                 setIsChatVisible(true);
