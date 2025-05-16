@@ -52,7 +52,7 @@ const LogoBackground = () => {
       <motion.img
         src="/images/nicorai-logo-black.svg"
         alt="Nicorai Logo Watermark"
-        className="w-1/4 max-w-[120px] md:max-w-[180px] lg:max-w-[220px] opacity-5 md:opacity-10 drop-shadow-2xl"
+        className="w-1/4 max-w-[140px] md:max-w-[200px] lg:max-w-[240px] opacity-4 md:opacity-4 drop-shadow-2xl"
         style={{
           rotateX,
           rotateY,
@@ -60,7 +60,7 @@ const LogoBackground = () => {
         }}
         draggable={false}
         animate={{ y: [0, -20, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
       />
     </div>
   );
