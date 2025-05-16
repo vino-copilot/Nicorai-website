@@ -2,7 +2,7 @@
 // Connects to the real API Gateway
 
 // Configuration
-const API_GATEWAY_URL = 'http://localhost:4000';
+const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_URL;
 const DEVELOPMENT_MODE = true; // Set to false in production
 
 // Types
