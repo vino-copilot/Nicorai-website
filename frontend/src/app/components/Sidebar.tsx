@@ -280,8 +280,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                 <Image
                   src="/images/nicorai-logo-black.svg"
                   alt="NicorAI Logo"
-                  width={isExpanded ? 56 : 40}
-                  height={isExpanded ? 56 : 40}
+                  width={isExpanded ? 56 : 35}
+                  height={isExpanded ? 56 : 35}
                   className="rounded-full object-contain transition-all duration-300 hover:opacity-80"
                   priority
                 />
