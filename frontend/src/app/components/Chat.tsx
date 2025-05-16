@@ -1125,7 +1125,7 @@ const Chat: React.FC<ChatProps> = ({
             <button
               type="submit"
               disabled={isLoading}
-              className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`absolute right-3 mb-2 bottom-3 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isLoading ? (
                 <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
