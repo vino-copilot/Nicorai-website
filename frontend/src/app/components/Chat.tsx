@@ -44,7 +44,7 @@ const Chat: React.FC<ChatProps> = ({
   const faqSuggestions = [
     "How can AI help my business?",
     "What services does NicorAI offer?",
-    "What are the technologies used by nicorAI? Show in a card",
+    "What are the technologies used by nicorAI?",
     "What industries do you specialize in?"
   ];
 
@@ -817,6 +817,17 @@ const Chat: React.FC<ChatProps> = ({
 
   const renderInitialView = () => (
     <div className={`flex flex-col items-center justify-center h-full ${isMobile ? 'px-4' : ''}`}>
+      {/* Show logo at the top for mobile view */}
+      {isMobile && (
+        <div className="w-full flex justify-center mt-30 mb-2">
+          <img
+            src="/images/nicorai-logo-black.svg"
+            alt="NicorAI Logo"
+            className="h-30 w-auto"
+            style={{ maxWidth: '70%' }}
+          />
+        </div>
+      )}
       {/* Show Close button if we're forced to show initial view but have messages */}
       {!isInitialView && messages.length > 0 && (
         <div className="absolute top-0 right-0 p-3">
@@ -834,7 +845,6 @@ const Chat: React.FC<ChatProps> = ({
           </button>
         </div>
       )}
-      
       <div className={`w-full max-w-lg`}>
         <div className="mb-8 text-center">
           <h2 className="text-4xl font-bold text-gray-800 mb-2">Welcome to <span className="text-blue-600 text-3xl p-1 inline-block" style={{ fontFamily: "var(--font-press-start-2p)", transform: "translateY(4px)" }}>NicorAI</span></h2>
@@ -864,7 +874,7 @@ const Chat: React.FC<ChatProps> = ({
             </div>
           </div>
         )}
-        
+        {/* landing page chat input */}
         <form onSubmit={handleSubmit} className="mb-8">
           <div className="relative">
             <textarea
@@ -1096,14 +1106,14 @@ const Chat: React.FC<ChatProps> = ({
         <div ref={messagesEndRef} />
       </div>
       {/* Input area - Updated to match the initial view styling */}
-      <div className="p-4">
+      <div className="p-3">
         <form onSubmit={handleSubmit}>
           <div className="relative">
             <textarea
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask any question about NicorAI..."
+              placeholder="Ask any question about NicorAI.."
               className="w-full p-4 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-14 placeholder-gray-500 text-gray-900"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -1147,4 +1157,4 @@ const Chat: React.FC<ChatProps> = ({
   );
 };
 
-export default Chat; 
+export default Chat;

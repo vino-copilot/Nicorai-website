@@ -256,7 +256,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
               {/* Logo/Profile Section */}
               <div 
-                className="flex flex-col items-center border-b border-gray-100 cursor-pointer"
+                className="flex flex-col items-center cursor-pointer"
                 onClick={() => {
                   // Reset to initial view first
                   onNavClick('');
@@ -458,7 +458,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
             className="bg-white border border-gray-200 rounded-full p-2 shadow-lg focus:outline-none hover:bg-blue-50"
             aria-label="Expand sidebar"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-blue-600">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-blue-600">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
           </button>
