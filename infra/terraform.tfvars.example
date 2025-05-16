@@ -1,0 +1,11 @@
+# Example Terraform configuration values
+# Rename to terraform.tfvars and update with your actual values
+
+aws_region          = "us-east-1"
+frontend_bucket_name = "nicorai-frontend"
+eb_application_name  = "nicorai-api"
+eb_environment_name  = "nicorai-api-prod"
+
+# You'll need to create a VPC and subnets first or use existing ones
+vpc_id               = "vpc-0123456789abcdef0"
+subnet_ids           = ["subnet-0123456789abcdef0", "subnet-0123456789abcdef1"]
