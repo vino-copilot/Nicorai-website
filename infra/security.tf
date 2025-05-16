@@ -1,29 +1,4 @@
-# Security group for Redis
-resource "aws_security_group" "redis" {
-  name        = "redis-security-group"
-  description = "Allow Redis traffic from Elastic Beanstalk"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port   = 6379
-    to_port     = 6379
-    protocol    = "tcp"
-    description = "Allow Redis traffic from Elastic Beanstalk"
-    # In production, restrict this to the Elastic Beanstalk security group
-    cidr_blocks = ["10.0.0.0/16"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "redis-sg"
-  }
-}
+# Using external Redis service, no security group for Redis needed
 
 # IAM role for Elastic Beanstalk
 resource "aws_iam_role" "eb_service_role" {

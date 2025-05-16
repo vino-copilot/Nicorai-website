@@ -18,7 +18,4 @@ output "eb_environment_url" {
   value       = aws_elastic_beanstalk_environment.api_gateway_prod.endpoint_url
 }
 
-output "redis_endpoint" {
-  description = "The endpoint of the Redis instance"
-  value       = aws_elasticache_cluster.redis.cache_nodes.0.address
-}
+# No Redis output since using external Redis service

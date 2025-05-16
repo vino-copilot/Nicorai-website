@@ -1,4 +1,4 @@
-# AWS Cost Estimate for MVP Setup
+# AWS Cost Estimate for MVP Setup (With External Redis)
 
 This document provides an updated cost breakdown for the AWS services used in the MVP version of the application.
 
@@ -17,9 +17,8 @@ This document provides an updated cost breakdown for the AWS services used in th
 | Service | Configuration | Estimated Cost |
 |---------|--------------|----------------|
 | Elastic Beanstalk | t4g.micro single instance | $8.03 |
-| ElastiCache (Redis) | cache.t1.micro | $8.78 |
 | Data Transfer | 50 GB | $4.50 |
-| **Backend Subtotal** | | **$21.31** |
+| **Backend Subtotal** | | **$12.53** |
 
 ### Other Services
 | Service | Configuration | Estimated Cost |
@@ -28,12 +27,13 @@ This document provides an updated cost breakdown for the AWS services used in th
 | CloudWatch | Basic monitoring | $0.00 |
 | **Other Subtotal** | | **$0.50** |
 
-### Total Estimated Monthly Cost: **$26.27**
+### Total Estimated Monthly Cost: **$17.49**
 
 ## Cost Savings
 - **Original estimate**: $51.33/month
-- **MVP estimate**: $26.27/month
-- **Monthly savings**: $25.06 (49% reduction)
+- **MVP estimate with AWS Redis**: $26.27/month
+- **MVP estimate with external Redis**: $17.49/month
+- **Monthly savings**: $33.84 (66% reduction from original)
 
 ## Key Changes in MVP Infrastructure
 1. **Removed Load Balancer** (~$16.20/month savings)

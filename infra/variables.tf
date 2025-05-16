@@ -22,11 +22,16 @@ variable "eb_environment_name" {
 }
 
 variable "subnet_ids" {
-  description = "The subnet IDs for the ElastiCache Redis instance"
+  description = "The subnet IDs for resources that need subnet placement"
   type        = list(string)
 }
 
 variable "vpc_id" {
   description = "The VPC ID for the security groups"
+  type        = string
+}
+
+variable "external_redis_url" {
+  description = "URL of the external Redis service"
   type        = string
 }

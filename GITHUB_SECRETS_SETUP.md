@@ -16,7 +16,7 @@ The following secrets need to be set in your GitHub repository settings for the 
 ## Backend (Elastic Beanstalk - Single Instance)
 - `EB_APPLICATION_NAME`: Your Elastic Beanstalk application name (e.g., nicorai-api)
 - `EB_ENVIRONMENT_NAME`: Your Elastic Beanstalk environment name (e.g., nicorai-api-prod)
-- `REDIS_URL`: URL for your ElastiCache Redis instance
+- `REDIS_URL`: URL for your external Redis service
 - `N8N_WEBHOOK_URL`: URL for your N8N webhook
 
 ## How to Set Up GitHub Secrets
@@ -40,7 +40,8 @@ terraform output
 # cloudfront_distribution_id = "E1A2B3C4D5E6F7"
 # cloudfront_domain_name = "d1234abcdef.cloudfront.net"
 # eb_environment_url = "nicorai-api-prod.us-east-1.elasticbeanstalk.com"
-# redis_endpoint = "nicorai-redis.abcdef.0001.use1.cache.amazonaws.com"
 ```
+
+Note: For the `REDIS_URL` secret, use the URL from your external Redis provider.
 
 Use these outputs to set the corresponding GitHub secrets.

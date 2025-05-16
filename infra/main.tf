@@ -139,28 +139,11 @@ resource "aws_elastic_beanstalk_environment" "api_gateway_prod" {
     name      = "NODE_ENV"
     value     = "production"
   }
-
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "REDIS_URL"
-    value     = aws_elasticache_cluster.redis.cache_nodes.0.address
+    value     = var.external_redis_url
   }
 }
 
-# ElastiCache Redis - using smallest instance type for MVP
-resource "aws_elasticache_subnet_group" "redis" {
-  name       = "redis-subnet-group"
-  subnet_ids = var.subnet_ids
-}
-
-resource "aws_elasticache_cluster" "redis" {
-  cluster_id           = "nicorai-redis"
-  engine               = "redis"
-  node_type            = "cache.t1.micro"  # Smallest instance size for MVP
-  num_cache_nodes      = 1
-  parameter_group_name = "default.redis7"
-  engine_version       = "7.1"
-  port                 = 6379
-  subnet_group_name    = aws_elasticache_subnet_group.redis.name
-  security_group_ids   = [aws_security_group.redis.id]
-}
+# Using external Redis service, no AWS ElastiCache resources needed

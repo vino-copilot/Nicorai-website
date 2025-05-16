@@ -1,4 +1,4 @@
-name: Maintenance and Status Check
+name: Maintenance and Status Check (External Redis)
 
 on:
   schedule:
@@ -27,18 +27,20 @@ jobs:
           
           if [[ "$HEALTH" != "Ok" && "$HEALTH" != "Info" ]]; then
             echo "::warning::Elastic Beanstalk environment is not healthy: $HEALTH"
-          fi
-      
-      - name: Check ElastiCache status
+          fi      - name: Check external Redis configuration
         run: |
-          CACHE_STATUS=$(aws elasticache describe-cache-clusters \
-            --cache-cluster-id nicorai-redis \
-            --query 'CacheClusters[0].CacheClusterStatus' --output text)
+          echo "Checking external Redis configuration in Elastic Beanstalk..."
           
-          echo "ElastiCache Status: $CACHE_STATUS"
+          # Check if Redis URL is configured in environment
+          ENV_VARS=$(aws elasticbeanstalk describe-configuration-settings \
+            --application-name ${{ secrets.EB_APPLICATION_NAME }} \
+            --environment-name ${{ secrets.EB_ENVIRONMENT_NAME }} \
+            --query "ConfigurationSettings[0].OptionSettings[?Namespace=='aws:elasticbeanstalk:application:environment']")
           
-          if [[ "$CACHE_STATUS" != "available" ]]; then
-            echo "::warning::ElastiCache cluster is not available: $CACHE_STATUS"
+          if echo "$ENV_VARS" | grep -q "REDIS_URL"; then
+            echo "Redis URL is properly configured in Elastic Beanstalk environment."
+          else
+            echo "::warning::Redis URL might not be configured in Elastic Beanstalk environment."
           fi
       
       - name: Check S3 bucket
