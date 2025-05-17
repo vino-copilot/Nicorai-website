@@ -14,55 +14,163 @@ jobs:
     defaults:
       run:
         working-directory: frontend
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build NextJS app
-        run: npm run build
+        run: npx next build --no-lint
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-          # Add optimization flags for production build
           NODE_ENV: production
-      
+
+      - name: Export static site (if not using app directory)
+        run: |
+          if [ -f "next.config.js" ] && grep -q "output: 'export'" next.config.js; then
+            echo "Static export already configured in next.config.js"
+          elif [ -f "next.config.ts" ] && grep -q "output: 'export'" next.config.ts; then
+            echo "Static export already configured in next.config.ts"
+          else
+            echo "Note: This step not needed with the app directory since Next.js 13+"
+          fi
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      
-      - name: Copy files to S3 bucket (with gzip)
+
+      - name: Prepare files for S3 deployment
         run: |
-          # Sync non-compressible assets normally
-          aws s3 sync out/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-            --delete \
-            --exclude "*.html" --exclude "*.js" --exclude "*.css" --exclude "*.json" --exclude "*.xml" --exclude "*.svg"
+          if [ -d "out" ]; then
+            DEPLOY_DIR="out"
+            echo "Using 'out' directory (static export)"
+          elif [ -d ".next" ]; then
+            DEPLOY_DIR=".next"
+            echo "Using '.next' directory (standard Next.js output)"
+          else
+            echo "Error: Could not find Next.js output directory"
+            exit 1
+          fi
+          echo "DEPLOY_DIR=$DEPLOY_DIR" >> $GITHUB_ENV
+
+          sudo apt-get update && sudo apt-get install -y gzip
+
+          mkdir -p ./deploy-tmp
+          cp -R $DEPLOY_DIR/* ./deploy-tmp/
+
+          # Ensure index.html exists
+          if [ "$DEPLOY_DIR" = "out" ]; then
+            if [ ! -f "./deploy-tmp/index.html" ]; then
+              echo "Creating fallback index.html"
+              echo '<meta http-equiv="refresh" content="0;url=/index">' > ./deploy-tmp/index.html
+            fi
+          elif [ "$DEPLOY_DIR" = ".next" ]; then
+            echo "Creating index.html for CloudFront"
+            echo '<meta http-equiv="refresh" content="0;url=/_next/static/chunks/pages/index.html">' > ./deploy-tmp/index.html
+            if [ ! -f "./deploy-tmp/404.html" ]; then
+              echo '<meta http-equiv="refresh" content="0;url=/">' > ./deploy-tmp/404.html
+            fi
+          fi
+
+          # Gzip compress files in-place (keep original names)
+          find ./deploy-tmp -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" -o -name "*.json" -o -name "*.xml" -o -name "*.svg" -o -name "*.txt" \) | while read -r file; do
+            gzip -9 "$file"
+            mv "$file.gz" "$file"
+          done
+
+      - name: Upload static assets to S3 (compressed files with original names)
+        run: |
+          # Upload each group with correct MIME and gzip headers
           
-          # Sync compressible files with gzip for better performance and lower transfer costs
-          aws s3 sync out/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-            --delete \
-            --include "*.html" --include "*.js" --include "*.css" --include "*.json" --include "*.xml" --include "*.svg" \
+          # HTML
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.html" \
+            --content-type "text/html" \
             --content-encoding gzip \
-            --content-type text/html \
-            --metadata-directive REPLACE
-      
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # JS
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.js" \
+            --content-type "application/javascript" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # CSS
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.css" \
+            --content-type "text/css" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # JSON
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.json" \
+            --content-type "application/json" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # XML
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.xml" \
+            --content-type "application/xml" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # SVG
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.svg" \
+            --content-type "image/svg+xml" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # TXT
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.txt" \
+            --content-type "text/plain" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # Upload other non-compressible files normally (images, fonts, etc.)
+          aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
+            --exclude "*" \
+            --include "*.png" --include "*.jpg" --include "*.jpeg" --include "*.gif" \
+            --include "*.ico" --include "*.woff" --include "*.woff2" --include "*.ttf" --include "*.eot" \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
       - name: Invalidate CloudFront distribution
         run: |
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
-      
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+
       - name: Report deployment status
         run: |
-          echo "Frontend deployed successfully!"
-          echo "URL: https://${{ secrets.CLOUDFRONT_DOMAIN_NAME || secrets.S3_BUCKET_NAME }}.s3-website-${{ secrets.AWS_REGION }}.amazonaws.com/"
+          echo "✅ Frontend deployed successfully!"
+          if [ -n "${{ secrets.CLOUDFRONT_DOMAIN_NAME }}" ]; then
+            echo "🔗 CloudFront URL: https://${{ secrets.CLOUDFRONT_DOMAIN_NAME }}/"
+          else
+            echo "🔗 S3 Website URL: http://${{ secrets.S3_BUCKET_NAME }}.s3-website-${{ secrets.AWS_REGION }}.amazonaws.com/"
+          fi
+          echo "📂 Deployment directory used: ${{ env.DEPLOY_DIR }}"

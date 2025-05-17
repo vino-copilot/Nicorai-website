@@ -1,4 +1,4 @@
-# AWS Cost Estimate for MVP Setup (With External Redis)
+# AWS Cost Estimate for MVP Setup (App Runner + External Redis)
 
 This document provides an updated cost breakdown for the AWS services used in the MVP version of the application.
 
@@ -13,12 +13,13 @@ This document provides an updated cost breakdown for the AWS services used in th
 | CloudFront | 50 GB data transfer | $4.25 |
 | **Frontend Subtotal** | | **$4.46** |
 
-### Backend Infrastructure (Cost-Optimized MVP)
+### Backend Infrastructure (App Runner)
 | Service | Configuration | Estimated Cost |
 |---------|--------------|----------------|
-| Elastic Beanstalk | t4g.micro single instance | $8.03 |
+| App Runner | 1 vCPU, 2 GB memory, 730 hours | $29.60 |
+| App Runner Compute | 50,000 requests | $0.65 |
 | Data Transfer | 50 GB | $4.50 |
-| **Backend Subtotal** | | **$12.53** |
+| **Backend Subtotal** | | **$34.75** |
 
 ### Other Services
 | Service | Configuration | Estimated Cost |
@@ -27,7 +28,7 @@ This document provides an updated cost breakdown for the AWS services used in th
 | CloudWatch | Basic monitoring | $0.00 |
 | **Other Subtotal** | | **$0.50** |
 
-### Total Estimated Monthly Cost: **$17.49**
+### Total Estimated Monthly Cost: **$39.81**
 
 ## Cost Savings
 - **Original estimate**: $51.33/month
