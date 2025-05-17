@@ -1,5 +1,6 @@
+# Use specific Node.js version - App Runner requires explicit versioning like nodejs18, nodejs16
 version: 1.0
-runtime: nodejs
+runtime: nodejs18
 build:
   commands:
     build:

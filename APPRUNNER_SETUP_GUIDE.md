@@ -1,6 +1,8 @@
 # AWS App Runner Setup Guide
 
-This guide walks you through the process of setting up the infrastructure for the NicorAI application using AWS App Runner for the backend and S3/CloudFront for the frontend.
+This guide walks 5. Configure build settings:
+   - Runtime: Node.js 18 (Important: must use exact version name "nodejs18", not generic "nodejs")
+   - Note: App Runner requires specific runtime versions (e.g., nodejs18, nodejs16) through the process of setting up the infrastructure for the NicorAI application using AWS App Runner for the backend and S3/CloudFront for the frontend.
 
 ## Prerequisites
 
@@ -48,7 +50,8 @@ If the `build` script is missing, add it to the package.json file. This is requi
 4. Select the GitHub connection you created earlier
 5. Select your repository and branch (typically main)
 6. Configure build settings:
-   - Runtime: Node.js 20
+   - Runtime: Node.js 20 (Important: must use exact version name "nodejs20", not generic "nodejs")
+   - Note: App Runner requires specific runtime versions (e.g., nodejs20, nodejs18)
    - Build command: `npm ci`
    - Start command: `node index.js`
    - Port: 4000

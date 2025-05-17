@@ -6,18 +6,17 @@ This document summarizes the changes made to migrate from Elastic Beanstalk to A
 
 ### Infrastructure (Terraform)
 - Replaced Elastic Beanstalk resources with App Runner service
-- Added IAM roles for App Runner ECR access and service execution
+- Added IAM roles for App Runner service execution
 - Updated variables and outputs to reflect App Runner settings
 
 ### CI/CD Pipeline
 - Updated GitHub Actions workflows for App Runner deployment
-- Added workflow for ECR repository creation
 - Modified maintenance checks for App Runner health monitoring
 - Updated full stack deployment workflow to use App Runner endpoints
 
-### Docker Configuration
-- Added Dockerfile for containerizing the Node.js API
+### App Runner Configuration
 - Added App Runner configuration file (apprunner.yaml)
+- Configured direct GitHub source connection for automatic deployments
 
 ### Documentation
 - Created App Runner setup guide

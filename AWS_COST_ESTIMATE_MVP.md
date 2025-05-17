@@ -19,8 +19,7 @@ This document provides an updated cost breakdown for the AWS services used in th
 | App Runner | 1 vCPU, 2 GB memory, 730 hours | $29.60 |
 | App Runner Compute | 50,000 requests | $0.65 |
 | Data Transfer | 50 GB | $4.50 |
-| ECR Storage | 1 GB | $0.10 |
-| **Backend Subtotal** | | **$34.85** |
+| **Backend Subtotal** | | **$34.75** |
 
 ### Other Services
 | Service | Configuration | Estimated Cost |

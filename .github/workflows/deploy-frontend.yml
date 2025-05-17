@@ -18,30 +18,33 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Set up Node.js
+        - name: Set up Node.js
         uses: actions/setup-node@v4
-        with:          node-version: '20'
+        with:
+          node-version: '20'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
       
       - name: Install dependencies
         run: npm ci
-        - name: Build NextJS app
+      
+      - name: Build NextJS app
         run: npx next build --no-lint
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           # Add optimization flags for production build
-          NODE_ENV: production
-      
-      - name: Export static site (if not using app directory)
+          NODE_ENV: production      - name: Export static site (if not using app directory)
         run: |
+          # Check if static export is configured (either in .js or .ts config file)
           if [ -f "next.config.js" ] && grep -q "output: 'export'" next.config.js; then
             echo "Static export already configured in next.config.js"
+          elif [ -f "next.config.ts" ] && grep -q "output: 'export'" next.config.ts; then
+            echo "Static export already configured in next.config.ts"
           else
             echo "Note: This step not needed with the app directory since Next.js 13+"
           fi
-        - name: Configure AWS credentials
+      
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -60,13 +63,14 @@ jobs:
           else
             echo "Error: Could not find Next.js output directory"
             exit 1
-          fi
-          echo "DEPLOY_DIR=$DEPLOY_DIR" >> $GITHUB_ENV
-            # Install gzip tools
+          fi          echo "DEPLOY_DIR=$DEPLOY_DIR" >> $GITHUB_ENV
+          
+          # Install gzip tools
           sudo apt-get update && sudo apt-get install -y gzip
           
           # Create a temporary directory for gzipped files
-          mkdir -p ./deploy-tmp          cp -R $DEPLOY_DIR/* ./deploy-tmp/
+          mkdir -p ./deploy-tmp
+          cp -R $DEPLOY_DIR/* ./deploy-tmp/
           
           # Ensure index.html exists for CloudFront
           if [ "$DEPLOY_DIR" = "out" ]; then
@@ -142,8 +146,7 @@ jobs:
             --content-type "application/xml" \
             --metadata-directive REPLACE \
             --no-guess-mime-type
-          
-          # SVG files
+            # SVG files
           aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
             --exclude "*" \
             --include "*.svg.gz" \
@@ -151,7 +154,8 @@ jobs:
             --content-type "image/svg+xml" \
             --metadata-directive REPLACE \
             --no-guess-mime-type
-            # TXT files
+          
+          # TXT files
           aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
             --exclude "*" \
             --include "*.txt.gz" \
@@ -173,8 +177,7 @@ jobs:
             echo "S3 Website URL: http://${{ secrets.S3_BUCKET_NAME }}.s3-website-${{ secrets.AWS_REGION }}.amazonaws.com/"
           fi
           echo "Deployment directory used: ${{ env.DEPLOY_DIR }}"
-          
-          # Optional: Print build stats if available
+            # Optional: Print build stats if available
           if [ -f ".next/build-manifest.json" ]; then
             echo "Next.js build information available in logs"
           fi

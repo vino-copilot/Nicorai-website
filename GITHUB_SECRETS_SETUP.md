@@ -14,7 +14,6 @@ The following secrets need to be set in your GitHub repository settings for the 
 - `NEXT_PUBLIC_API_URL`: URL of your API Gateway (backend)
 
 ## Backend (App Runner)
-- `ECR_REPOSITORY`: Your ECR repository name (e.g., nicorai-api-gateway)
 - `APPRUNNER_SERVICE_ARN`: The ARN of your App Runner service
 - `APPRUNNER_SERVICE_NAME`: The name of your App Runner service
 - `REDIS_URL`: URL for your external Redis service
