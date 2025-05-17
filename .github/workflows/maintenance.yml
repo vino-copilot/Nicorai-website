@@ -1,0 +1,91 @@
+name: Maintenance and Status Check (External Redis)
+
+on:
+  schedule:
+    - cron: '0 6 * * MON' # Runs at 6:00 AM every Monday
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  check-infrastructure:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Check Elastic Beanstalk health
+        run: |
+          HEALTH=$(aws elasticbeanstalk describe-environment-health \
+            --environment-name ${{ secrets.EB_ENVIRONMENT_NAME }} \
+            --attribute-names Status HealthStatus --query 'HealthStatus' --output text)
+          
+          echo "Elastic Beanstalk Environment Health: $HEALTH"
+          
+          if [[ "$HEALTH" != "Ok" && "$HEALTH" != "Info" ]]; then
+            echo "::warning::Elastic Beanstalk environment is not healthy: $HEALTH"
+          fi      - name: Check external Redis configuration
+        run: |
+          echo "Checking external Redis configuration in Elastic Beanstalk..."
+          
+          # Check if Redis URL is configured in environment
+          ENV_VARS=$(aws elasticbeanstalk describe-configuration-settings \
+            --application-name ${{ secrets.EB_APPLICATION_NAME }} \
+            --environment-name ${{ secrets.EB_ENVIRONMENT_NAME }} \
+            --query "ConfigurationSettings[0].OptionSettings[?Namespace=='aws:elasticbeanstalk:application:environment']")
+          
+          if echo "$ENV_VARS" | grep -q "REDIS_URL"; then
+            echo "Redis URL is properly configured in Elastic Beanstalk environment."
+          else
+            echo "::warning::Redis URL might not be configured in Elastic Beanstalk environment."
+          fi
+      
+      - name: Check S3 bucket
+        run: |
+          S3_EXISTS=$(aws s3api head-bucket --bucket ${{ secrets.S3_BUCKET_NAME }} 2>&1 || echo "error")
+          
+          if [[ "$S3_EXISTS" == *"error"* ]]; then
+            echo "::warning::S3 bucket check failed"
+          else
+            echo "S3 bucket is accessible"
+          fi
+      
+      - name: Check CloudFront distribution
+        run: |
+          CF_STATUS=$(aws cloudfront get-distribution \
+            --id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --query 'Distribution.Status' --output text)
+          
+          echo "CloudFront Status: $CF_STATUS"
+          
+          if [[ "$CF_STATUS" != "Deployed" ]]; then
+            echo "::warning::CloudFront distribution is not deployed: $CF_STATUS"
+          fi
+      
+      - name: Send status report
+        if: ${{ always() }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { GITHUB_REPOSITORY, GITHUB_RUN_ID } = process.env;
+            const runUrl = `https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}`;
+            
+            const body = `## Weekly Infrastructure Status Report
+            
+            | Service | Status | Details |
+            |---------|--------|---------|
+            | Workflow Run | Completed | [View Run](${runUrl}) |
+            | Date | ${new Date().toISOString()} | UTC |
+            
+            This is an automated status check of the MVP infrastructure. View the workflow run for detailed status information.`;
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Infrastructure Status Report: ${new Date().toLocaleDateString()}`,
+              body: body,
+              labels: ['status-report']
+            });
