@@ -80,11 +80,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   const navItems = [
     { id: 'what-we-do', label: 'What We Do', icon: Briefcase },
     { id: 'what-weve-done', label: "What We've Done", icon: CheckSquare },
-    { id: 'inspiration', label: 'Our Inspiration', icon: Lightbulb },
-    { id: 'research-blog', label: 'Research and Blog', icon: Sparkles },
+    { id: 'research-blog', label: 'Research', icon: Sparkles },
     { id: 'connect', label: 'Connect', icon: Mail },
     { id: 'us', label: 'Us', icon: Users },
-    
   ];
 
   const handleNavClick = (id: string) => {

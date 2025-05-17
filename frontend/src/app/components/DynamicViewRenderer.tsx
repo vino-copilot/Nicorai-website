@@ -69,8 +69,6 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
         return <ConnectPage onClose={onClose} />;
       case 'us':
         return <AboutUsPage onClose={onClose} />;
-      case 'inspiration':
-        return <InspirationPage onClose={onClose} />;
       case 'research-blog': 
         return <ResearchBlogPage onClose={onClose} />;
       default:
@@ -1322,6 +1320,30 @@ const AboutHero = () => {
           We craft immersive Augmented and Virtual Reality experiences designed to engage, educate, and transform how our clients connect with their audiences. From training simulations to virtual product demos, we use AR/VR to create innovative ways for businesses to engage their customers and stakeholders, ensuring memorable and impactful experiences.
           </p>
           <br /><br />
+          
+          {/* Legacy of Nicolas Rashevsky section */}
+          <div className="pt-10">
+            <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 border border-purple-100 mb-4">
+              <Sparkles size={14} className="mr-2" />
+              Our Inspiration
+            </div>
+            <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
+              The Legacy of <span className="text-blue-600">Nicolas Rashevsky</span>
+            </h1>
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/images/Nicolas_Rashevsky.png"
+                alt="Nicolas Rashevsky"
+                width={280}
+                height={280}
+                className="rounded-2xl shadow-lg border border-purple-100 bg-white object-cover"
+                priority
+              />
+            </div>
+            <p className="text-xl text-gray-700 mb-4 leading-relaxed">
+              At NicorAI, we believe that true innovation is built upon a foundation of groundbreaking ideas and visionary thinkers. Our journey into the world of artificial intelligence is deeply inspired by the pioneering work of Nicolas Rashevsky, a theoretical biophysicist whose ideas were far ahead of their time. Rashevsky's work wasn't just about biology; it was a profound exploration of how mathematical principles could unlock the secrets of complex systems â€" a vision that forms the core of our approach to AI today. He was, in many ways, a founding father of the AI revolution, and his legacy fuels our mission
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>
@@ -1329,6 +1351,7 @@ const AboutHero = () => {
 };
  
  
+
 const OurStory = () => {
   return (
     <section className="py-16 relative">
@@ -1344,17 +1367,13 @@ const OurStory = () => {
             <div className="relative">
               <div className="absolute -top-6 -left-6 w-full h-full rounded-2xl bg-indigo-100/50"></div>
               <div className="relative bg-white rounded-2xl overflow-hidden shadow-xl border border-indigo-100 p-8 h-full flex flex-col">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Story</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Story of Nicolas Rashevsky</h2>
                 <div className="space-y-4 text-gray-700">
                   <p>
-                    NicorAI was founded in 2019 with a vision to make artificial intelligence accessible and practical
-                    for businesses of all sizes. Our team of experts combines deep technical knowledge with
-                    business acumen to deliver AI solutions that drive real results.
+                    Nicolas Rashevsky wasn't a computer scientist in the traditional sense. Born in 1899, he was a brilliant scholar who applied the rigor of mathematics to the complexities of the human body and, in doing so, stumbled upon concepts that would become crucial to artificial intelligence. He was a polymath, straddling the worlds of mathematics, physics, and biology. In 1934, he left for Chicago and became the first professor of mathematical biophysics at the University of Chicago. He was ahead of his time, and he believed in the power of mathematics to unlock the secrets of life.
                   </p>
                   <p>
-                    We began as a small team of AI researchers and engineers passionate about the transformative
-                    potential of machine learning. Today, we've grown into a leading AI consultancy with a global
-                    presence, serving clients across industries.
+                    Rashevsky's approach was to apply mathematical modeling to biological systems, seeing patterns and structures that were previously hidden. His work on neural networks, though initially framed within the context of the human brain, laid the theoretical groundwork for the artificial neural networks that are fundamental to today's deep learning and AI systems. He co-authored the book "Mathematical Biophysics" which included the famous "Theory of the Brain" which is considered a core component of AI development, he even anticipated many technologies and challenges of the present day through his work.
                   </p>
                   <p>
                     What sets us apart is our client-centric approach. We don't just implement technology;
@@ -1579,32 +1598,6 @@ const CoreValues = () => {
             </motion.div>
           ))}
         </div>
- 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-16 bg-white rounded-2xl shadow-lg overflow-hidden border border-indigo-100"
-        >
-          <div className="p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Join Our Team</h3>
-            <p className="text-gray-700 text-center mb-8 max-w-3xl mx-auto">
-              We're always looking for talented individuals who are passionate about AI and want to make a difference.
-              Check out our open positions or send us your resume.
-            </p>
-            <div className="flex justify-center">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-medium rounded-lg shadow-md flex items-center"
-              >
-                View Open Positions
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </section>
   );
@@ -1819,7 +1812,7 @@ const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
               Insights & Articles
             </div>
             <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
-              Research & Blogs
+              Research
             </h1>
             <p className="text-xl text-gray-700 mb-4 leading-relaxed">
               Dive into our latest research, articles, and insights at the intersection of AI, technology, and innovation. Explore thought leadership inspired by pioneers like Nicolas Rashevsky.
