@@ -13,9 +13,9 @@ output "cloudfront_domain_name" {
   value       = aws_cloudfront_distribution.frontend.domain_name
 }
 
-output "eb_environment_url" {
-  description = "The URL of the Elastic Beanstalk environment"
-  value       = aws_elastic_beanstalk_environment.api_gateway_prod.endpoint_url
+output "apprunner_service_url" {
+  description = "The URL of the App Runner service"
+  value       = aws_apprunner_service.api_gateway.service_url
 }
 
 # No Redis output since using external Redis service

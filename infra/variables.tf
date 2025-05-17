@@ -9,16 +9,33 @@ variable "frontend_bucket_name" {
   type        = string
 }
 
-variable "eb_application_name" {
-  description = "The name of the Elastic Beanstalk application"
+variable "apprunner_service_name" {
+  description = "The name of the App Runner service"
   type        = string
-  default     = "nicorai-api"
+  default     = "nicorai-api-gateway"
 }
 
-variable "eb_environment_name" {
-  description = "The name of the Elastic Beanstalk environment"
+variable "github_repository_url" {
+  description = "The URL of the GitHub repository"
   type        = string
-  default     = "nicorai-api-prod"
+  default     = "https://github.com/yourusername/nicorai"
+}
+
+variable "github_branch" {
+  description = "The branch to deploy from"
+  type        = string
+  default     = "main"
+}
+
+variable "github_connection_arn" {
+  description = "The ARN of the GitHub connection in AWS"
+  type        = string
+}
+
+variable "n8n_webhook_url" {
+  description = "URL of the N8N webhook"
+  type        = string
+  default     = "https://n8n.srv810314.hstgr.cloud/webhook/chat"
 }
 
 variable "subnet_ids" {

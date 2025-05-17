@@ -13,9 +13,10 @@ The following secrets need to be set in your GitHub repository settings for the 
 - `CLOUDFRONT_DOMAIN_NAME`: The CloudFront domain name (optional, for deployment report)
 - `NEXT_PUBLIC_API_URL`: URL of your API Gateway (backend)
 
-## Backend (Elastic Beanstalk - Single Instance)
-- `EB_APPLICATION_NAME`: Your Elastic Beanstalk application name (e.g., nicorai-api)
-- `EB_ENVIRONMENT_NAME`: Your Elastic Beanstalk environment name (e.g., nicorai-api-prod)
+## Backend (App Runner)
+- `ECR_REPOSITORY`: Your ECR repository name (e.g., nicorai-api-gateway)
+- `APPRUNNER_SERVICE_ARN`: The ARN of your App Runner service
+- `APPRUNNER_SERVICE_NAME`: The name of your App Runner service
 - `REDIS_URL`: URL for your external Redis service
 - `N8N_WEBHOOK_URL`: URL for your N8N webhook
 
@@ -39,7 +40,7 @@ terraform output
 # frontend_bucket_name = "nicorai-frontend"
 # cloudfront_distribution_id = "E1A2B3C4D5E6F7"
 # cloudfront_domain_name = "d1234abcdef.cloudfront.net"
-# eb_environment_url = "nicorai-api-prod.us-east-1.elasticbeanstalk.com"
+# apprunner_service_url = "abcdef1234.us-east-1.awsapprunner.com"
 ```
 
 Note: For the `REDIS_URL` secret, use the URL from your external Redis provider.

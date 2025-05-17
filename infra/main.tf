@@ -110,39 +110,48 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 }
 
-# Elastic Beanstalk application
-resource "aws_elastic_beanstalk_application" "api_gateway" {
-  name        = var.eb_application_name
-  description = "NicorAI API Gateway Application"
-}
+# App Runner service for backend API using GitHub source connection
+resource "aws_apprunner_service" "api_gateway" {
+  service_name = var.apprunner_service_name
 
-# Elastic Beanstalk environment
-resource "aws_elastic_beanstalk_environment" "api_gateway_prod" {
-  name                = var.eb_environment_name
-  application         = aws_elastic_beanstalk_application.api_gateway.name
-  solution_stack_name = "64bit Amazon Linux 2023 v6.1.1 running Node.js 20"
-
-  setting {
-    namespace = "aws:autoscaling:launchconfiguration"
-    name      = "InstanceType"
-    value     = "t4g.micro"
+  source_configuration {
+    auto_deployments_enabled = true
+    
+    code_repository {
+      code_configuration {
+        configuration_source = "API"
+        
+        code_configuration_values {
+          runtime = "NODEJS_20"
+          build_command = "npm ci"
+          start_command = "node index.js"
+          port = "4000"
+          runtime_environment_variables = {
+            "NODE_ENV"        = "production"
+            "REDIS_URL"       = var.external_redis_url
+            "N8N_WEBHOOK_URL" = var.n8n_webhook_url
+          }
+        }
+      }
+      
+      repository_url = var.github_repository_url
+      source_code_version {
+        type = "BRANCH"
+        value = var.github_branch
+      }
+      
+      connection_arn = var.github_connection_arn
+    }
   }
-  # Single instance environment doesn't use ASG settings
-  setting {
-    namespace = "aws:elasticbeanstalk:environment"
-    name      = "EnvironmentType"
-    value     = "SingleInstance"
+  
+  instance_configuration {
+    cpu = "1 vCPU"
+    memory = "2 GB"
+    instance_role_arn = aws_iam_role.apprunner_instance_role.arn
   }
-
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "NODE_ENV"
-    value     = "production"
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "REDIS_URL"
-    value     = var.external_redis_url
+  
+  tags = {
+    Name = "nicorai-api-gateway"
   }
 }
 

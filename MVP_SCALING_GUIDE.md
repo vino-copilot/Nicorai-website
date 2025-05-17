@@ -34,36 +34,32 @@ The GitHub Actions workflows will automatically deploy your code to the infrastr
 
 ## Scaling Plan
 
-When your traffic increases beyond what a single instance can handle, follow these steps to scale:
+When your traffic increases beyond what the current App Runner configuration can handle, follow these steps to scale:
 
 ### 1. Update Terraform Configuration
 
 ```terraform
-# Change from SingleInstance to LoadBalanced
-setting {
-  namespace = "aws:elasticbeanstalk:environment"
-  name      = "EnvironmentType"
-  value     = "LoadBalanced"
+# Update App Runner configuration for higher capacity
+resource "aws_apprunner_service" "api_gateway" {
+  # ...existing config...
+  
+  instance_configuration {
+    # Increase CPU and memory
+    cpu = "2 vCPU"     # From 1 vCPU
+    memory = "4 GB"    # From 2 GB
+    
+    # Auto-scaling configuration
+    auto_scaling_configurations_arn = aws_apprunner_auto_scaling_configuration_version.api_scaling.arn
+  }
 }
 
-# Re-enable auto-scaling
-setting {
-  namespace = "aws:autoscaling:asg"
-  name      = "MinSize"
-  value     = "2"
-}
-
-setting {
-  namespace = "aws:autoscaling:asg"
-  name      = "MaxSize" 
-  value     = "4"
-}
-
-# Optionally upgrade Redis
-resource "aws_elasticache_cluster" "redis" {
-  # Change from cache.t1.micro to cache.t4g.micro or larger
-  node_type = "cache.t4g.micro"
-  # ...other settings remain the same
+# Add auto-scaling configuration
+resource "aws_apprunner_auto_scaling_configuration_version" "api_scaling" {
+  auto_scaling_configuration_name = "api-scaling"
+  
+  max_concurrency = 100          # Maximum concurrent requests
+  max_size        = 10           # Maximum instances
+  min_size        = 2            # Minimum instances (was 1)
 }
 ```
 
@@ -75,13 +71,23 @@ terraform apply
 
 ### 3. Monitor Performance
 
-Use CloudWatch to monitor CPU, memory, and network metrics to determine if further scaling is needed.
+App Runner provides built-in metrics in CloudWatch that you can use to monitor:
+- CPU utilization
+- Memory utilization 
+- Request count and latency
+- HTTP errors
 
 ## Performance Considerations
 
-The MVP setup is suitable for:
-- Up to ~100 concurrent users
-- Low to moderate API request volumes
-- Basic Redis caching needs
+The App Runner MVP setup is suitable for:
+- Up to ~200 concurrent users
+- Medium API request volumes (App Runner handles scaling better than a single EC2)
+- Stateless API applications
+- Zero-maintenance deployment needs
 
-Monitor these metrics closely as your user base grows to determine when to scale up.
+One of the advantages of App Runner is that it can scale automatically based on traffic, even in the MVP setup. The service will scale out when:
+- CPU utilization is high
+- Memory utilization is high
+- Request concurrency exceeds service capacity
+
+Unlike a single EC2 instance in Elastic Beanstalk, App Runner can handle traffic spikes more gracefully, making it a better choice for services that might see sudden increases in traffic.

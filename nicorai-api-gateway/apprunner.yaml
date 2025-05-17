@@ -1,0 +1,19 @@
+version: 1.0
+runtime: nodejs
+build:
+  commands:
+    build:
+      - npm ci
+      - npm run build
+run:
+  command: node index.js
+  network:
+    port: 4000
+    env: PORT
+  env:
+    - name: NODE_ENV
+      value: "production"
+    - name: REDIS_URL
+      value: "${REDIS_URL}"
+    - name: N8N_WEBHOOK_URL
+      value: "${N8N_WEBHOOK_URL}"

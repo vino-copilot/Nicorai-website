@@ -1,14 +1,19 @@
 # Example Terraform configuration values
 # Rename to terraform.tfvars and update with your actual values
 
-aws_region          = "us-east-1"
-frontend_bucket_name = "nicorai-frontend"
-eb_application_name  = "nicorai-api"
-eb_environment_name  = "nicorai-api-prod"
+aws_region            = "us-east-1"
+frontend_bucket_name  = "nicorai-frontend"
+apprunner_service_name = "nicorai-api-gateway"
+
+# GitHub repository information
+github_repository_url = "https://github.com/yourusername/nicorai"
+github_branch         = "main"
+github_connection_arn = "arn:aws:apprunner:us-east-1:123456789012:connection/nicorai-github-connection/abcdef1234567890"
 
 # You'll need to create a VPC and subnets first or use existing ones
-vpc_id               = "vpc-0123456789abcdef0"
-subnet_ids           = ["subnet-0123456789abcdef0", "subnet-0123456789abcdef1"]
+vpc_id                = "vpc-0123456789abcdef0"
+subnet_ids            = ["subnet-0123456789abcdef0", "subnet-0123456789abcdef1"]
 
-# External Redis URL (from your third-party Redis provider)
-external_redis_url   = "redis://your-external-redis-host:6379"
+# External services URLs
+external_redis_url    = "rediss://default:password@your-redis-host:6379"
+n8n_webhook_url       = "https://n8n.srv810314.hstgr.cloud/webhook/chat"

@@ -1,0 +1,64 @@
+name: Create ECR Repository
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository_name:
+        description: 'Name for the ECR repository'
+        required: true
+        default: 'nicorai-api-gateway'
+
+jobs:
+  create-ecr:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Create ECR repository
+        id: create-ecr
+        run: |
+          # Check if repository exists
+          REPO_EXISTS=$(aws ecr describe-repositories --repository-names ${{ github.event.inputs.repository_name }} 2>&1 || echo "not-exists")
+          
+          if [[ "$REPO_EXISTS" == *"not-exists"* ]]; then
+            echo "Creating new ECR repository..."
+            aws ecr create-repository \
+              --repository-name ${{ github.event.inputs.repository_name }} \
+              --image-scanning-configuration scanOnPush=true \
+              --no-cli-pager
+              
+            REPO_URI=$(aws ecr describe-repositories \
+              --repository-names ${{ github.event.inputs.repository_name }} \
+              --query 'repositories[0].repositoryUri' \
+              --output text)
+              
+            echo "Repository created: $REPO_URI"
+            echo "uri=${REPO_URI}" >> $GITHUB_OUTPUT
+          else
+            echo "Repository already exists."
+            REPO_URI=$(aws ecr describe-repositories \
+              --repository-names ${{ github.event.inputs.repository_name }} \
+              --query 'repositories[0].repositoryUri' \
+              --output text)
+            echo "Repository URI: $REPO_URI"
+            echo "uri=${REPO_URI}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Output ECR repository details
+        run: |
+          echo "✅ ECR Repository Setup Complete"
+          echo "Repository Name: ${{ github.event.inputs.repository_name }}"
+          echo "Repository URI: ${{ steps.create-ecr.outputs.uri }}"
+          echo ""
+          echo "To use this repository:"
+          echo "1. Set the following GitHub secret:"
+          echo "   ECR_REPOSITORY=${{ github.event.inputs.repository_name }}"
+          echo ""
+          echo "2. Configure your Terraform variables:"
+          echo "   ecr_repository_url = \"${{ steps.create-ecr.outputs.uri }}\""
