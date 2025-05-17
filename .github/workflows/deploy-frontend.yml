@@ -71,50 +71,93 @@ jobs:
           mkdir -p ./deploy-tmp
           cp -R $DEPLOY_DIR/* ./deploy-tmp/
 
+          # Ensure index.html exists
           if [ "$DEPLOY_DIR" = "out" ]; then
             if [ ! -f "./deploy-tmp/index.html" ]; then
-              echo "Warning: index.html not found. Creating redirect..."
+              echo "Creating fallback index.html"
               echo '<meta http-equiv="refresh" content="0;url=/index">' > ./deploy-tmp/index.html
             fi
           elif [ "$DEPLOY_DIR" = ".next" ]; then
-            echo "Creating index.html for CloudFront..."
+            echo "Creating index.html for CloudFront"
             echo '<meta http-equiv="refresh" content="0;url=/_next/static/chunks/pages/index.html">' > ./deploy-tmp/index.html
             if [ ! -f "./deploy-tmp/404.html" ]; then
               echo '<meta http-equiv="refresh" content="0;url=/">' > ./deploy-tmp/404.html
             fi
           fi
 
-          # Gzip static assets and keep original filenames
+          # Gzip compress files in-place (keep original names)
           find ./deploy-tmp -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" -o -name "*.json" -o -name "*.xml" -o -name "*.svg" -o -name "*.txt" \) | while read -r file; do
             gzip -9 "$file"
             mv "$file.gz" "$file"
           done
 
-      - name: Copy files to S3 bucket with correct headers
+      - name: Upload static assets to S3 (compressed files with original names)
         run: |
-          # Sync all gzipped files with proper headers
-          aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-            --delete \
+          # Upload each group with correct MIME and gzip headers
+          
+          # HTML
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.html" \
+            --content-type "text/html" \
             --content-encoding gzip \
             --metadata-directive REPLACE \
-            --no-guess-mime-type \
-            --cache-control "public, max-age=31536000" \
-            --exclude "*" \
-            --include "*.html" \
-            --include "*.js" \
-            --include "*.css" \
-            --include "*.json" \
-            --include "*.xml" \
-            --include "*.svg" \
-            --include "*.txt"
+            --cache-control "public, max-age=31536000"
 
-          # Sync binary (non-gzipped) assets like images/fonts/icons
+          # JS
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.js" \
+            --content-type "application/javascript" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # CSS
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.css" \
+            --content-type "text/css" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # JSON
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.json" \
+            --content-type "application/json" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # XML
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.xml" \
+            --content-type "application/xml" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # SVG
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.svg" \
+            --content-type "image/svg+xml" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # TXT
+          aws s3 cp ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive \
+            --exclude "*" --include "*.txt" \
+            --content-type "text/plain" \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
+
+          # Upload other non-compressible files normally (images, fonts, etc.)
           aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
             --exclude "*" \
-            --include "*.png" --include "*.jpg" --include "*.jpeg" \
-            --include "*.gif" --include "*.ico" \
-            --include "*.woff" --include "*.woff2" --include "*.ttf" --include "*.eot" \
-            --metadata-directive REPLACE
+            --include "*.png" --include "*.jpg" --include "*.jpeg" --include "*.gif" \
+            --include "*.ico" --include "*.woff" --include "*.woff2" --include "*.ttf" --include "*.eot" \
+            --metadata-directive REPLACE \
+            --cache-control "public, max-age=31536000"
 
       - name: Invalidate CloudFront distribution
         run: |
@@ -131,6 +174,3 @@ jobs:
             echo "🔗 S3 Website URL: http://${{ secrets.S3_BUCKET_NAME }}.s3-website-${{ secrets.AWS_REGION }}.amazonaws.com/"
           fi
           echo "📂 Deployment directory used: ${{ env.DEPLOY_DIR }}"
-          if [ -f ".next/build-manifest.json" ]; then
-            echo "📦 Next.js build manifest found."
-          fi
