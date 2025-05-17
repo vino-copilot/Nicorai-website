@@ -37,7 +37,6 @@ jobs:
 
       - name: Export static site (if not using app directory)
         run: |
-          # Check if static export is configured (either in .js or .ts config file)
           if [ -f "next.config.js" ] && grep -q "output: 'export'" next.config.js; then
             echo "Static export already configured in next.config.js"
           elif [ -f "next.config.ts" ] && grep -q "output: 'export'" next.config.ts; then
@@ -55,7 +54,6 @@ jobs:
 
       - name: Prepare files for S3 deployment
         run: |
-          # Check which output directory exists
           if [ -d "out" ]; then
             DEPLOY_DIR="out"
             echo "Using 'out' directory (static export)"
@@ -68,115 +66,71 @@ jobs:
           fi
           echo "DEPLOY_DIR=$DEPLOY_DIR" >> $GITHUB_ENV
 
-          # Install gzip tools
           sudo apt-get update && sudo apt-get install -y gzip
 
-          # Create a temporary directory for gzipped files
           mkdir -p ./deploy-tmp
           cp -R $DEPLOY_DIR/* ./deploy-tmp/
 
-          # Ensure index.html exists for CloudFront
           if [ "$DEPLOY_DIR" = "out" ]; then
             if [ ! -f "./deploy-tmp/index.html" ]; then
-              echo "Warning: index.html not found in out directory. Creating a redirect..."
+              echo "Warning: index.html not found. Creating redirect..."
               echo '<meta http-equiv="refresh" content="0;url=/index">' > ./deploy-tmp/index.html
             fi
           elif [ "$DEPLOY_DIR" = ".next" ]; then
-            echo "Creating index.html for CloudFront default root object..."
+            echo "Creating index.html for CloudFront..."
             echo '<meta http-equiv="refresh" content="0;url=/_next/static/chunks/pages/index.html">' > ./deploy-tmp/index.html
             if [ ! -f "./deploy-tmp/404.html" ]; then
               echo '<meta http-equiv="refresh" content="0;url=/">' > ./deploy-tmp/404.html
             fi
           fi
 
-          # Gzip files but preserve original extension for S3 upload commands
-          find ./deploy-tmp -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" -o -name "*.json" -o -name "*.xml" -o -name "*.svg" -o -name "*.txt" \) -exec sh -c 'gzip -9 < "$1" > "$1.gz" && rm "$1"' _ {} \;
+          # Gzip static assets and keep original filenames
+          find ./deploy-tmp -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" -o -name "*.json" -o -name "*.xml" -o -name "*.svg" -o -name "*.txt" \) | while read -r file; do
+            gzip -9 "$file"
+            mv "$file.gz" "$file"
+          done
 
-      - name: Copy files to S3 bucket with proper content types
+      - name: Copy files to S3 bucket with correct headers
         run: |
-          # Sync binary and non-compressible files normally
+          # Sync all gzipped files with proper headers
           aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
             --delete \
+            --content-encoding gzip \
+            --metadata-directive REPLACE \
+            --no-guess-mime-type \
+            --cache-control "public, max-age=31536000" \
             --exclude "*" \
-            --include "*.jpg" --include "*.jpeg" --include "*.png" --include "*.gif" --include "*.ico" --include "*.woff" --include "*.woff2" --include "*.ttf" --include "*.eot" \
+            --include "*.html" \
+            --include "*.js" \
+            --include "*.css" \
+            --include "*.json" \
+            --include "*.xml" \
+            --include "*.svg" \
+            --include "*.txt"
+
+          # Sync binary (non-gzipped) assets like images/fonts/icons
+          aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
+            --exclude "*" \
+            --include "*.png" --include "*.jpg" --include "*.jpeg" \
+            --include "*.gif" --include "*.ico" \
+            --include "*.woff" --include "*.woff2" --include "*.ttf" --include "*.eot" \
             --metadata-directive REPLACE
-
-          # HTML files
-          aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-            --exclude "*" \
-            --include "*.html.gz" \
-            --content-encoding gzip \
-            --content-type "text/html" \
-            --metadata-directive REPLACE \
-            --no-guess-mime-type
-
-          # JavaScript files
-          aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-            --exclude "*" \
-            --include "*.js.gz" \
-            --content-encoding gzip \
-            --content-type "application/javascript" \
-            --metadata-directive REPLACE \
-            --no-guess-mime-type
-
-          # CSS files
-          aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-            --exclude "*" \
-            --include "*.css.gz" \
-            --content-encoding gzip \
-            --content-type "text/css" \
-            --metadata-directive REPLACE \
-            --no-guess-mime-type
-
-          # JSON files
-          aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-            --exclude "*" \
-            --include "*.json.gz" \
-            --content-encoding gzip \
-            --content-type "application/json" \
-            --metadata-directive REPLACE \
-            --no-guess-mime-type
-
-          # XML files
-          aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-            --exclude "*" \
-            --include "*.xml.gz" \
-            --content-encoding gzip \
-            --content-type "application/xml" \
-            --metadata-directive REPLACE \
-            --no-guess-mime-type
-
-          # SVG files
-          aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-            --exclude "*" \
-            --include "*.svg.gz" \
-            --content-encoding gzip \
-            --content-type "image/svg+xml" \
-            --metadata-directive REPLACE \
-            --no-guess-mime-type
-
-          # TXT files
-          aws s3 sync ./deploy-tmp/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-            --exclude "*" \
-            --include "*.txt.gz" \
-            --content-encoding gzip \
-            --content-type "text/plain" \
-            --metadata-directive REPLACE \
-            --no-guess-mime-type
 
       - name: Invalidate CloudFront distribution
         run: |
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
 
       - name: Report deployment status
         run: |
-          echo "Frontend deployed successfully!"
+          echo "✅ Frontend deployed successfully!"
           if [ -n "${{ secrets.CLOUDFRONT_DOMAIN_NAME }}" ]; then
-            echo "CloudFront URL: https://${{ secrets.CLOUDFRONT_DOMAIN_NAME }}/"
+            echo "🔗 CloudFront URL: https://${{ secrets.CLOUDFRONT_DOMAIN_NAME }}/"
           else
-            echo "S3 Website URL: http://${{ secrets.S3_BUCKET_NAME }}.s3-website-${{ secrets.AWS_REGION }}.amazonaws.com/"
+            echo "🔗 S3 Website URL: http://${{ secrets.S3_BUCKET_NAME }}.s3-website-${{ secrets.AWS_REGION }}.amazonaws.com/"
           fi
-          echo "Deployment directory used: ${{ env.DEPLOY_DIR }}"
+          echo "📂 Deployment directory used: ${{ env.DEPLOY_DIR }}"
           if [ -f ".next/build-manifest.json" ]; then
-            echo "Next.js build information available in logs"
+            echo "📦 Next.js build manifest found."
           fi
