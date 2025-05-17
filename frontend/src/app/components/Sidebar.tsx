@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import apiService, { ChatSession } from '../services/api';
-import { Briefcase, CheckSquare, Mail, Users, Sparkles } from 'lucide-react';
+import { Briefcase, CheckSquare, Mail, Users, Sparkles, Lightbulb } from 'lucide-react';
 
 interface SidebarProps {
   onNavClick: (view: string) => void;
@@ -80,7 +80,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   const navItems = [
     { id: 'what-we-do', label: 'What We Do', icon: Briefcase },
     { id: 'what-weve-done', label: "What We've Done", icon: CheckSquare },
-    { id: 'inspiration', label: 'Our Inspiration', icon: Sparkles },
+    { id: 'inspiration', label: 'Our Inspiration', icon: Lightbulb },
+    { id: 'research-blog', label: 'Research and Blog', icon: Sparkles },
     { id: 'connect', label: 'Connect', icon: Mail },
     { id: 'us', label: 'Us', icon: Users },
     
@@ -306,7 +307,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                           toggleSidebar();
                         }
                       }}
-                      className={`flex items-center w-full px-4 py-3 my-1 rounded-lg transition-colors
+                      className={`flex items-center w-full px-4 py-2 my-1 rounded-lg transition-colors
                         ${activeView === item.id ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'}
                         ${isExpanded ? 'justify-start' : 'justify-center'}
                       `}
@@ -437,6 +438,29 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                   )}
                 </ul>
               </div>
+            </div>
+            {/* Social Media and Copyright Footer */}
+            <div className={`flex-shrink-0 p-4 border-t border-gray-200 mt-auto`}>
+              {/* Social Media Icons */}
+              <div className={`flex ${isExpanded ? 'justify-center space-x-6' : 'flex-col space-y-4 items-center'} mb-3`}>
+                <Link href="https://www.linkedin.com/company/nicorai/" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-blue-600 transition-colors flex items-center justify-center">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.327-.027-3.037-1.849-3.037-1.851 0-2.134 1.445-2.134 2.939v5.667h-3.554V9h3.414v1.561h.049c.476-.899 1.637-1.849 3.369-1.849 3.602 0 4.267 2.369 4.267 5.455v6.285zM5.337 7.433c-1.144 0-2.069-.926-2.069-2.068 0-1.143.925-2.069 2.069-2.069 1.143 0 2.068.926 2.068 2.069 0 1.142-.925 2.068-2.068 2.068zm1.777 13.019H3.56V9h3.554v11.452zM22.225 0H1.771C.792 0 0 .771 0 1.723v20.549C0 23.229.792 24 1.771 24h20.451C23.2 24 24 23.229 24 22.271V1.723C24 .771 23.2 0 22.222 0z" fill="currentColor"/>
+                  </svg>
+                </Link>
+                <Link href="https://x.com/nicor_ai" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-blue-600 transition-colors flex items-center justify-center">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M17.53 2.477h3.924l-8.56 9.823 10.09 13.223h-7.96l-6.24-8.19-7.14 8.19H2.47l9.13-10.49L1.01 2.477h8.09l5.77 7.59 6.66-7.59zm-1.38 18.13h2.18L7.1 4.29H4.77l11.38 16.317z" fill="currentColor"/>
+                  </svg>
+                </Link>
+              </div>
+              
+              {/* Copyright Notice */}
+              {isExpanded ? (
+                <p className="text-xs text-center text-gray-500 mt-2">© 2025 NicorAI Ltd All rights reserved.</p>
+              ) : (
+                <p className="text-xs text-center text-gray-500 mt-2">©</p>
+              )}
             </div>
           </>
         )}

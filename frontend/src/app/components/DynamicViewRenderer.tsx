@@ -71,6 +71,8 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
         return <AboutUsPage onClose={onClose} />;
       case 'inspiration':
         return <InspirationPage onClose={onClose} />;
+      case 'research-blog': 
+        return <ResearchBlogPage onClose={onClose} />;
       default:
         return (
           <div className="flex items-center justify-center h-full">
@@ -124,7 +126,7 @@ const AIHeroSection = () => {
   }, []);
 
   return (
-    <section className={`relative overflow-hidden ${isMobile ? 'py-8' : 'py-16'}`}>
+    <section className={`relative overflow-hidden ${isMobile ? 'py-1' : 'py-16'}`}>
       {/* Animated background - only show on desktop/tablet */}
       {!isMobile && (
         <div className="absolute inset-0 z-0">
@@ -343,7 +345,7 @@ const AIServicesSection = () => {
   ];
 
   return (
-    <section className={`${isMobile ? 'py-8' : 'py-16'} bg-white relative overflow-hidden`}>
+    <section className={`${isMobile ? 'py-1' : 'py-16'} bg-white relative overflow-hidden`}>
       <div className="absolute inset-0 bg-grid-pattern"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -352,7 +354,7 @@ const AIServicesSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className={`text-center ${isMobile ? 'mb-8' : 'mb-16'}`}
         >
           <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100 mb-4">
             <Share2 size={14} className="mr-2" />
@@ -440,19 +442,19 @@ const TechStackSection = () => {
   ];
 
   return (
-    <section className={`${isMobile ? 'py-8' : 'py-16'} bg-gradient-to-b from-white to-blue-50`}>
+    <section className={`${isMobile ? 'py-11' : 'py-16'} bg-gradient-to-b from-white to-blue-50`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-12"
+          className={`text-center ${isMobile ? 'mb-8' : 'mb-12'}`}
         >
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our Technology Stack
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className=" mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             We utilize cutting-edge technologies and frameworks
           </p>
         </motion.div>
@@ -529,7 +531,7 @@ const AIProcessSection = () => {
   ];
 
   return (
-    <section className={`${isMobile ? 'py-8' : 'py-16'} bg-blue-50 relative overflow-hidden`}>
+    <section className={`${isMobile ? 'py-1' : 'py-16'} bg-blue-50 relative overflow-hidden`}>
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100/50 rounded-full filter blur-3xl"></div>
       <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-100/50 rounded-full filter blur-3xl"></div>
@@ -540,7 +542,7 @@ const AIProcessSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className={`text-center ${isMobile ? 'mb-8' : 'mb-16'}`}
         >
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our AI Implementation Process
@@ -752,7 +754,7 @@ const FeaturedProjects = () => {
   };
  
   return (
-    <section className="py-16 bg-gradient-to-b from-white relative to-purple-50">
+    <section className={`bg-gradient-to-b from-white relative to-purple-50 ${window.innerWidth < 768 ? 'py-1' : 'py-16'}`}> 
       <div className="absolute inset-0 bg-grid-pattern"></div>
  
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -761,7 +763,7 @@ const FeaturedProjects = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className={`text-center ${window.innerWidth < 768 ? 'mb-10' : 'mb-16'}`}
         >
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Featured AI Projects
@@ -859,7 +861,7 @@ const TestimonialsSection = () => {
   ];
  
   return (
-    <section className="py-20 bg-purple-50 relative overflow-hidden">
+    <section className={`${window.innerWidth < 768 ? 'pt-12 pb-8' : 'py-20'} bg-purple-50 relative overflow-hidden`}>
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-indigo-100/30 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-purple-100/30 rounded-full filter blur-3xl"></div>
@@ -870,7 +872,7 @@ const TestimonialsSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className={`text-center ${window.innerWidth < 768 ? 'mb-8 ' : 'mb-16'}`}
         >
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "36px", fontWeight: 700, letterSpacing: "-0.9px", lineHeight: "40px" }}>
             What Our Clients Say
@@ -965,17 +967,59 @@ const ContactForm = () => {
     company: '',
     message: '',
     submitted: false,
-    loading: false
+    loading: false,
+    error: null as string | null, // Added error state
   });
  
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormState({ ...formState, loading: true });
+    setFormState(prev => ({ ...prev, loading: true, submitted: false, error: null }));
  
-    // Simulate form submission
-    setTimeout(() => {
-      setFormState({ ...formState, submitted: true, loading: false });
-    }, 1500);
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formState.name,
+          email: formState.email,
+          company: formState.company,
+          message: formState.message,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setFormState(prev => ({
+          ...prev,
+          submitted: true,
+          loading: false,
+          name: '', // Optionally clear fields
+          email: '',
+          company: '',
+          message: '',
+        }));
+        if (result.previewUrl) {
+          console.log("Ethereal preview URL: ", result.previewUrl);
+          // You could also display this URL to the user for testing if desired
+        }
+      } else {
+        setFormState(prev => ({ 
+          ...prev, 
+          loading: false, 
+          error: result.error || 'Failed to send message. Please try again.' 
+        }));
+      }
+    } catch (err) {
+      console.error("Contact form submission error:", err);
+      setFormState(prev => ({ 
+        ...prev, 
+        loading: false, 
+        error: 'An unexpected error occurred. Please try again.' 
+      }));
+    }
   };
  
   return (
@@ -1014,6 +1058,8 @@ const ContactForm = () => {
                     <p className="text-gray-600">
                       Thank you for reaching out. A member of our team will get back to you shortly.
                     </p>
+                    {/* Optionally show Ethereal link if needed for testing "on screen" */}
+                    {/* {formState.previewUrl && <p className="text-sm mt-2">Preview your test email: <a href={formState.previewUrl} target="_blank" rel="noopener noreferrer">{formState.previewUrl}</a></p>} */}
                   </motion.div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
@@ -1029,6 +1075,7 @@ const ContactForm = () => {
                         className="w-full px-4 py-3 rounded-lg text-black border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all duration-200"
                         placeholder="Enter your name"
                         required
+                        disabled={formState.loading}
                       />
                     </div>
  
@@ -1044,6 +1091,7 @@ const ContactForm = () => {
                         className="w-full px-4 py-3 rounded-lg text-black border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all duration-200"
                         placeholder="Enter your email"
                         required
+                        disabled={formState.loading}
                       />
                     </div>
  
@@ -1058,6 +1106,7 @@ const ContactForm = () => {
                         onChange={(e) => setFormState({ ...formState, company: e.target.value })}
                         className="w-full px-4 py-3 rounded-lg text-black border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all duration-200"
                         placeholder="Enter your company name"
+                        disabled={formState.loading}
                       />
                     </div>
  
@@ -1073,8 +1122,14 @@ const ContactForm = () => {
                         className="w-full px-4 py-3 rounded-lg text-black border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all duration-200 resize-none"
                         placeholder="Tell us about your project or query..."
                         required
+                        disabled={formState.loading}
                       ></textarea>
                     </div>
+
+                    {/* Display error message if any */}
+                    {formState.error && (
+                      <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{formState.error}</p>
+                    )}
  
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -1125,7 +1180,7 @@ const OfficeLocations = () => {
   ];
  
   return (
-    <section className="py-10 bg-gradient-to-b from-white to-blue-50 relative overflow-hidden"> {/* Reduced vertical padding */}
+    <section className={`${window.innerWidth < 768 ? 'pt-6' : 'py-10'} bg-gradient-to-b from-white to-blue-50 relative overflow-hidden`}> {/* Reduced vertical padding */}
       {/* Background pattern */}
       <div className="absolute inset-0 bg-grid-pattern z-0"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-teal-100/20 rounded-full filter blur-3xl z-0"></div>
@@ -1137,7 +1192,7 @@ const OfficeLocations = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className={`text-center ${window.innerWidth < 768 ? 'mb-8' : 'mb-16'}`}
         >
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our Offices
@@ -1706,5 +1761,135 @@ const InspirationCommitment = () => (
   </section>
 );
 
+// NEW RESEARCH AND BLOG PAGE START
+const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
+  const blogPosts = [
+    {
+      title: "The Future of AI in Web Development",
+      date: "October 26, 2023",
+      excerpt: "Artificial Intelligence is rapidly transforming the landscape of web development. From automated code generation to intelligent UI/UX design, AI tools are empowering developers to build more sophisticated and personalized web experiences...",
+      category: "AI Trends",
+      color: "blue",
+    },
+    {
+      title: "Understanding Large Language Models (LLMs)",
+      date: "October 15, 2023",
+      excerpt: "Large Language Models are at the forefront of the current AI revolution. This article provides a high-level overview of LLM architecture, training processes, and their capabilities, along with ethical considerations...",
+      category: "LLMs",
+      color: "indigo",
+    },
+    {
+      title: "Bridging Biology and AI: The Rashevsky Connection",
+      date: "September 30, 2023",
+      excerpt: "Explore how the foundational mathematical biophysics work of Nicolas Rashevsky provides a unique lens through which we approach modern AI challenges, emphasizing systemic understanding and rigorous analysis.",
+      category: "Inspiration",
+      color: "purple",
+    },
+  ];
+
+  const colorMap: Record<string, string> = {
+    blue: "from-blue-500 to-indigo-600",
+    indigo: "from-indigo-500 to-purple-600",
+    purple: "from-purple-500 to-pink-600",
+  };
+
+  const bgColorMap: Record<string, string> = {
+    blue: "bg-blue-50 text-blue-800",
+    indigo: "bg-indigo-50 text-indigo-800",
+    purple: "bg-purple-50 text-purple-800",
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="relative pt-10 pb-16 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white bg-grid-pattern"></div>
+          <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full filter blur-3xl animate-float"></div>
+          <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-indigo-100/20 to-blue-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        </div>
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100 mb-4">
+              <Sparkles size={14} className="mr-2" />
+              Insights & Articles
+            </div>
+            <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
+              Research & Blogs
+            </h1>
+            <p className="text-xl text-gray-700 mb-4 leading-relaxed">
+              Dive into our latest research, articles, and insights at the intersection of AI, technology, and innovation. Explore thought leadership inspired by pioneers like Nicolas Rashevsky.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Blog Posts Section */}
+      <section className="py-16 bg-gradient-to-b from-white relative to-gray-50">
+        <div className="absolute inset-0 bg-grid-pattern"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
+              Latest Articles
+            </h2>
+            <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Stay updated with our explorations and discoveries in the world of AI.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {blogPosts.map((post, index) => (
+              <motion.div
+                key={post.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md transition-all duration-300 flex flex-col h-full"
+              >
+                <div className={`bg-gradient-to-r ${colorMap[post.color] || 'from-gray-500 to-gray-600'} h-40 relative overflow-hidden`}>
+                  <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-[size:16px_16px]"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                     <div className={`inline-flex items-center px-3 py-1 rounded-full text-[13px] leading-5 font-medium ${bgColorMap[post.color] || 'bg-gray-50 text-gray-800'} mb-2`}>
+                      {post.category}
+                    </div>
+                    <h3 className="text-xl font-bold">{post.title}</h3>
+                  </div>
+                </div>
+
+                <div className="p-6 flex flex-col flex-1">
+                  <p className="text-sm text-gray-500 mb-3">Posted on: {post.date}</p>
+                  <p className="text-gray-600 mb-6 flex-grow">{post.excerpt}</p>
+                  <div className="mt-auto">
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="w-full py-2 bg-gray-900 text-white rounded-lg shadow-sm flex items-center justify-center text-sm font-medium"
+                    >
+                      Read More
+                      <ArrowRight size={16} className="ml-1" />
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+// NEW RESEARCH AND BLOG PAGE END
 
 export default DynamicViewRenderer;

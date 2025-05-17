@@ -931,7 +931,7 @@ const Chat: React.FC<ChatProps> = ({
         )}
         
         <div className="space-y-3">
-          <p className="text-sm font-medium text-gray-700">Frequently asked questions:</p>
+          <p className="text-sm font-medium text-gray-700">Ask questions like:</p>
           <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${isMobile ? 'pb-8' : ''}`}>
             {faqSuggestions.map((question, index) => (
               <button
