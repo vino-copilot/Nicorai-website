@@ -875,14 +875,14 @@ const Chat: React.FC<ChatProps> = ({
           </div>
         )}
         {/* landing page chat input */}
-        <form onSubmit={handleSubmit} className="mb-8">
+        <form onSubmit={handleSubmit} className="mb-6">
           <div className="relative">
             <textarea
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask any question about NicorAI.."
-              className="w-full p-9 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-25 placeholder-gray-500 text-gray-900 placeholder:whitespace-nowrap"
+              className="w-full p-5 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-16 placeholder-gray-500 text-gray-900 placeholder:whitespace-nowrap   "
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -893,7 +893,7 @@ const Chat: React.FC<ChatProps> = ({
             <button
               type="submit"
               disabled={isLoading}
-              className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`absolute right-3 top-1/2 transform -translate-y-3/5 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isLoading ? (
                 <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
