@@ -3,12 +3,15 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import apiService, { ChatSession } from '../services/api';
 import { Briefcase, CheckSquare, Mail, Users, Sparkles, Lightbulb } from 'lucide-react';
+import ConfirmModal from './ConfirmModal';
+
 
 interface SidebarProps {
   onNavClick: (view: string) => void;
   activeView: string | null;
   onToggle?: (expanded: boolean) => void;
 }
+
 
 // Add this utility function at the top level, before the Sidebar component
 const isMobileDevice = () => {
@@ -17,6 +20,7 @@ const isMobileDevice = () => {
   }
   return false;
 };
+
 
 // Custom CSS for the logo text to match the pixelated style
 const logoTextStyle = {
@@ -27,6 +31,7 @@ const logoTextStyle = {
   fontSize: "1.2rem",
 };
 
+
 // Custom CSS for the navigation items to use Pixelify Sans font
 const navItemStyle = {
   fontFamily: "var(--font-pixelify-sans)",
@@ -34,12 +39,16 @@ const navItemStyle = {
   fontWeight: 400,
 };
 
+
 const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) => {
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(isMobileDevice());
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
 
   // Notify parent about initial sidebar state
   useEffect(() => {
@@ -48,6 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
     }
   }, []);
 
+
   // Fetch chat history when component mounts or when localStorage changes
   useEffect(() => {
     const loadChatHistory = () => {
@@ -55,27 +65,28 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
       setChatHistory(history);
       setCurrentChatId(apiService.getCurrentChatId());
     };
-    
+   
     // Load initial history
     loadChatHistory();
-    
+   
     // Set up an interval to periodically check for updates (every 5 seconds)
     const intervalId = setInterval(loadChatHistory, 5000);
-    
+   
     // Add event listener for storage changes (to sync across tabs)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'nicoraiChatHistory') {
         loadChatHistory();
       }
     };
-    
+   
     window.addEventListener('storage', handleStorageChange);
-    
+   
     return () => {
       clearInterval(intervalId);
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
+
 
   const navItems = [
     { id: 'what-we-do', label: 'What We Do', icon: Briefcase },
@@ -85,23 +96,26 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
     { id: 'us', label: 'Us', icon: Users },
   ];
 
+
   const handleNavClick = (id: string) => {
     onNavClick(id);
   };
+
 
   // Handle selecting a chat from the history
   const handleSelectChat = (chatId: string) => {
     apiService.setCurrentChat(chatId);
     setCurrentChatId(chatId);
-    
+   
     // Update local state - no need to reload the page
     const currentMessages = apiService.getCurrentChatMessages();
-    
+   
     // Create a custom event to notify other components of the chat change
-    const chatChangeEvent = new CustomEvent('chatChanged', { 
+    const chatChangeEvent = new CustomEvent('chatChanged', {
       detail: { chatId, messages: currentMessages }
     });
     window.dispatchEvent(chatChangeEvent);
+
 
     // Ensure sidebar state is properly communicated when selecting chat
     if (onToggle) {
@@ -109,53 +123,59 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
     }
   };
 
+
   // Format the date for display in the sidebar
   const formatChatDate = (date: Date) => {
     const now = new Date();
     const chatDate = new Date(date);
-    
+   
     // If the chat is from today, show the time
     if (chatDate.toDateString() === now.toDateString()) {
       return chatDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
-    
+   
     // If the chat is from yesterday, show "Yesterday"
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     if (chatDate.toDateString() === yesterday.toDateString()) {
       return 'Yesterday';
     }
-    
+   
     // Otherwise, show the date
     return chatDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
+
   // Handle deleting a chat
   const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
-    e.stopPropagation(); // Prevent triggering the chat selection
-    
-    if (window.confirm('Are you sure you want to delete this chat?')) {
-      apiService.deleteChat(chatId);
-      
-      // Update the local state
-      setChatHistory(prevHistory => prevHistory.filter(chat => chat.id !== chatId));
-      
-      // If we deleted the current chat, update messages
-      if (chatId === currentChatId) {
+    e.stopPropagation();
+    setPendingDeleteId(chatId);
+    setShowConfirm(true);
+  };
+
+
+  const confirmDelete = () => {
+    if (pendingDeleteId) {
+      apiService.deleteChat(pendingDeleteId);
+      setChatHistory(prevHistory => prevHistory.filter(chat => chat.id !== pendingDeleteId));
+      if (pendingDeleteId === currentChatId) {
         const newChatId = apiService.getCurrentChatId();
         setCurrentChatId(newChatId);
-        
-        // Get messages for the new current chat
         const newMessages = newChatId ? apiService.getCurrentChatMessages() : [];
-        
-        // Notify other components
-        const chatChangeEvent = new CustomEvent('chatChanged', { 
-          detail: { chatId: newChatId, messages: newMessages }
-        });
+        const chatChangeEvent = new CustomEvent('chatChanged', { detail: { chatId: newChatId, messages: newMessages } });
         window.dispatchEvent(chatChangeEvent);
       }
     }
+    setShowConfirm(false);
+    setPendingDeleteId(null);
   };
+
+
+  const cancelDelete = () => {
+    setShowConfirm(false);
+    setPendingDeleteId(null);
+  };
+
 
   // Toggle sidebar expansion
   const toggleSidebar = () => {
@@ -165,10 +185,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
     if (onToggle) {
       onToggle(newExpandedState);
     }
-    
+   
     // For debugging
     console.log("Toggle sidebar:", newExpandedState, "Mobile:", isMobile);
   };
+
 
   // Update the mobile detection useEffect
   useEffect(() => {
@@ -178,17 +199,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
       setIsLoading(false); // Set loading to false after initial check
       console.log("Mobile detection:", isMobileView, window.innerWidth);
     };
-    
+   
     // Initial check
     checkIfMobile();
-    
+   
     // Listen for window resize
     window.addEventListener('resize', checkIfMobile);
-    
+   
     return () => {
       window.removeEventListener('resize', checkIfMobile);
     };
   }, []);
+
 
   // Auto-collapse on mobile initially - only on first render
   useEffect(() => {
@@ -207,21 +229,23 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   // Empty dependency array ensures this only runs once on mount
   }, []);
 
+
   return (
     <>
       {/* Mobile overlay - only visible when sidebar is expanded on mobile */}
       {isExpanded && isMobile && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40" 
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
           onClick={toggleSidebar}
           style={{ touchAction: 'none' }}
         ></div>
       )}
 
+
       {/* Sidebar */}
-      <div 
+      <div
         className={`fixed top-0 left-0 h-screen flex flex-col bg-white shadow-lg transition-all duration-300
-          ${isExpanded ? 'w-62' : 'w-20'} 
+          ${isExpanded ? 'w-62' : 'w-20'}
           border-r border-gray-100 z-[80]
           ${!isExpanded && isMobile ? '-translate-x-full opacity-0' : 'translate-x-0 opacity-100'}
           ${isLoading ? 'invisible' : 'visible'}`}
@@ -253,23 +277,24 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                 </button>
               </div>
 
+
               {/* Logo/Profile Section */}
-              <div 
+              <div
                 className="flex flex-col items-center cursor-pointer"
                 onClick={() => {
                   // Reset to initial view first
                   onNavClick('');
-                  
+                 
                   // Create a new chat
                   const newChatId = apiService.createNewChat();
                   setCurrentChatId(newChatId);
-                  
+                 
                   // Notify components about the new chat
-                  const chatChangeEvent = new CustomEvent('chatChanged', { 
+                  const chatChangeEvent = new CustomEvent('chatChanged', {
                     detail: { chatId: newChatId, messages: [] }
                   });
                   window.dispatchEvent(chatChangeEvent);
-                  
+                 
                   // On mobile, close the sidebar after navigation
                   if (isMobile) {
                     toggleSidebar();
@@ -289,6 +314,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                 )}
               </div>
             </div>
+
 
             {/* Scrollable content section */}
             <div className="flex-1 overflow-y-auto sidebar-scroll">
@@ -317,6 +343,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                 })}
               </nav>
 
+
               {/* Recent Chats Section */}
               <div className={`${isExpanded ? 'p-4 border-t border-gray-200 mt-2' : 'p-2 mt-4'}`}>
                 {isExpanded && (
@@ -328,11 +355,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                           if (window.confirm('Clear all chat history? This cannot be undone.')) {
                             apiService.clearAllChats();
                             setChatHistory([]);
-                            
+                           
                             // Update current chat ID
                             const newChatId = apiService.getCurrentChatId();
                             setCurrentChatId(newChatId);
-                            
+                           
                             // Notify other components
                             const chatChangeEvent = new CustomEvent('chatChanged', {
                               detail: { chatId: newChatId, messages: [] }
@@ -347,7 +374,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                     )}
                   </div>
                 )}
-                
+               
                 <ul className="space-y-2">
                   {/* New Chat Button styled like a chat history item */}
                   <li className="group">
@@ -355,17 +382,17 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                       onClick={() => {
                         // Reset to initial view first
                         onNavClick('');
-                        
+                       
                         // Create a new chat
                         const newChatId = apiService.createNewChat();
                         setCurrentChatId(newChatId);
-                        
+                       
                         // Notify other components
                         const chatChangeEvent = new CustomEvent('chatChanged', {
                           detail: { chatId: newChatId, messages: [] }
                         });
                         window.dispatchEvent(chatChangeEvent);
-                        
+                       
                         // On mobile, close the sidebar after creating a new chat
                         if (isMobile && isExpanded) {
                           toggleSidebar();
@@ -385,7 +412,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                       </div>
                     </div>
                   </li>
-                  
+                 
                   {/* Chat history - only visible when expanded */}
                   {isExpanded && (
                     <>
@@ -395,7 +422,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                             <div
                               onClick={() => {
                                 handleSelectChat(chat.id);
-                                
                                 // On mobile, close the sidebar after selecting a chat
                                 if (isMobile) {
                                   toggleSidebar();
@@ -417,9 +443,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                                   {formatChatDate(chat.lastUpdated)}
                                 </p>
                               </div>
+                              {/* Always show delete button, on all screen sizes */}
                               <button
                                 onClick={(e) => handleDeleteChat(e, chat.id)}
-                                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1"
+                                className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1"
                                 title="Delete chat"
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
@@ -436,34 +463,31 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                   )}
                 </ul>
               </div>
-            </div>
-            {/* Social Media and Copyright Footer */}
-            <div className={`flex-shrink-0 p-4 border-t border-gray-200 mt-auto`}>
-              {/* Social Media Icons */}
-              <div className={`flex ${isExpanded ? 'justify-center space-x-6' : 'flex-col space-y-4 items-center'} mb-3`}>
-                <Link href="https://www.linkedin.com/company/nicorai/" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-blue-600 transition-colors flex items-center justify-center">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.327-.027-3.037-1.849-3.037-1.851 0-2.134 1.445-2.134 2.939v5.667h-3.554V9h3.414v1.561h.049c.476-.899 1.637-1.849 3.369-1.849 3.602 0 4.267 2.369 4.267 5.455v6.285zM5.337 7.433c-1.144 0-2.069-.926-2.069-2.068 0-1.143.925-2.069 2.069-2.069 1.143 0 2.068.926 2.068 2.069 0 1.142-.925 2.068-2.068 2.068zm1.777 13.019H3.56V9h3.554v11.452zM22.225 0H1.771C.792 0 0 .771 0 1.723v20.549C0 23.229.792 24 1.771 24h20.451C23.2 24 24 23.229 24 22.271V1.723C24 .771 23.2 0 22.222 0z" fill="currentColor"/>
-                  </svg>
-                </Link>
-                <Link href="https://x.com/nicor_ai" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-blue-600 transition-colors flex items-center justify-center">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M17.53 2.477h3.924l-8.56 9.823 10.09 13.223h-7.96l-6.24-8.19-7.14 8.19H2.47l9.13-10.49L1.01 2.477h8.09l5.77 7.59 6.66-7.59zm-1.38 18.13h2.18L7.1 4.29H4.77l11.38 16.317z" fill="currentColor"/>
-                  </svg>
-                </Link>
+
+
+              {/* Social Media and Copyright Footer - moved inside scrollable content */}
+              <div className={`flex-shrink-0 p-4 border-t border-gray-200 mt-4`}>
+                {/* Social Media Icons */}
+                <div className={`flex ${isExpanded ? 'justify-center space-x-6' : 'flex-col space-y-4 items-center'} mb-3`}>
+                  <Link href="https://www.linkedin.com/company/nicorai/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
+                    <img src="/images/linkedin.svg" alt="LinkedIn" width={27} height={27} className="object-contain" />
+                  </Link>
+                  <Link href="https://x.com/nicor_ai" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
+                    <img src="/images/X_logo_2023_original.svg" alt="X" width={24} height={24} className="object-contain" />
+                  </Link>
+                </div>
+                {/* Copyright Notice */}
+                {isExpanded ? (
+                  <p className="text-xs text-center text-gray-500 mt-2">© 2025 NicorAI Ltd All rights reserved.</p>
+                ) : (
+                  <p className="text-xs text-center text-gray-500 mt-2">©</p>
+                )}
               </div>
-              
-              {/* Copyright Notice */}
-              {isExpanded ? (
-                <p className="text-xs text-center text-gray-500 mt-2">© 2025 NicorAI Ltd All rights reserved.</p>
-              ) : (
-                <p className="text-xs text-center text-gray-500 mt-2">©</p>
-              )}
             </div>
           </>
         )}
       </div>
-      
+     
       {/* Mobile toggle button - always visible when on mobile and sidebar is collapsed */}
       {isMobile && !isExpanded && !isLoading && (
         <div className="fixed top-0 left-0 z-[100] p-4">
@@ -486,8 +510,20 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
           </button>
         </div>
       )}
+
+
+      <ConfirmModal
+        open={showConfirm}
+        title="Delete Chat"
+        description="Are you sure you want to delete this chat?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </>
   );
 };
+
 
 export default Sidebar;

@@ -48,7 +48,7 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
     // Check if this is a dynamic view from chat
     if (viewId === 'dynamic-view' && dynamicViewContent) {
       return (
-        <div className="min-h-screen bg-white flex items-center justify-center p-8">
+        <div className="min-h-screen bg-white flex items-center justify-center p-1">
           <div className="w-full max-w-4xl">
             <DynamicContentRenderer
               view={dynamicViewContent}

@@ -44,7 +44,7 @@ const Chat: React.FC<ChatProps> = ({
   const faqSuggestions = [
     "How can AI help my business?",
     "What services does NicorAI offer?",
-    "What are the technologies used by nicorAI?",
+    "What are the technologies used by NicorAI?",
     "What industries do you specialize in?"
   ];
 
@@ -881,8 +881,8 @@ const Chat: React.FC<ChatProps> = ({
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask any question about NicorAI..."
-              className="w-full p-9 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-25 placeholder-gray-500 text-gray-900"
+              placeholder="Ask any question about NicorAI.."
+              className="w-full p-9 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-25 placeholder-gray-500 text-gray-900 placeholder:whitespace-nowrap"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
