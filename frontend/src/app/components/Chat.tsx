@@ -996,7 +996,7 @@ const Chat: React.FC<ChatProps> = ({
         {!dynamicView && (
           <button
             onClick={() => onMessageSent?.(true)}
-            className="p-2 rounded-full hover:bg-blue-100 transition-colors bg-white"
+            className="p-2 rounded-full hover:bg-blue-100 transition-colors bg-white border border-gray-200 shadow-lg"
             title="Close chat"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-600">
@@ -1030,11 +1030,11 @@ const Chat: React.FC<ChatProps> = ({
             >
               {/* AI Avatar - only show for AI messages */}
               {message.sender !== 'user' && (
-                <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden">
+                <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden bg-white flex items-center justify-center">
                   <img
-                    src="/nicor-ai-avatar.png"
+                    src="/images/nicorai-logo-black.svg"
                     alt="NicorAI"
-                    className="h-full w-full object-cover"
+                    className="h-6 w-6 object-contain"
                   />
                 </div>
               )}
@@ -1094,11 +1094,11 @@ const Chat: React.FC<ChatProps> = ({
         {/* Loading indicator */}
         {isLoading && (
           <div className="flex justify-start mb-4">
-            <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden">
+            <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden bg-white flex items-center justify-center">
               <img
-                src="/nicor-ai-avatar.png"
+                src="/images/nicorai-logo-black.svg"
                 alt="NicorAI"
-                className="h-full w-full object-cover"
+                className="h-6 w-6 object-contain"
               />
             </div>
             <div className="bg-blue-100 rounded-2xl rounded-tl-none px-4 py-3 flex items-center max-w-[80%]">
@@ -1114,11 +1114,11 @@ const Chat: React.FC<ChatProps> = ({
         {/* Error message */}
         {error && (
           <div className="flex justify-start mb-4">
-            <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden">
+            <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden bg-white flex items-center justify-center">
               <img
-                src="/nicor-ai-avatar.png"
+                src="/images/nicorai-logo-black.svg"
                 alt="NicorAI"
-                className="h-full w-full object-cover"
+                className="h-6 w-6 object-contain"
               />
             </div>
             <div className="flex flex-col max-w-[80%]">
