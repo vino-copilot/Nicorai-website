@@ -23,7 +23,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
  
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-11/12 max-w-md p-6 mx-2 flex flex-col items-center border border-blue-100 animate-pop-in">
+      <div className="bg-white rounded-2xl shadow-2xl w-11/12 sm:max-w-xs md:max-w-sm lg:max-w-md p-4 sm:p-6 mx-2 flex flex-col items-center border border-blue-100 animate-pop-in">
         <div className="flex flex-col items-center mb-4">
           {/* Warning Icon */}
           <svg className="w-12 h-12 text-red-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -32,7 +32,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <h2 className="text-xl font-bold text-gray-900 mb-1 text-center" style={{ fontFamily: 'Arial, sans-serif' }}>{title}</h2>
         </div>
         <p className="text-gray-700 mb-6 text-center text-base" style={{ fontFamily: 'Arial, sans-serif' }}>{description}</p>
-        <div className="flex w-full justify-center gap-3">
+        <div className="flex w-full justify-center gap-3 flex-wrap">
           <button
             onClick={onCancel}
             className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium transition-colors border border-gray-200"

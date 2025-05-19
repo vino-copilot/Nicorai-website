@@ -6,11 +6,15 @@ import { Briefcase, CheckSquare, Mail, Users, Sparkles, Lightbulb } from 'lucide
 import ConfirmModal from './ConfirmModal';
 
 
+
+
 interface SidebarProps {
   onNavClick: (view: string) => void;
   activeView: string | null;
   onToggle?: (expanded: boolean) => void;
 }
+
+
 
 
 // Add this utility function at the top level, before the Sidebar component
@@ -20,6 +24,8 @@ const isMobileDevice = () => {
   }
   return false;
 };
+
+
 
 
 // Custom CSS for the logo text to match the pixelated style
@@ -32,12 +38,16 @@ const logoTextStyle = {
 };
 
 
+
+
 // Custom CSS for the navigation items to use Pixelify Sans font
 const navItemStyle = {
   fontFamily: "var(--font-pixelify-sans)",
   letterSpacing: "0.02em",
   fontWeight: 400,
 };
+
+
 
 
 const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) => {
@@ -48,6 +58,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   const [isMobile, setIsMobile] = useState(isMobileDevice());
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
+
+
 
 
   // Notify parent about initial sidebar state
@@ -56,6 +69,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
       onToggle(isExpanded);
     }
   }, []);
+
+
 
 
   // Fetch chat history when component mounts or when localStorage changes
@@ -88,6 +103,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   }, []);
 
 
+
+
   const navItems = [
     { id: 'what-we-do', label: 'What We Do', icon: Briefcase },
     { id: 'what-weve-done', label: "What We've Done", icon: CheckSquare },
@@ -97,9 +114,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   ];
 
 
+
+
   const handleNavClick = (id: string) => {
     onNavClick(id);
   };
+
+
 
 
   // Handle selecting a chat from the history
@@ -117,11 +138,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
     window.dispatchEvent(chatChangeEvent);
 
 
+
+
     // Ensure sidebar state is properly communicated when selecting chat
     if (onToggle) {
       onToggle(isExpanded);
     }
   };
+
+
 
 
   // Format the date for display in the sidebar
@@ -146,12 +171,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   };
 
 
+
+
   // Handle deleting a chat
   const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
     setPendingDeleteId(chatId);
     setShowConfirm(true);
   };
+
+
 
 
   const confirmDelete = () => {
@@ -171,10 +200,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   };
 
 
+
+
   const cancelDelete = () => {
     setShowConfirm(false);
     setPendingDeleteId(null);
   };
+
+
 
 
   // Toggle sidebar expansion
@@ -189,6 +222,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
     // For debugging
     console.log("Toggle sidebar:", newExpandedState, "Mobile:", isMobile);
   };
+
+
 
 
   // Update the mobile detection useEffect
@@ -212,6 +247,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   }, []);
 
 
+
+
   // Auto-collapse on mobile initially - only on first render
   useEffect(() => {
     if (isMobile) {
@@ -230,6 +267,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   }, []);
 
 
+
+
   return (
     <>
       {/* Mobile overlay - only visible when sidebar is expanded on mobile */}
@@ -240,6 +279,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
           style={{ touchAction: 'none' }}
         ></div>
       )}
+
+
 
 
       {/* Sidebar */}
@@ -276,6 +317,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                   )}
                 </button>
               </div>
+
+
 
 
               {/* Logo/Profile Section */}
@@ -316,157 +359,147 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
             </div>
 
 
+
+
             {/* Scrollable content section */}
-            <div className="flex-1 overflow-y-auto sidebar-scroll">
-              {/* Menu Items */}
-              <nav className="flex flex-col items-center mt-4 w-full">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        handleNavClick(item.id);
-                        if (isMobile) {
-                          toggleSidebar();
-                        }
-                      }}
-                      className={`flex items-center w-full px-4 py-2 my-1 rounded-lg transition-colors
-                        ${activeView === item.id ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'}
-                        ${isExpanded ? 'justify-start' : 'justify-center'}
-                      `}
-                    >
-                      <Icon className="w-6 h-6" />
-                      {isExpanded && <span className="ml-4 text-base font-medium">{item.label}</span>}
-                    </button>
-                  );
-                })}
-              </nav>
-
-
-              {/* Recent Chats Section */}
-              <div className={`${isExpanded ? 'p-4 border-t border-gray-200 mt-2' : 'p-2 mt-4'}`}>
-                {isExpanded && (
-                  <div className="flex justify-between items-center mb-3">
-                    <h2 className="font-semibold text-gray-800">Recent Chat</h2>
-                    {chatHistory.length > 0 && (
+            <div className="flex-1 overflow-y-auto sidebar-scroll flex flex-col">
+              {/* Main content (menu + recent chats) */}
+              <div className="flex-1 flex flex-col">
+                {/* Menu Items */}
+                <nav className="flex flex-col items-center mt-4 w-full">
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
                       <button
+                        key={item.id}
                         onClick={() => {
-                          if (window.confirm('Clear all chat history? This cannot be undone.')) {
-                            apiService.clearAllChats();
-                            setChatHistory([]);
-                           
-                            // Update current chat ID
-                            const newChatId = apiService.getCurrentChatId();
-                            setCurrentChatId(newChatId);
-                           
-                            // Notify other components
-                            const chatChangeEvent = new CustomEvent('chatChanged', {
-                              detail: { chatId: newChatId, messages: [] }
-                            });
-                            window.dispatchEvent(chatChangeEvent);
+                          handleNavClick(item.id);
+                          if (isMobile) {
+                            toggleSidebar();
                           }
                         }}
-                        className="text-xs text-red-500 hover:text-red-700"
+                        className={`flex items-center w-full px-4 py-2 my-1 rounded-lg transition-colors
+                          ${activeView === item.id ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'}
+                          ${isExpanded ? 'justify-start' : 'justify-center'}
+                        `}
                       >
-                        Clear All
+                        <Icon className="w-6 h-6" />
+                        {isExpanded && <span className="ml-4 text-base font-medium">{item.label}</span>}
                       </button>
-                    )}
-                  </div>
-                )}
-               
-                <ul className="space-y-2">
-                  {/* New Chat Button styled like a chat history item */}
-                  <li className="group">
-                    <div
-                      onClick={() => {
-                        // Reset to initial view first
-                        onNavClick('');
-                       
-                        // Create a new chat
-                        const newChatId = apiService.createNewChat();
-                        setCurrentChatId(newChatId);
-                       
-                        // Notify other components
-                        const chatChangeEvent = new CustomEvent('chatChanged', {
-                          detail: { chatId: newChatId, messages: [] }
-                        });
-                        window.dispatchEvent(chatChangeEvent);
-                       
-                        // On mobile, close the sidebar after creating a new chat
-                        if (isMobile && isExpanded) {
-                          toggleSidebar();
-                        }
-                      }}
-                      className={`flex items-start ${isExpanded ? 'p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer border border-dashed border-gray-300' : 'p-0.5 justify-center'}`}
-                    >
-                      <div className={`flex-1 min-w-0 flex ${isExpanded ? 'items-center' : 'justify-center'}`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`${isExpanded ? 'w-4 h-4 mr-2' : 'w-6 h-6'} text-blue-600`}>
-                          <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-                        </svg>
-                        {isExpanded && (
-                          <p className="text-sm font-medium text-blue-600">
-                            New Chat
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </li>
-                 
-                  {/* Chat history - only visible when expanded */}
+                    );
+                  })}
+                </nav>
+
+
+                {/* Recent Chats Section */}
+                <div className={`${isExpanded ? 'p-4 border-t border-gray-200 mt-2' : 'p-2 mt-4'}`}>
                   {isExpanded && (
-                    <>
-                      {chatHistory.length > 0 ? (
-                        chatHistory.map((chat) => (
-                          <li key={chat.id} className="group">
-                            <div
-                              onClick={() => {
-                                handleSelectChat(chat.id);
-                                // On mobile, close the sidebar after selecting a chat
-                                if (isMobile) {
-                                  toggleSidebar();
-                                }
-                              }}
-                              className={`flex items-start p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer ${
-                                chat.id === currentChatId ? 'bg-blue-50 border-l-2 border-blue-600 pl-3.5' : ''
-                              }`}
-                            >
-                              <div className="flex-1 min-w-0">
-                                <p className={`text-sm font-medium truncate group-hover:text-blue-600 ${
-                                  chat.id === currentChatId ? 'text-blue-600' : 'text-gray-900'
-                                }`}>
-                                  {chat.title}
-                                </p>
-                                <p className={`text-xs ${
-                                  chat.id === currentChatId ? 'text-blue-500' : 'text-gray-600'
-                                } group-hover:text-blue-500`}>
-                                  {formatChatDate(chat.lastUpdated)}
-                                </p>
-                              </div>
-                              {/* Always show delete button, on all screen sizes */}
-                              <button
-                                onClick={(e) => handleDeleteChat(e, chat.id)}
-                                className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1"
-                                title="Delete chat"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                                  <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
-                                </svg>
-                              </button>
-                            </div>
-                          </li>
-                        ))
-                      ) : (
-                        <li className="text-sm text-gray-500 italic px-4">No recent chats</li>
+                    <div className="flex justify-between items-center mb-3">
+                      <h2 className="font-semibold text-gray-800">Recent Chat</h2>
+                      {chatHistory.length > 0 && (
+                        <button
+                          onClick={() => setShowClearAllConfirm(true)}
+                          className="text-xs text-red-500 hover:text-red-700"
+                        >
+                          Clear All
+                        </button>
                       )}
-                    </>
+                    </div>
                   )}
-                </ul>
+                 
+                  <ul className="space-y-2">
+                    {/* New Chat Button styled like a chat history item */}
+                    <li className="group">
+                      <div
+                        onClick={() => {
+                          // Reset to initial view first
+                          onNavClick('');
+                         
+                          // Create a new chat
+                          const newChatId = apiService.createNewChat();
+                          setCurrentChatId(newChatId);
+                         
+                          // Notify other components
+                          const chatChangeEvent = new CustomEvent('chatChanged', {
+                            detail: { chatId: newChatId, messages: [] }
+                          });
+                          window.dispatchEvent(chatChangeEvent);
+                         
+                          // On mobile, close the sidebar after creating a new chat
+                          if (isMobile && isExpanded) {
+                            toggleSidebar();
+                          }
+                        }}
+                        className={`flex items-start ${isExpanded ? 'p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer border border-dashed border-gray-300' : 'p-0.5 justify-center'}`}
+                      >
+                        <div className={`flex-1 min-w-0 flex ${isExpanded ? 'items-center' : 'justify-center'}`}>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`${isExpanded ? 'w-4 h-4 mr-2' : 'w-6 h-6'} text-blue-600`}>
+                            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+                          </svg>
+                          {isExpanded && (
+                            <p className="text-sm font-medium text-blue-600">
+                              New Chat
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                   
+                    {/* Chat history - only visible when expanded */}
+                    {isExpanded && (
+                      <>
+                        {chatHistory.length > 0 ? (
+                          chatHistory.map((chat) => (
+                            <li key={chat.id} className="group">
+                              <div
+                                onClick={() => {
+                                  handleSelectChat(chat.id);
+                                  // On mobile, close the sidebar after selecting a chat
+                                  if (isMobile) {
+                                    toggleSidebar();
+                                  }
+                                }}
+                                className={`flex items-start p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer ${
+                                  chat.id === currentChatId ? 'bg-blue-50 border-l-2 border-blue-600 pl-3.5' : ''
+                                }`}
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-sm font-medium truncate group-hover:text-blue-600 ${
+                                    chat.id === currentChatId ? 'text-blue-600' : 'text-gray-900'
+                                  }`}>
+                                    {chat.title}
+                                  </p>
+                                  <p className={`text-xs ${
+                                    chat.id === currentChatId ? 'text-blue-500' : 'text-gray-600'
+                                  } group-hover:text-blue-500`}>
+                                    {formatChatDate(chat.lastUpdated)}
+                                  </p>
+                                </div>
+                                {/* Always show delete button, on all screen sizes */}
+                                <button
+                                  onClick={(e) => handleDeleteChat(e, chat.id)}
+                                  className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1"
+                                  title="Delete chat"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                                    <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="text-sm text-gray-500 italic px-4">No recent chats</li>
+                        )}
+                      </>
+                    )}
+                  </ul>
+                </div>
               </div>
 
 
-              {/* Social Media and Copyright Footer - moved inside scrollable content */}
-              <div className={`flex-shrink-0 p-4 border-t border-gray-200 mt-4`}>
+              {/* Footer: Social Media and Copyright - scrolls with content, but pushed to bottom if short */}
+              <div className={`p-4 border-t border-gray-200 mt-auto`}>
                 {/* Social Media Icons */}
                 <div className={`flex ${isExpanded ? 'justify-center space-x-6' : 'flex-col space-y-4 items-center'} mb-3`}>
                   <Link href="https://www.linkedin.com/company/nicorai/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
@@ -512,6 +545,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
       )}
 
 
+
+
       <ConfirmModal
         open={showConfirm}
         title="Delete Chat"
@@ -521,9 +556,34 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />
+      {/* Confirm Modal for Clear All */}
+      <ConfirmModal
+        open={showClearAllConfirm}
+        title="Clear All Chats"
+        description="Are you sure you want to clear all chat history?"
+        confirmText="Clear All"
+        cancelText="Cancel"
+        onConfirm={() => {
+          apiService.clearAllChats();
+          setChatHistory([]);
+          // Update current chat ID
+          const newChatId = apiService.getCurrentChatId();
+          setCurrentChatId(newChatId);
+          // Notify other components
+          const chatChangeEvent = new CustomEvent('chatChanged', {
+            detail: { chatId: newChatId, messages: [] }
+          });
+          window.dispatchEvent(chatChangeEvent);
+          setShowClearAllConfirm(false);
+        }}
+        onCancel={() => setShowClearAllConfirm(false)}
+      />
     </>
   );
 };
 
 
+
+
 export default Sidebar;
+
