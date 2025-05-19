@@ -1269,7 +1269,7 @@ const AboutUsPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
  
 const AboutHero = () => {
   return (
-    <section className="relative pt-10 pb-16 overflow-hidden">
+    <section className="relative pt-[17px] pb-[17px] md:pt-10 md:pb-16 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-indigo-50 to-white bg-grid-pattern"></div>
@@ -1354,7 +1354,7 @@ const AboutHero = () => {
 
 const OurStory = () => {
   return (
-    <section className="py-16 relative">
+    <section className="py-[17px] md:py-16 relative">
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
@@ -1467,7 +1467,7 @@ const TeamSection = () => {
   ];
  
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-indigo-50 relative overflow-hidden">
+    <section className="py-[17px] md:py-20 bg-gradient-to-b from-white to-indigo-50 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern"></div>
  
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -1476,7 +1476,7 @@ const TeamSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-[17px] md:mb-12"
         >
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our Leadership Team
@@ -1555,7 +1555,7 @@ const CoreValues = () => {
   ];
  
   return (
-    <section className="py-20 bg-indigo-50 relative overflow-hidden">
+    <section className="py-[17px] md:py-20 bg-indigo-50 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-indigo-100/50 rounded-full filter blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-100/50 rounded-full filter blur-3xl"></div>
@@ -1566,7 +1566,7 @@ const CoreValues = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-[17px] md:mb-12"
         >
           <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
             Our Core Values
@@ -1795,26 +1795,26 @@ const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative pt-10 pb-16 overflow-hidden">
+      <section className="relative pt-4 pb-4 md:pt-10 md:pb-10 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white bg-grid-pattern"></div>
           <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full filter blur-3xl animate-float"></div>
           <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-indigo-100/20 to-blue-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
         </div>
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center ">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100 mb-4">
+            <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100 mb-2 ">
               <Sparkles size={14} className="mr-2" />
               Insights & Articles
             </div>
             <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
               Research
             </h1>
-            <p className="text-xl text-gray-700 mb-4 leading-relaxed">
+            <p className="text-xl text-gray-700 mb-2 leading-relaxed ">
               Dive into our latest research, articles, and insights at the intersection of AI, technology, and innovation. Explore thought leadership inspired by pioneers like Nicolas Rashevsky.
             </p>
           </motion.div>
@@ -1822,7 +1822,7 @@ const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
       </section>
 
       {/* Blog Posts Section */}
-      <section className="py-16 bg-gradient-to-b from-white relative to-gray-50">
+      <section className="py-4 md:py-16 bg-gradient-to-b from-white relative to-gray-50">
         <div className="absolute inset-0 bg-grid-pattern"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div
@@ -1830,7 +1830,7 @@ const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-16"
+            className="text-center mb-4 md:mb-12 "
           >
             <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
               Latest Articles
