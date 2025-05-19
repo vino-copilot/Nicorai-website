@@ -81,7 +81,7 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
   };
 
   return (
-    <div className="relative flex-1 h-full overflow-auto bg-white pb-24">
+    <div className="relative flex-1 h-full overflow-auto bg-white pb-20">
       {/* Remove close button for dynamic views to avoid duplication */}
       {viewId !== 'dynamic-view' && (
         <div className="sticky top-0 right-0 p-4 flex justify-end z-50 bg-transparent">
@@ -1178,7 +1178,7 @@ const OfficeLocations = () => {
   ];
  
   return (
-    <section className={`${window.innerWidth < 768 ? 'pt-6' : 'py-10'} bg-gradient-to-b from-white to-blue-50 relative overflow-hidden`}> {/* Reduced vertical padding */}
+    <section className={`${window.innerWidth < 768 ? 'pt-6 pb-8' : 'py-10'} bg-gradient-to-b from-white to-blue-50 relative overflow-hidden`}> {/* Added pb-24 for mobile */}
       {/* Background pattern */}
       <div className="absolute inset-0 bg-grid-pattern z-0"></div>
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-teal-100/20 rounded-full filter blur-3xl z-0"></div>
