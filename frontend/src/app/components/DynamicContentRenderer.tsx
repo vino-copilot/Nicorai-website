@@ -340,7 +340,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
       <div className="fixed top-4 right-4 z-50">
         <button
           onClick={onClose}
-          className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors shadow-md"
+          className="p-2 rounded-full bg-white hover:bg-blue-100 transition-colors shadow-md"
           aria-label="Close"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="black" className="w-5 h-5">
