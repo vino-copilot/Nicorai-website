@@ -37,6 +37,8 @@ const Chat: React.FC<ChatProps> = ({
   const [dynamicViewMessageId, setDynamicViewMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [prevIsVisible, setPrevIsVisible] = useState(isVisible);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Use either external or internal closed dynamic view
   const closedDynamicView = externalClosedDynamicView || internalClosedDynamicView;
@@ -949,7 +951,10 @@ const Chat: React.FC<ChatProps> = ({
   );
 
   const renderChatView = () => (
-    <div className="flex flex-col h-full relative">
+    <div 
+      ref={chatContainerRef}
+      className="flex flex-col h-full relative"
+    >
       {/* Header section with close button */}
       <div className="p-2 flex justify-end">
         {!dynamicView && (
@@ -1143,6 +1148,19 @@ const Chat: React.FC<ChatProps> = ({
       </div>
     </div>
   );
+
+  // Reset scroll position when chat becomes visible
+  useEffect(() => {
+    // Only reset scroll when transitioning from not visible to visible
+    if (isVisible && !prevIsVisible) {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop = 0;
+      }
+    }
+    
+    // Update previous visibility state
+    setPrevIsVisible(isVisible);
+  }, [isVisible, prevIsVisible]);
 
   if (!isVisible) {
     return null;

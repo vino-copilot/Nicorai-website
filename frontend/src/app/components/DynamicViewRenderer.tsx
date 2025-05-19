@@ -28,7 +28,9 @@ import {
   Mail,
   MapPin,
   Target,
-  ArrowRight
+  ArrowRight,
+  Notebook,
+  Rocket
 } from 'lucide-react';
 
 interface ViewProps {
@@ -43,6 +45,16 @@ const cn = (...classes: any[]) => {
 };
 
 const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicViewContent }) => {
+  // Add a ref to the container div
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll to top whenever viewId changes
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
+  }, [viewId]);
+  
   // Function to render content based on viewId
   const renderContent = () => {
     // Check if this is a dynamic view from chat
@@ -81,7 +93,7 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
   };
 
   return (
-    <div className="relative flex-1 h-full overflow-auto bg-white pb-20">
+    <div ref={containerRef} className="relative flex-1 h-full overflow-auto bg-white pb-20">
       {/* Remove close button for dynamic views to avoid duplication */}
       {viewId !== 'dynamic-view' && (
         <div className="sticky top-0 right-0 p-4 flex justify-end z-50 bg-transparent">
@@ -505,7 +517,7 @@ const AIProcessSection = () => {
     {
       title: "Strategy",
       description: "We formulate a strategic plan to implement AI solutions tailored to your needs.",
-      icon: <Briefcase className="w-6 h-6 text-white" />,
+      icon: <Notebook className="w-6 h-6 text-white" />,
       color: "bg-indigo-600"
     },
     {
@@ -517,7 +529,7 @@ const AIProcessSection = () => {
     {
       title: "Deployment",
       description: "We seamlessly integrate AI solutions into your existing systems and workflows.",
-      icon: <Share2 className="w-6 h-6 text-white" />,
+      icon: <Rocket className="w-6 h-6 text-white" />,
       color: "bg-violet-600"
     },
     {
@@ -1420,7 +1432,7 @@ const OurStory = () => {
                 <h3 className="text-2xl font-bold ml-4">Our Commitment</h3>
               </div>
               <p className="text-indigo-100 text-[16px]">
-              At NicorAI, we honor Rashevsky’s legacy by embracing his scientific approach and commitment to solving complex problems. Inspired by his innovation, we strive to create impactful AI solutions that reflect his enduring influence.
+              At NicorAI, we honor Rashevsky's legacy by embracing his scientific approach and commitment to solving complex problems. Inspired by his innovation, we strive to create impactful AI solutions that reflect his enduring influence.
               </p>
             </div>
           </motion.div>
