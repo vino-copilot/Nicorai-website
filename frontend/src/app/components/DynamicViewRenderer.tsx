@@ -99,7 +99,7 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
         <div className="sticky top-0 right-0 p-4 flex justify-end z-50 bg-transparent">
           <button
             onClick={onClose}
-            className="p-2 text-gray-500 hover:text-gray-700 bg-white rounded-full shadow-sm"
+            className="p-2 text-gray-500 hover:text-gray-700 bg-white rounded-full shadow-lg"
             aria-label="Close view"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
