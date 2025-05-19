@@ -1006,7 +1006,7 @@ const Chat: React.FC<ChatProps> = ({
         )}
       </div>
       {/* Message container with custom scrollbar styling */}
-      <div className="flex-1 p-4 overflow-y-auto relative sidebar-scroll">
+      <div className="flex-1 p-4 py-16 overflow-y-auto relative sidebar-scroll">
         {/* Always show dynamic view on top when available, regardless of sidebar state */}
         {dynamicView && (
           <div className={`absolute inset-0 z-30 flex items-center justify-center bg-white bg-opacity-80 p-4 ${activeView ? 'sticky top-0' : ''}`}>
