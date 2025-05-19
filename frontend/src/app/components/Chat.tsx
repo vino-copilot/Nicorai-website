@@ -992,7 +992,7 @@ const Chat: React.FC<ChatProps> = ({
   const renderChatView = () => (
     <div className="flex flex-col h-full relative">
       {/* Header section with close button */}
-      <div className="p-2 flex justify-end">
+      <div className="p-4 flex justify-end fixed top-0 right-0 z-40">
         {!dynamicView && (
           <button
             onClick={() => onMessageSent?.(true)}
