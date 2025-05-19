@@ -1408,9 +1408,19 @@ const OurStory = () => {
                 </div>
                 <h3 className="text-2xl font-bold ml-4">Our Vision</h3>
               </div>
-              <p className="text-indigo-100 text-[16px]">
+              <p className="text-indigo-100 text-[16px] mb-8">
                 A world where AI enhances human potential, drives business innovation,solves real-world problems and
                 creates solutions to our most pressing challenges.
+              </p>
+
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                  <Target className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold ml-4">Our Commitment</h3>
+              </div>
+              <p className="text-indigo-100 text-[16px]">
+              At NicorAI, we honor Rashevsky’s legacy by embracing his scientific approach and commitment to solving complex problems. Inspired by his innovation, we strive to create impactful AI solutions that reflect his enduring influence.
               </p>
             </div>
           </motion.div>
