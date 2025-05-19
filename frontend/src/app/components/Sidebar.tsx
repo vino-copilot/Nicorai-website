@@ -4,6 +4,11 @@ import Image from 'next/image';
 import apiService, { ChatSession } from '../services/api';
 import { Briefcase, CheckSquare, Mail, Users, Sparkles, Lightbulb } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
+import { useChatLoading } from '../services/ChatContext';
+
+
+
+
 
 
 
@@ -17,6 +22,10 @@ interface SidebarProps {
 
 
 
+
+
+
+
 // Add this utility function at the top level, before the Sidebar component
 const isMobileDevice = () => {
   if (typeof window !== 'undefined') {
@@ -24,6 +33,10 @@ const isMobileDevice = () => {
   }
   return false;
 };
+
+
+
+
 
 
 
@@ -40,12 +53,20 @@ const logoTextStyle = {
 
 
 
+
+
+
+
 // Custom CSS for the navigation items to use Pixelify Sans font
 const navItemStyle = {
   fontFamily: "var(--font-pixelify-sans)",
   letterSpacing: "0.02em",
   fontWeight: 400,
 };
+
+
+
+
 
 
 
@@ -59,6 +80,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
+  const { isLoading: chatLoading } = useChatLoading();
+
+
+
+
 
 
 
@@ -69,6 +95,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
       onToggle(isExpanded);
     }
   }, []);
+
+
+
+
 
 
 
@@ -105,6 +135,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
 
 
+
+
+
+
   const navItems = [
     { id: 'what-we-do', label: 'What We Do', icon: Briefcase },
     { id: 'what-weve-done', label: "What We've Done", icon: CheckSquare },
@@ -116,9 +150,17 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
 
 
+
+
+
+
   const handleNavClick = (id: string) => {
     onNavClick(id);
   };
+
+
+
+
 
 
 
@@ -140,11 +182,19 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
 
 
+
+
+
+
     // Ensure sidebar state is properly communicated when selecting chat
     if (onToggle) {
       onToggle(isExpanded);
     }
   };
+
+
+
+
 
 
 
@@ -173,12 +223,20 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
 
 
+
+
+
+
   // Handle deleting a chat
   const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
     setPendingDeleteId(chatId);
     setShowConfirm(true);
   };
+
+
+
+
 
 
 
@@ -202,10 +260,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
 
 
+
+
+
+
   const cancelDelete = () => {
     setShowConfirm(false);
     setPendingDeleteId(null);
   };
+
+
+
+
 
 
 
@@ -222,6 +288,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
     // For debugging
     console.log("Toggle sidebar:", newExpandedState, "Mobile:", isMobile);
   };
+
+
+
+
 
 
 
@@ -249,6 +319,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
 
 
+
+
+
+
   // Auto-collapse on mobile initially - only on first render
   useEffect(() => {
     if (isMobile) {
@@ -269,6 +343,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
 
 
+
+
+
+
   return (
     <>
       {/* Mobile overlay - only visible when sidebar is expanded on mobile */}
@@ -279,6 +357,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
           style={{ touchAction: 'none' }}
         ></div>
       )}
+
+
+
+
 
 
 
@@ -317,6 +399,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                   )}
                 </button>
               </div>
+
+
+
+
 
 
 
@@ -361,6 +447,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
 
 
+
+
+
+
             {/* Scrollable content section */}
             <div className="flex-1 overflow-y-auto sidebar-scroll flex flex-col">
               {/* Main content (menu + recent chats) */}
@@ -389,6 +479,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                     );
                   })}
                 </nav>
+
+
 
 
                 {/* Recent Chats Section */}
@@ -474,6 +566,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                                   } group-hover:text-blue-500`}>
                                     {formatChatDate(chat.lastUpdated)}
                                   </p>
+                                  {chat.id === currentChatId && chatLoading && (
+                                    <span className="ml-2 inline-block align-middle">
+                                      <span className="flex space-x-1">
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                                      </span>
+                                    </span>
+                                  )}
                                 </div>
                                 {/* Always show delete button, on all screen sizes */}
                                 <button
@@ -496,6 +597,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                   </ul>
                 </div>
               </div>
+
+
 
 
               {/* Footer: Social Media and Copyright - scrolls with content, but pushed to bottom if short */}
@@ -547,6 +650,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
 
 
+
+
+
+
       <ConfirmModal
         open={showConfirm}
         title="Delete Chat"
@@ -585,5 +692,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
 
 
 
+
+
+
+
 export default Sidebar;
+
+
+
+
 

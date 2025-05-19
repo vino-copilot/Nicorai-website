@@ -1629,9 +1629,9 @@ const CoreValues = () => {
 const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   const blogPosts = [
     {
-      title: "The Future of AI in Web Development",
-      date: "October 26, 2023",
-      excerpt: "Artificial Intelligence is rapidly transforming the landscape of web development. From automated code generation to intelligent UI/UX design, AI tools are empowering developers to build more sophisticated and personalized web experiences...",
+      title: "NicorAI: The Website",
+      date: "May 19, 2025",
+      excerpt: "NicorAI is a modern AI platform built with Next.js and React, offering a responsive design and interactive chat. It delivers rich content through text, charts, and cards, ensuring a smooth user experience across all devices...",
       category: "AI Trends",
       color: "blue",
     },

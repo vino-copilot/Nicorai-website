@@ -1,130 +1,93 @@
 import React, { useState, useRef } from 'react';
 import apiService, { DynamicView } from '../services/api';
+import { useChatLoading } from '../services/ChatContext';
+
 
 interface ChatInputProps {
   onMessageSent?: (isClosing?: boolean, dynamicView?: DynamicView) => void;
   isChatExplicitlyClosed?: boolean;
 }
 
+
 type NotificationStatus = 'none' | 'sending' | 'success' | 'error';
+
 
 const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyClosed = false }) => {
   const [inputValue, setInputValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<{status: NotificationStatus, message: string}>({
     status: 'none',
     message: ''
   });
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  
+  const { isLoading, setIsLoading } = useChatLoading();
+ 
   // Clear notification after 3 seconds
   const clearNotificationTimeout = useRef<NodeJS.Timeout | null>(null);
 
+
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
-    
     setInputValue('');
     setIsLoading(true);
     setNotification({
       status: 'sending',
       message: 'Sending message...'
     });
-    
-    // Create a new chat if:
-    // 1. There's no current chat ID, or
-    // 2. The current chat has no messages, or
-    // 3. The chat was explicitly closed (this is the key condition)
+    // Only create a new chat if there is truly no current chat ID and no messages
     const currentChatId = apiService.getCurrentChatId();
     const currentMessages = currentChatId ? apiService.getCurrentChatMessages() : [];
-    
-    // Always create a new chat when sending from a tab view after explicitly closing the chat
-    if (!currentChatId || currentMessages.length === 0 || isChatExplicitlyClosed) {
-      console.log('Creating new chat because:', 
-        !currentChatId ? 'no current chat' : 
-        currentMessages.length === 0 ? 'current chat has no messages' : 
-        'chat was explicitly closed');
+    if (!currentChatId && currentMessages.length === 0) {
       const newChatId = apiService.createNewChat();
       apiService.setCurrentChat(newChatId);
-    } else {
-      console.log('Using existing chat:', currentChatId);
     }
-    
     try {
-      // Use the API service to get a response
-      const aiResponse = await apiService.sendMessage(content);
-      
-      // Dispatch a chat changed event to update any listening components
-      const chatChangeEvent = new CustomEvent('chatChanged', { 
+      const chatIdForSend = apiService.getCurrentChatId() || undefined;
+      const aiResponse = await apiService.sendMessage(content, chatIdForSend);
+      const chatChangeEvent = new CustomEvent('chatChanged', {
         detail: { chatId: apiService.getCurrentChatId(), messages: apiService.getCurrentChatMessages() }
       });
       window.dispatchEvent(chatChangeEvent);
-      
-      // Show success notification
-      setNotification({
-        status: 'success',
-        message: 'Message sent!'
-      });
-      
-      // Pass dynamic view to parent if it exists
+      setNotification({ status: 'success', message: 'Message sent!' });
       if (aiResponse.dynamicView) {
-        console.log('Dynamic view found in ChatInput response:', aiResponse.dynamicView);
         onMessageSent?.(false, aiResponse.dynamicView);
-        return;
-      }
-      
-      // If no direct dynamic view, check for content that might need a dynamic view
-      const lowerContent = content.toLowerCase().trim();
-      const isViewRequest = 
-        lowerContent.includes('contact') ||
-        lowerContent.includes('comparison') || 
-        lowerContent.includes('products') ||
-        lowerContent.includes('chart') || 
-        lowerContent.includes('table') ||
-        lowerContent.includes('about nicor') ||
-        lowerContent.includes('show');
-      
-      if (isViewRequest) {
-        const apiSuggestedView = await apiService.checkForDynamicView(content);
-        if (apiSuggestedView) {
-          console.log('Suggested view found in ChatInput:', apiSuggestedView);
-          onMessageSent?.(false, apiSuggestedView);
+      } else {
+        const lowerContent = content.toLowerCase().trim();
+        const isViewRequest =
+          lowerContent.includes('contact') ||
+          lowerContent.includes('comparison') ||
+          lowerContent.includes('products') ||
+          lowerContent.includes('chart') ||
+          lowerContent.includes('table') ||
+          lowerContent.includes('about nicor') ||
+          lowerContent.includes('show');
+        if (isViewRequest) {
+          const apiSuggestedView = await apiService.checkForDynamicView(content);
+          if (apiSuggestedView) {
+            onMessageSent?.(false, apiSuggestedView);
+          }
         }
       }
     } catch (error) {
-      // Show error notification
-      setNotification({
-        status: 'error',
-        message: 'Failed to send message. Please try again.'
-      });
+      setNotification({ status: 'error', message: 'Failed to send message. Please try again.' });
       console.error('Error sending message:', error);
     } finally {
       setIsLoading(false);
-      
-      // Clear notification after 3 seconds
-      if (clearNotificationTimeout.current) {
-        clearTimeout(clearNotificationTimeout.current);
-      }
-      
-      clearNotificationTimeout.current = setTimeout(() => {
-        setNotification({
-          status: 'none',
-          message: ''
-        });
-      }, 3000);
     }
   };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
-    
-    // First notify parent to show chat UI immediately 
+   
+    // First notify parent to show chat UI immediately
     // BEFORE sending the message
     onMessageSent?.(false);
-    
+   
     // Then send the message
     sendMessage(inputValue);
   };
+
 
   return (
     <form onSubmit={handleSubmit} className="flex items-end relative">
@@ -154,12 +117,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
           </svg>
         </button>
       </div>
-      
+     
       {/* Notification popup */}
       {notification.status !== 'none' && (
         <div className={`absolute bottom-full mb-2 right-0 px-3 py-1.5 rounded-xl text-sm flex items-center gap-2 transition-opacity ${
-          notification.status === 'sending' ? 'bg-blue-50 text-blue-600' : 
-          notification.status === 'success' ? 'bg-green-50 text-green-600' : 
+          notification.status === 'sending' ? 'bg-blue-50 text-blue-600' :
+          notification.status === 'success' ? 'bg-green-50 text-green-600' :
           'bg-red-50 text-red-600'
         }`}>
           {notification.status === 'sending' ? (
@@ -183,4 +146,6 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
   );
 };
 
-export default ChatInput; 
+
+export default ChatInput;
+

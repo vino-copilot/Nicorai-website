@@ -1,9 +1,11 @@
 // API service for NicorAI frontend
 // Connects to the real API Gateway
 
+
 // Configuration
 const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_URL;
 const DEVELOPMENT_MODE = true; // Set to false in production
+
 
 // Types
 export interface ChatMessage {
@@ -13,6 +15,7 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
+
 export interface ChatSession {
   id: string;
   title: string;
@@ -20,16 +23,19 @@ export interface ChatSession {
   messages: ChatMessage[];
 }
 
+
 export interface DynamicView {
   id: string;
   type: 'chart' | 'card' | 'table' | 'list' | 'custom' | 'dynamicScreen';
   data: any;
 }
 
+
 // Extend ChatMessage interface to include view information
 interface ChatMessageWithView extends ChatMessage {
   dynamicView?: DynamicView;
 }
+
 
 // Define interface for dynamic view associations
 interface ViewAssociations {
@@ -38,15 +44,25 @@ interface ViewAssociations {
   };
 }
 
+
 // API class
 class ApiService {
   private currentChatId: string | null = null;
   private lastDynamicViewId: string | null = null; // Track the last view to prevent repetition
 
+
   constructor() {
     // Initialize with the most recent chat or create a new one
     this.initializeChat();
+    // Restore currentChatId from localStorage if available
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const savedChatId = localStorage.getItem('nicoraiCurrentChatId');
+      if (savedChatId) {
+        this.currentChatId = savedChatId;
+      }
+    }
   }
+
 
   private initializeChat() {
     const history = this.getChatHistory();
@@ -56,6 +72,7 @@ class ApiService {
       this.createNewChat();
     }
   }
+
 
   // Create a new chat session
   createNewChat(): string {
@@ -67,11 +84,16 @@ class ApiService {
       messages: []
     };
 
+
     // Save to localStorage
     this.saveChatSession(newChat);
     this.currentChatId = newChatId;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('nicoraiCurrentChatId', newChatId);
+    }
     return newChatId;
   }
+
 
   // Get all chat sessions from localStorage
   getChatHistory(): ChatSession[] {
@@ -82,7 +104,9 @@ class ApiService {
       }
       if (!chatHistoryJSON) return [];
 
+
       const history = JSON.parse(chatHistoryJSON);
+
 
       // Convert string timestamps back to Date objects
       const convertedHistory = history.map((chat: any) => ({
@@ -93,6 +117,7 @@ class ApiService {
           timestamp: new Date(msg.timestamp)
         }))
       }));
+
 
       // Filter out empty chats (chats with no messages or just with the default title)
       return convertedHistory.filter((chat: ChatSession) =>
@@ -105,38 +130,50 @@ class ApiService {
     }
   }
 
+
   // Get messages for the current chat session
   getCurrentChatMessages(): ChatMessage[] {
     if (!this.currentChatId) return [];
+
 
     const history = this.getChatHistory();
     const currentChat = history.find(c => c.id === this.currentChatId);
     return currentChat ? currentChat.messages : [];
   }
 
+
   // Set the current active chat
   setCurrentChat(chatId: string) {
     this.currentChatId = chatId;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('nicoraiCurrentChatId', chatId);
+    }
   }
+
 
   // Get the current chat ID
   getCurrentChatId(): string | null {
     return this.currentChatId;
   }
 
+
   // Save a chat session to localStorage
   private saveChatSession(chat: ChatSession) {
     try {
       const history = this.getChatHistory();
 
+
       // Remove existing chat with the same ID if it exists
       const filteredHistory = history.filter(c => c.id !== chat.id);
+
 
       // Add the new/updated chat at the beginning (most recent)
       const updatedHistory = [chat, ...filteredHistory];
 
+
       // Keep only the last 20 chats to prevent localStorage from growing too large
       const trimmedHistory = updatedHistory.slice(0, 20);
+
 
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.setItem('nicoraiChatHistory', JSON.stringify(trimmedHistory));
@@ -146,20 +183,25 @@ class ApiService {
     }
   }
 
+
   // Update chat title based on first few messages
   private updateChatTitle(chatId: string, messages: ChatMessage[]) {
     if (messages.length < 2) return; // Need at least one user message and one AI response
 
+
     const userMessage = messages.find(m => m.sender === 'user');
     if (!userMessage) return;
+
 
     // Use the first user message as the title (truncated)
     const title = userMessage.content.length > 30
       ? `${userMessage.content.substring(0, 30)}...`
       : userMessage.content;
 
+
     const history = this.getChatHistory();
     const chat = history.find(c => c.id === chatId);
+
 
     if (chat && chat.title === 'New Chat') {
       const updatedChat = {
@@ -168,12 +210,24 @@ class ApiService {
         lastUpdated: new Date()
       };
 
+
       this.saveChatSession(updatedChat);
     }
   }
 
+
   // Send a chat message and get a response
-  async sendMessage(message: string): Promise<ChatMessageWithView> {
+  async sendMessage(message: string, chatId?: string): Promise<ChatMessageWithView> {
+    // Use the provided chatId or fall back to the currentChatId
+    const targetChatId = chatId || this.currentChatId;
+    if (!targetChatId) {
+      // If no chatId is available, create a new chat
+      const newChatId = this.createNewChat();
+      this.currentChatId = newChatId;
+      return this.sendMessage(message, newChatId);
+    }
+
+
     // Create the user message
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}-user`,
@@ -182,8 +236,10 @@ class ApiService {
       timestamp: new Date()
     };
 
-    // Add user message to current chat
-    this.addMessageToCurrentChat(userMessage);
+
+    // Add user message to the correct chat
+    this.addMessageToCurrentChat(userMessage, targetChatId);
+
 
     try {
       // Always try the API first
@@ -193,8 +249,10 @@ class ApiService {
         timestamp: new Date().toISOString()
       };
 
+
       // Log request for debugging
       console.log('Sending request to API Gateway:', payload);
+
 
       // Make the actual API call
       const response = await fetch(`${API_GATEWAY_URL}/chat`, {
@@ -205,12 +263,15 @@ class ApiService {
         body: JSON.stringify(payload)
       });
 
+
       if (!response.ok) {
         throw new Error('API request failed');
       }
 
+
       const responseData = await response.json();
       console.log('API Gateway response:', responseData);
+
 
       // Create AI message from response
       let aiContent = '';
@@ -228,24 +289,19 @@ class ApiService {
         timestamp: new Date()
       };
 
+
       // Check for dynamic view in response
       let dynamicView = null;
-      // Method 1: Direct view in responseData
       if (responseData.responseType === 'view') {
         dynamicView = this.checkResponseForDynamicView(responseData);
-      } 
-      // Method 2: View in content field
-      else if (responseData.content && typeof responseData.content === 'object') {
-        // Check for items array in the content
+      } else if (responseData.content && typeof responseData.content === 'object') {
         if (responseData.content.items && Array.isArray(responseData.content.items)) {
           dynamicView = {
             id: `dynamic-${Date.now()}`,
             type: 'custom',
             data: responseData.content
           };
-        }
-        // Check for dynamicView or view property
-        else if (responseData.content.dynamicView || responseData.content.view) {
+        } else if (responseData.content.dynamicView || responseData.content.view) {
           const viewData = responseData.content.dynamicView || responseData.content.view;
           dynamicView = {
             id: `dynamic-${Date.now()}`,
@@ -254,13 +310,12 @@ class ApiService {
           };
         }
       }
-      // Add the dynamic view to the message if found
       if (dynamicView) {
         console.log('Dynamic view found in API response:', dynamicView);
         aiMessage.dynamicView = dynamicView;
       }
-      // Add AI message to current chat
-      this.addMessageToCurrentChat(aiMessage);
+      // Add AI message to the correct chat
+      this.addMessageToCurrentChat(aiMessage, targetChatId);
       return aiMessage;
     } catch (error) {
       console.error('Error sending message:', error);
@@ -278,15 +333,15 @@ class ApiService {
             ['TailwindCSS', 'Styling', 'Utility-first CSS framework'],
             ['Node.js', 'Backend', 'JavaScript runtime environment']
           ]
-        });
+        }, targetChatId);
       } else if (lowerMessage.includes("case studies as chart") || lowerMessage.includes("show me the case studies as chart")) {
         return this.createSpecialViewResponse('chart', 'Case Studies', {
           title: 'Case Studies Success Rate',
           labels: ['E-commerce', 'Healthcare', 'Finance', 'Manufacturing', 'Technology'],
           values: [88, 75, 92, 70, 95]
-        });
+        }, targetChatId);
       } else if (
-        lowerMessage.includes("show me as card technologies") || 
+        lowerMessage.includes("show me as card technologies") ||
         lowerMessage.includes("card technologies") ||
         lowerMessage.includes("technologies in card")
       ) {
@@ -298,7 +353,7 @@ class ApiService {
             { title: 'Backend', content: 'Node.js, Express, Python, Django' },
             { title: 'Database', content: 'MongoDB, PostgreSQL, Redis' }
           ]
-        });
+        }, targetChatId);
       }
       // Create error message
       const errorMessage: ChatMessageWithView = {
@@ -307,25 +362,29 @@ class ApiService {
         sender: 'ai',
         timestamp: new Date()
       };
-      // Add error message to current chat
-      this.addMessageToCurrentChat(errorMessage);
+      this.addMessageToCurrentChat(errorMessage, targetChatId);
       return errorMessage;
     }
   }
 
+
   // Add a message to the current chat session
-  private addMessageToCurrentChat(message: ChatMessage) {
-    if (!this.currentChatId) {
+  private addMessageToCurrentChat(message: ChatMessage, chatId?: string) {
+    const targetChatId = chatId || this.currentChatId;
+    if (!targetChatId) {
       this.createNewChat();
+      return;
     }
 
+
     const history = this.getChatHistory();
-    const currentChat = history.find(c => c.id === this.currentChatId) || {
-      id: this.currentChatId as string,
+    const currentChat = history.find(c => c.id === targetChatId) || {
+      id: targetChatId as string,
       title: 'New Chat',
       lastUpdated: new Date(),
       messages: []
     };
+
 
     // Add the new message
     const updatedChat = {
@@ -334,21 +393,35 @@ class ApiService {
       lastUpdated: new Date()
     };
 
+
     // Save the updated chat
     this.saveChatSession(updatedChat);
 
+
     // Update chat title if this is a new chat
     this.updateChatTitle(updatedChat.id, updatedChat.messages);
+
+
+    // If this is an AI message with a dynamicView, store the view association immediately
+    if (message.sender === 'ai' && (message as any).dynamicView) {
+      const view = (message as any).dynamicView;
+      const viewId = `view-for-message-${message.id}`;
+      // Store the view and association
+      this.storeViewAndAssociation(message.id, { ...view, id: viewId });
+    }
   }
+
 
   // Generate a dynamic view (mock)
   async getDynamicView(viewId: string): Promise<DynamicView | null> {
     // In a real app, we would call the API Gateway to get the view
     // But for development, we'll use mock data
 
+
     try {
       // Wait a bit to simulate API call
       await new Promise(resolve => setTimeout(resolve, 300));
+
 
       // Check if this is a dynamic ID (created at runtime) that we may not have stored
       if (viewId.startsWith('dynamic-')) {
@@ -369,7 +442,7 @@ class ApiService {
             }
           };
         }
-        
+       
         // If it's a table view
         if (viewId.includes('table')) {
           console.log(`Creating fallback table view for dynamic ID: ${viewId}`);
@@ -390,7 +463,7 @@ class ApiService {
             }
           };
         }
-        
+       
         // Generic fallback for any dynamic ID
         console.log(`Creating generic fallback view for dynamic ID: ${viewId}`);
         return {
@@ -402,6 +475,7 @@ class ApiService {
           }
         };
       }
+
 
       // Create a view based on the requested ID
       switch (viewId) {
@@ -421,6 +495,7 @@ class ApiService {
             }
           };
 
+
         case 'contact-info':
           return {
             id: 'contact-info',
@@ -439,6 +514,7 @@ class ApiService {
             }
           };
 
+
         case 'chart-example':
           return {
             id: 'chart-example',
@@ -449,6 +525,7 @@ class ApiService {
               values: [85, 72, 90, 68, 95]
             }
           };
+
 
         case 'card-example':
           return {
@@ -469,6 +546,7 @@ class ApiService {
               ]
             }
           };
+
 
         default:
           console.log(`Creating fallback view for unknown ID: ${viewId}`);
@@ -492,34 +570,42 @@ class ApiService {
     }
   }
 
+
   // Private helper to generate responses for fallback mode
   private generateResponse(message: string): string {
     message = message.toLowerCase();
+
 
     if (message.includes('hello') || message.includes('hi')) {
       return "Hello! I'm the NicorAI assistant. How can I help you today?";
     }
 
+
     if (message.includes('help')) {
       return "I'd be happy to help! You can ask me about our AI services, schedule a demo, or get information about how our solutions can benefit your business.";
     }
 
+
     // Default response
     return `Thanks for your message. Our team at NicorAI specializes in building custom AI solutions to help businesses like yours. Would you like to know more about how we can assist with your specific needs?`;
   }
+
 
   // Delete a chat session
   deleteChat(chatId: string) {
     const history = this.getChatHistory();
     const filteredHistory = history.filter(c => c.id !== chatId);
 
+
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem('nicoraiChatHistory', JSON.stringify(filteredHistory));
     }
 
+
     // If we deleted the current chat, set the current chat to the most recent one
     if (this.currentChatId === chatId) {
       this.currentChatId = filteredHistory.length > 0 ? filteredHistory[0].id : null;
+
 
       // If there are no chats left, create a new one
       if (!this.currentChatId) {
@@ -527,6 +613,7 @@ class ApiService {
       }
     }
   }
+
 
   // Clear all chat history
   clearAllChats() {
@@ -536,31 +623,38 @@ class ApiService {
     this.createNewChat();
   }
 
+
   // Check if API response has suggested a dynamic view (for Day 6)
   async checkForDynamicView(query: string): Promise<DynamicView | null> {
     try {
       // In a real implementation, this would check if the last API response
       // contained a suggestion for a dynamic view
 
+
       // For MVP demonstration, we can simulate this by checking if the API response
       // included a responseType field set to "view" with a viewSpec
+
 
       // To prevent showing the same view for every query, we should only
       // return a view when the query specifically asks for relevant information
       const lowerQuery = query.toLowerCase().trim();
 
+
       // Get the current chat messages
       const messages = this.getCurrentChatMessages();
       if (messages.length === 0) return null;
+
 
       // Get the last AI message
       const lastAiMessage = [...messages].reverse().find(m => m.sender === 'ai');
       if (!lastAiMessage) return null;
 
+
       // Check if the content has special markers for a view
       // This is just a simple implementation for the MVP - real implementation
       // would use actual API response fields according to the API contract
       const content = lastAiMessage.content;
+
 
       // If we detect a "view suggestion" pattern in the API response
       // Format: [VIEW_TYPE:data description]
@@ -568,6 +662,7 @@ class ApiService {
       if (viewMatch) {
         const viewType = viewMatch[1].toLowerCase();
         const viewDescription = viewMatch[2];
+
 
         // Handle different view types based on markers from the API
         if (viewType === 'table') {
@@ -624,6 +719,7 @@ class ApiService {
           }
         }
       }
+
 
       // In development, check keywords in the query itself - only for specific queries
       if (DEVELOPMENT_MODE) {
@@ -690,6 +786,7 @@ class ApiService {
         }
       }
 
+
       return null;
     } catch (error) {
       console.error('Error checking for dynamic view:', error);
@@ -697,14 +794,17 @@ class ApiService {
     }
   }
 
+
   // Clear the tracked dynamic view (call this when closing a view)
   clearLastDynamicView() {
     this.lastDynamicViewId = null;
   }
 
+
   // Helper method to create a dynamic view from API response data
   createDynamicViewFromResponse(responseData: any): DynamicView | null {
     if (!responseData) return null;
+
 
     try {
       // For the console-visible format where responseType is 'view'
@@ -716,13 +816,14 @@ class ApiService {
           // If we have an output string and no specific viewType, use 'dynamicScreen'
           viewType = 'dynamicScreen';
         }
-        
+       
         return {
           id: `dynamic-${Date.now()}`,
-          type: viewType as any, 
+          type: viewType as any,
           data: responseData.content.viewSpec || responseData.content
         };
       }
+
 
       // Direct dynamic view ID format
       if (responseData.id && responseData.id.startsWith('dynamic-')) {
@@ -733,6 +834,7 @@ class ApiService {
         };
       }
 
+
       // Alternative format that might come from the API
       if (responseData.view) {
         return {
@@ -741,6 +843,7 @@ class ApiService {
           data: responseData.view.data || responseData.view
         };
       }
+
 
       // Check if the response itself matches our expected data structure
       if (responseData.items && Array.isArray(responseData.items)) {
@@ -752,6 +855,7 @@ class ApiService {
         };
       }
 
+
       return null;
     } catch (error) {
       console.error('Error creating dynamic view from response:', error);
@@ -759,16 +863,17 @@ class ApiService {
     }
   }
 
+
   // Update sendMessage to also check for dynamic view data in API response
   private checkResponseForDynamicView(data: any): DynamicView | null {
     if (!data) return null;
-    
+   
     try {
       // Check common format with responseType and content
       if (data.responseType === 'view' && data.content) {
         return this.createDynamicViewFromResponse(data);
       }
-      
+     
       // Check for direct dynamic view format
       if (data.id && data.id.startsWith('dynamic-') && data.type) {
         return {
@@ -777,12 +882,12 @@ class ApiService {
           data: data.data
         };
       }
-      
+     
       // Check for nested view property
       if (data.view) {
         return this.createDynamicViewFromResponse({ view: data.view });
       }
-      
+     
       // Check for items array format that should be a custom view
       if (data.items && Array.isArray(data.items)) {
         // This looks like a custom view with items array
@@ -792,7 +897,7 @@ class ApiService {
           data: data
         };
       }
-      
+     
       // Check the response for data payload of known formats
       if (data.data) {
         // If data contains nested items array
@@ -803,7 +908,7 @@ class ApiService {
             data: data.data
           };
         }
-        
+       
         // Check if data contains table-like structure
         if (data.data.headers || data.data.columns || data.data.rows) {
           return {
@@ -813,7 +918,7 @@ class ApiService {
           };
         }
       }
-      
+     
       return null;
     } catch (error) {
       console.error('Error checking for dynamic view in response:', error);
@@ -821,87 +926,81 @@ class ApiService {
     }
   }
 
+
   // Helper method to store a view and its message association
   private storeViewAndAssociation(messageId: string, view: DynamicView) {
     if (!view || !view.id || !messageId) return;
-    
+   
     try {
       // Ensure each messageId gets a unique viewId based on the message content
       // This ensures different messages get different views
       const currentChatId = this.getCurrentChatId();
       if (!currentChatId) return;
-      
+     
       // Generate a unique view ID that includes the message ID to ensure uniqueness
       const uniqueViewId = `view-for-message-${messageId}`;
-      
+     
       // Create a copy of the view with the unique ID
       const uniqueView: DynamicView = {
         ...view,
         id: uniqueViewId
       };
-      
+     
       // Store the view itself
       let storedViews: Record<string, DynamicView> = {};
       const storedViewsJson = localStorage.getItem('storedDynamicViews');
       if (storedViewsJson) {
         storedViews = JSON.parse(storedViewsJson);
       }
-      
+     
       // Store with unique ID to ensure each message has its own view
       storedViews[uniqueViewId] = uniqueView;
       localStorage.setItem('storedDynamicViews', JSON.stringify(storedViews));
-      
+     
       // Store the association
       let viewAssociations: ViewAssociations = {};
       const associationsJson = localStorage.getItem('dynamicViewAssociations');
       if (associationsJson) {
         viewAssociations = JSON.parse(associationsJson);
       }
-      
+     
       if (!viewAssociations[currentChatId]) {
         viewAssociations[currentChatId] = {};
       }
-      
+     
       // Store the association with the unique view ID
       viewAssociations[currentChatId][messageId] = uniqueViewId;
       localStorage.setItem('dynamicViewAssociations', JSON.stringify(viewAssociations));
-      
+     
       console.log(`Stored view ${uniqueViewId} for message ${messageId}`);
     } catch (e) {
       console.error('Error storing view and association:', e);
     }
   }
 
+
   // Helper method to create a special dynamic view response
-  private createSpecialViewResponse(viewType: 'table' | 'chart' | 'card' | 'custom', viewName: string, viewData: any): ChatMessageWithView {
-    // Create an AI message with empty content (to ensure view rendering)
+  private createSpecialViewResponse(viewType: 'table' | 'chart' | 'card' | 'custom', viewName: string, viewData: any, chatId?: string): ChatMessageWithView {
     const aiMessage: ChatMessageWithView = {
       id: `msg-${Date.now()}-ai`,
-      content: "", // Empty content to allow rendering the view
+      content: "",
       sender: 'ai',
       timestamp: new Date()
     };
-    
-    // Create dynamic view with a message-specific ID
     const dynamicView: DynamicView = {
       id: `dynamic-${viewType}-${viewName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
       type: viewType,
       data: viewData
     };
-    
-    // Attach the view to the message
     aiMessage.dynamicView = dynamicView;
-    
-    // Add the AI message to the chat
-    this.addMessageToCurrentChat(aiMessage);
-    
-    // Store the view for future reference with the unique ID
+    this.addMessageToCurrentChat(aiMessage, chatId);
     this.storeViewAndAssociation(aiMessage.id, dynamicView);
-    
     return aiMessage;
   }
 }
 
+
 // Export a singleton instance
 const apiService = new ApiService();
-export default apiService; 
+export default apiService;
+
