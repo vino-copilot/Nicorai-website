@@ -19,22 +19,25 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
     message: ''
   });
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const { isLoading, setIsLoading } = useChatLoading();
+  const { loadingChats, setLoadingForChat } = useChatLoading();
+  const currentChatId = apiService.getCurrentChatId();
  
   // Clear notification after 3 seconds
   const clearNotificationTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  const anyChatLoading = Object.values(loadingChats).some(Boolean);
 
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
+    const chatIdAtSend = apiService.getCurrentChatId();
+    if (loadingChats[chatIdAtSend || '']) return;
     setInputValue('');
-    setIsLoading(true);
+    if (chatIdAtSend) setLoadingForChat(chatIdAtSend, true);
     setNotification({
       status: 'sending',
       message: 'Sending message...'
     });
     // Only create a new chat if there is truly no current chat ID and no messages
-    const currentChatId = apiService.getCurrentChatId();
     const currentMessages = currentChatId ? apiService.getCurrentChatMessages() : [];
     if (!currentChatId && currentMessages.length === 0) {
       const newChatId = apiService.createNewChat();
@@ -71,7 +74,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
       setNotification({ status: 'error', message: 'Failed to send message. Please try again.' });
       console.error('Error sending message:', error);
     } finally {
-      setIsLoading(false);
+      if (chatIdAtSend) setLoadingForChat(chatIdAtSend, false);
     }
   };
 
@@ -79,12 +82,8 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
-   
-    // First notify parent to show chat UI immediately
-    // BEFORE sending the message
+    if (loadingChats[currentChatId || '']) return;
     onMessageSent?.(false);
-   
-    // Then send the message
     sendMessage(inputValue);
   };
 
@@ -104,12 +103,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
               handleSubmit(e);
             }
           }}
+          disabled={anyChatLoading}
         />
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={anyChatLoading}
           className={`absolute right-3 mb-1 bottom-3 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${
-            isLoading ? 'opacity-50' : ''
+            anyChatLoading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">

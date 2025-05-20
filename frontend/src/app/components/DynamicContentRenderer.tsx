@@ -336,7 +336,7 @@ const DynamicContentRenderer: React.FC<DynamicContentRendererProps> = ({ view, o
   };
 
   return (
-    <div className="w-full mb-4 max-h-full overflow-hidden relative">
+    <div className="w-full mb-4 max-h-full overflow-hidden relative max-h-[80vh] overflow-y-auto">
       <div className="fixed top-4 right-4 z-50">
         <button
           onClick={onClose}

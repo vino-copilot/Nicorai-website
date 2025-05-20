@@ -46,7 +46,7 @@ const Chat: React.FC<ChatProps> = ({
   const [dynamicViewMessageId, setDynamicViewMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const { isLoading, setIsLoading } = useChatLoading();
+  const { loadingChats, setLoadingForChat } = useChatLoading();
 
 
 
@@ -429,17 +429,18 @@ const Chat: React.FC<ChatProps> = ({
   // Function to handle sending a message
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
-   
+    const chatIdAtSend = apiService.getCurrentChatId();
     setInputValue('');
-    setIsLoading(true); // Use context
     setError(null);
-   
     // Only create a new chat if there is truly no current chat ID and no messages
-    const currentChatId = apiService.getCurrentChatId();
+    let currentChatId = chatIdAtSend;
     if (!currentChatId && messages.length === 0) {
       const newChatId = apiService.createNewChat();
       apiService.setCurrentChat(newChatId);
+      currentChatId = newChatId;
     }
+    // Set loading for this chat
+    if (currentChatId) setLoadingForChat(currentChatId, true);
    
     // Clear any previous dynamic view when sending a new message
     // Only keep it if the new message specifically requests a view
@@ -486,18 +487,15 @@ const Chat: React.FC<ChatProps> = ({
       if (aiResponse.dynamicView) {
         console.log('Dynamic view found in AI response:', aiResponse.dynamicView);
 
-
         // Get the ID of the latest AI message for associating with dynamic view
         const updatedMessages = apiService.getCurrentChatMessages();
         const latestAiMessage = updatedMessages
           .filter(m => m.sender === 'ai')
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
 
-
         if (latestAiMessage) {
           // Always use the consistent view ID pattern
           const consistentViewId = `view-for-message-${latestAiMessage.id}`;
-
 
           // Create a copy of the view with this consistent ID
           const consistentView: DynamicView = {
@@ -505,14 +503,11 @@ const Chat: React.FC<ChatProps> = ({
             id: consistentViewId
           };
 
-
           // Store the association and the view IMMEDIATELY after receiving the response
           storeViewMessageAssociation(latestAiMessage.id, consistentViewId, consistentView);
 
-
           // Show the view (open modal)
           setDynamicViewMessageId(latestAiMessage.id);
-
 
           // Notify parent to hide chat and show view
           if (onMessageSent) {
@@ -530,15 +525,21 @@ const Chat: React.FC<ChatProps> = ({
       console.error('Error sending message:', error);
       setError("Sorry, we're having trouble connecting to the AI. Please try again.");
     } finally {
-      setIsLoading(false); // Use context
+      if (chatIdAtSend) setLoadingForChat(chatIdAtSend, false);
     }
   };
 
 
 
 
+  const anyChatLoading = Object.values(loadingChats).some(Boolean);
+
+
+
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (loadingChats[apiService.getCurrentChatId() || '']) return;
     sendMessage(inputValue);
   };
 
@@ -551,7 +552,7 @@ const Chat: React.FC<ChatProps> = ({
       const newChatId = apiService.createNewChat();
       apiService.setCurrentChat(newChatId);
     }
-   
+    if (loadingChats[apiService.getCurrentChatId() || '']) return;
     sendMessage(question);
   };
 
@@ -693,7 +694,10 @@ const Chat: React.FC<ChatProps> = ({
         showDynamicView(messageId, storedView);
         return;
       } else {
-        console.error(`[ERROR] Consistent view ID for message ${messageId} is missing from localStorage. Not running fallback logic to avoid overwriting.`);
+        console.warn(`[WARN] Consistent view ID for message ${messageId} is missing from localStorage. Attempting to reconstruct view from context.`);
+        // Fallback: try to reconstruct the view from context
+        determineBestViewFromContext(messageId);
+        // Optionally, you could show a toast/notification here
         return;
       }
     } catch (e) {
@@ -957,13 +961,14 @@ const Chat: React.FC<ChatProps> = ({
                   handleSubmit(e);
                 }
               }}
+              disabled={anyChatLoading}
             />
             <button
               type="submit"
-              disabled={isLoading}
-              className={`absolute right-3 top-1/2 transform -translate-y-3/5 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={anyChatLoading}
+              className={`absolute right-3 top-1/2 transform -translate-y-3/5 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${anyChatLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {isLoading ? (
+              {anyChatLoading ? (
                 <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -985,6 +990,7 @@ const Chat: React.FC<ChatProps> = ({
                 key={index}
                 onClick={() => handleFaqClick(question)}
                 className="p-3 text-left text-sm rounded-xl border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
+                disabled={anyChatLoading}
               >
                 {question}
               </button>
@@ -1101,7 +1107,7 @@ const Chat: React.FC<ChatProps> = ({
           ))
         )}
         {/* Loading indicator */}
-        {isLoading && (
+        {loadingChats[apiService.getCurrentChatId() || ''] && (
           <div className="flex justify-start mb-4">
             <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden bg-white flex items-center justify-center">
               <img
@@ -1171,13 +1177,14 @@ const Chat: React.FC<ChatProps> = ({
                   handleSubmit(e);
                 }
               }}
+              disabled={anyChatLoading}
             />
             <button
               type="submit"
-              disabled={isLoading}
-              className={`absolute right-3 mb-2 bottom-3 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={anyChatLoading}
+              className={`absolute right-3 mb-2 bottom-3 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${anyChatLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {isLoading ? (
+              {anyChatLoading ? (
                 <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

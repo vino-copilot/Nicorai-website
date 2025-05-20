@@ -22,8 +22,8 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 
 interface ChatLoadingContextType {
-  isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
+  loadingChats: { [chatId: string]: boolean };
+  setLoadingForChat: (chatId: string, loading: boolean) => void;
 }
 
 
@@ -188,11 +188,14 @@ export const useChatLoading = () => {
 
 
 export const ChatLoadingProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingChats, setLoadingChats] = useState<{ [chatId: string]: boolean }>({});
 
+  const setLoadingForChat = (chatId: string, loading: boolean) => {
+    setLoadingChats(prev => ({ ...prev, [chatId]: loading }));
+  };
 
   return (
-    <ChatLoadingContext.Provider value={{ isLoading, setIsLoading }}>
+    <ChatLoadingContext.Provider value={{ loadingChats, setLoadingForChat }}>
       {children}
     </ChatLoadingContext.Provider>
   );

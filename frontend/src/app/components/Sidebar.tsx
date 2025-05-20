@@ -80,7 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
-  const { isLoading: chatLoading } = useChatLoading();
+  const { loadingChats } = useChatLoading();
 
 
 
@@ -551,7 +551,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                                     toggleSidebar();
                                   }
                                 }}
-                                className={`flex items-start p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer ${
+                                className={`flex items-start p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer relative ${
                                   chat.id === currentChatId ? 'bg-blue-50 border-l-2 border-blue-600 pl-3.5' : ''
                                 }`}
                               >
@@ -563,18 +563,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                                   </p>
                                   <p className={`text-xs ${
                                     chat.id === currentChatId ? 'text-blue-500' : 'text-gray-600'
-                                  } group-hover:text-blue-500`}>
+                                  } group-hover:text-blue-500 flex items-center gap-2`}>
                                     {formatChatDate(chat.lastUpdated)}
+                                    {loadingChats[chat.id] && (
+                                      <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                    )}
                                   </p>
-                                  {chat.id === currentChatId && chatLoading && (
-                                    <span className="ml-2 inline-block align-middle">
-                                      <span className="flex space-x-1">
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-                                      </span>
-                                    </span>
-                                  )}
                                 </div>
                                 {/* Always show delete button, on all screen sizes */}
                                 <button
