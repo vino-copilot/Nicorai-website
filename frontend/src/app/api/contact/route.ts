@@ -52,11 +52,10 @@ ${message}
     `;
 
     const mailOptions = {
-      from: `"NicorAI Contact Form" <${emailFromAddress}>`, // sender address
+      from: `"NicorAI Connection Form" <${emailFromAddress}>`, // sender address
       to: emailToAddress, // list of receivers
       subject: emailSubject, // Subject line
       text: emailTextBody, // plain text body
-      // html: "<b>Hello world?</b>", // You can add an HTML body if needed
     };
 
     // Send mail with defined transport object

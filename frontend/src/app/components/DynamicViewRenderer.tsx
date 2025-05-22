@@ -30,7 +30,16 @@ import {
   Target,
   ArrowRight,
   Notebook,
-  Rocket
+  Rocket,
+  Handshake,
+  Eye,
+  Lightbulb,
+  Goal,
+  TrendingUp,
+  TrendingUpDown,
+  TrendingUpDownIcon,
+  TrendingUpIcon,
+  BrainCircuit
 } from 'lucide-react';
 
 interface ViewProps {
@@ -116,27 +125,44 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
 
 // WHAT WE DO PAGE
 const WhatWeDoPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  // Create a ref for the services section
+  const servicesRef = useRef<HTMLDivElement>(null);
+  
+  // Function to scroll to the services section
+  const scrollToServices = () => {
+    if (servicesRef.current) {
+      servicesRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-white">
-      <AIHeroSection />
-      <AIServicesSection />
+      <AIHeroSection scrollToServices={scrollToServices} />
+      <div ref={servicesRef}>
+        <AIServicesSection />
+      </div>
       <TechStackSection />
       <AIProcessSection />
     </div>
   );
 };
 
-const AIHeroSection = () => {
+const AIHeroSection = ({ scrollToServices }: { scrollToServices: () => void }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1023);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
   return (
-    <section className={`relative overflow-hidden ${isMobile ? 'py-1' : 'py-16'}`}>
+    <section className={`relative overflow-hidden ${isMobile ? 'py-1' : isTablet ? 'py-6' : 'py-16'}`}>
       {/* Animated background - only show on desktop/tablet */}
       {!isMobile && (
         <div className="absolute inset-0 z-0">
@@ -168,9 +194,10 @@ const AIHeroSection = () => {
                   AI-Powered Solutions
                 </div>
               )}
-              <h1 className={`text-5xl font-bold text-gray-900 tracking-tight${isMobile ? ' text-center' : ''}`}> 
-                Transform Your Business With <br />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">AI-Powered Solutions</span>
+              <h1 className={`text-5xl font-bold tracking-tight${isMobile ? ' text-center' : ''}`}> 
+                <span className="text-gray-900">Transform Your Business</span>
+                <br />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">With AI-Powered Solutions</span>
               </h1>
               <p className={`mt-4 text-xl text-gray-600 leading-relaxed${isMobile ? ' text-center' : ''}`}> 
                 We leverage cutting-edge artificial intelligence and machine learning to deliver
@@ -180,7 +207,8 @@ const AIHeroSection = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg shadow-md flex items-center"
+                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg shadow-md flex items-center cursor-pointer"
+                  onClick={scrollToServices}
                 >
                   Explore Our Services
                   <ChevronRight size={18} className="ml-2" />
@@ -196,8 +224,8 @@ const AIHeroSection = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="relative"
             >
-              {/* Animated/floating elements only on desktop/tablet */}
-              {!isMobile && (
+              {/* Animated/floating elements only on desktop (>1023px) and mobile (<768px), hide for tablet (768-1023px) */}
+              {!isTablet && !isMobile && (
                 <div className="relative w-full h-96 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50 shadow-xl">
                   {/* Nodes animation */}
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -308,11 +336,16 @@ const NetworkAnimation = () => {
 
 const AIServicesSection = () => {
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1023);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
   const services = [
@@ -325,7 +358,7 @@ const AIServicesSection = () => {
     {
       title: "Natural Language Processing",
       description: "Build intelligent chatbots, sentiment analysis tools, and automated content generation systems.",
-      icon: <MessageSquare className="w-6 h-6 text-indigo-600" />,
+      icon: <BrainCircuit className="w-6 h-6 text-indigo-600" />,
       color: "from-indigo-50 to-indigo-100/50"
     },
     {
@@ -355,7 +388,7 @@ const AIServicesSection = () => {
   ];
 
   return (
-    <section className={`${isMobile ? 'py-1' : 'py-16'} bg-white relative overflow-hidden`}>
+    <section className={`${isMobile ? 'py-1' : isTablet ? 'pt-2 pb-6' : 'py-16'} bg-white relative overflow-hidden`}>
       <div className="absolute inset-0 bg-grid-pattern"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -364,7 +397,7 @@ const AIServicesSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className={`text-center ${isMobile ? 'mb-8' : 'mb-16'}`}
+          className={`text-center ${isMobile ? 'mb-8' : isTablet ? 'mb-6' : 'mb-16'}`}
         >
           <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100 mb-4">
             <Share2 size={14} className="mr-2" />
@@ -608,14 +641,29 @@ const WhatWeveDonePage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
  
 const CaseStudiesHero = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1023);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
   return (
     <section className="relative pt-10 pb-12 overflow-hidden">
       {/* Background elements */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-50 to-white bg-grid-pattern"></div>
-        <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-purple-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "1s" }}></div>
-        <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-purple-100/20 rounded-full filter blur-3xl animate-float"></div>
-      </div>
+      {!isTablet && (
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-purple-50 to-white bg-grid-pattern"></div>
+          <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-purple-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "1s" }}></div>
+          <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-purple-100/20 rounded-full filter blur-3xl animate-float"></div>
+        </div>
+      )}
  
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -670,7 +718,7 @@ const CaseStudiesHero = () => {
                     <ChevronRight size={16} className="ml-1" />
                   </motion.button>
                 </div>
-                <div className="bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center p-8">
+                <div className="bg-gradient-to-br from-purple-500 to-indigo-600 hidden md:flex items-center justify-center p-8">
                   <motion.div
                     animate={{
                       y: [0, -10, 0],
@@ -797,12 +845,12 @@ const FeaturedProjects = () => {
               <div className={`bg-gradient-to-r ${colorMap[project.color]} h-48 relative overflow-hidden`}>
                 <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-[size:16px_16px]"></div>
                 <div className="absolute top-6 right-6">
-                  <div className="w-16 h-16 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg flex items-center justify-center">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg flex items-center justify-center">
                     {project.icon}
                   </div>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-[14px] leading-5 font-medium ${bgColorMap[project.color]} mb-2`}>
+                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-[14px] leading-5 font-medium ${bgColorMap[project.color] || 'bg-gray-50 text-gray-800'} mb-2`}>
                     {project.category}
                   </div>
                   <h3 className="text-2xl font-bold">{project.title}</h3>
@@ -938,14 +986,29 @@ const ConnectPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
  
 const ContactHero = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1023);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
   return (
     <section className="relative pt-4 pb-6 overflow-hidden"> {/* Reduced padding */}
       {/* Background elements */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white bg-grid-pattern"></div>
-        <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-teal-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float"></div>
-        <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-teal-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
-      </div>
+      {!isTablet && (
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white bg-grid-pattern"></div>
+          <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-teal-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float"></div>
+          <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-teal-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
+        </div>
+      )}
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -956,10 +1019,10 @@ const ContactHero = () => {
         >
           <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-teal-50 to-blue-50 text-teal-700 border border-teal-100 mb-4">
             <MessageSquare size={14} className="mr-2" />
-            Let's connect
+            Connect
           </div>
           <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
-            Let's Connect !
+            Let's Connect!
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
             Ready to transform your business with AI? Reach out to our team to explore how NicorAI can help you achieve your goals.
@@ -1055,11 +1118,11 @@ const ContactForm = () => {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-teal-50 border border-teal-200 rounded-xl p-6 text-center"
+                    className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center"
                   >
                     <div className="mb-4">
-                      <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
@@ -1280,14 +1343,29 @@ const AboutUsPage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
  
 const AboutHero = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1023);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
   return (
     <section className="relative pt-[17px] pb-[17px] md:pt-10 md:pb-16 overflow-hidden">
       {/* Background elements */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-50 to-white bg-grid-pattern"></div>
-        <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-indigo-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float"></div>
-        <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-indigo-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
-      </div>
+      {!isTablet && (
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-indigo-50 to-white bg-grid-pattern"></div>
+          <div className="absolute top-0 right-0 w-5/12 h-5/12 bg-gradient-to-br from-indigo-100/30 to-blue-100/30 rounded-full filter blur-3xl animate-float"></div>
+          <div className="absolute bottom-0 left-0 w-6/12 h-5/12 bg-gradient-to-tr from-blue-100/20 to-indigo-100/20 rounded-full filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
+        </div>
+      )}
  
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -1308,7 +1386,7 @@ const AboutHero = () => {
           </p>
           <br />
           <br />
- 
+          
           <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-6">
           We specialize in two core areas
           </h1>
@@ -1336,7 +1414,7 @@ const AboutHero = () => {
           {/* Legacy of Nicolas Rashevsky section */}
           <div className="pt-10">
             <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 border border-purple-100 mb-4">
-              <Sparkles size={14} className="mr-2" />
+              <Lightbulb size={14} className="mr-2" />
               Our Inspiration
             </div>
             <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
@@ -1406,7 +1484,7 @@ const OurStory = () => {
             <div className="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl shadow-xl overflow-hidden text-white p-8 h-full flex flex-col">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  <Sparkles className="h-6 w-6 text-white" />
+                  <Goal className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold ml-4">Our Mission</h3>
               </div>
@@ -1416,7 +1494,7 @@ const OurStory = () => {
  
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  <Target className="h-6 w-6 text-white" />
+                  <Eye className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold ml-4">Our Vision</h3>
               </div>
@@ -1427,7 +1505,7 @@ const OurStory = () => {
 
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  <Target className="h-6 w-6 text-white" />
+                  <Handshake className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold ml-4">Our Commitment</h3>
               </div>
@@ -1553,7 +1631,7 @@ const CoreValues = () => {
     {
       title: "Innovation",
       description: "We push the boundaries of what's possible with AI, constantly exploring new technologies and approaches.",
-      icon: <Sparkles className="h-6 w-6" />,
+      icon: <Lightbulb className="h-6 w-6" />,
       color: "bg-blue-50 text-blue-700 border-blue-100"
     },
     {
@@ -1565,7 +1643,7 @@ const CoreValues = () => {
     {
       title: "Impact",
       description: "We measure our success by the tangible results we deliver for our clients and the value we create.",
-      icon: <Zap className="h-6 w-6" />,
+      icon: <TrendingUp className="h-6 w-6" />,
       color: "bg-purple-50 text-purple-700 border-purple-100"
     },
     {
@@ -1741,7 +1819,7 @@ const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
                       whileTap={{ scale: 0.97 }}
                       className="w-full py-2 bg-gray-900 text-white rounded-lg shadow-sm flex items-center justify-center text-sm font-medium"
                     >
-                      Read More
+                      Publishing Soon
                       <ArrowRight size={16} className="ml-1" />
                     </motion.button>
                   </div>

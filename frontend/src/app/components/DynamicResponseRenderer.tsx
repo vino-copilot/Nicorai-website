@@ -1,3 +1,5 @@
+// The file is responsible for converting and rendering HTML string output from the backend into proper React components.
+
 import React from 'react';
 
 interface DynamicResponseRendererProps {

@@ -1,11 +1,9 @@
 // API service for NicorAI frontend
 // Connects to the real API Gateway
 
-
 // Configuration
 const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_URL;
 const DEVELOPMENT_MODE = true; // Set to false in production
-
 
 // Types
 export interface ChatMessage {
@@ -26,7 +24,7 @@ export interface ChatSession {
 
 export interface DynamicView {
   id: string;
-  type: 'chart' | 'card' | 'table' | 'list' | 'custom' | 'dynamicScreen';
+  type: 'dynamicScreen';
   data: any;
 }
 
@@ -104,9 +102,7 @@ class ApiService {
       }
       if (!chatHistoryJSON) return [];
 
-
       const history = JSON.parse(chatHistoryJSON);
-
 
       // Convert string timestamps back to Date objects
       const convertedHistory = history.map((chat: any) => ({
@@ -144,6 +140,16 @@ class ApiService {
 
   // Set the current active chat
   setCurrentChat(chatId: string) {
+    // If chatId is empty, clear the current chat ID
+    if (!chatId) {
+      this.currentChatId = null;
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem('nicoraiCurrentChatId');
+      }
+      return;
+    }
+    
+    // Otherwise set to the provided chat ID
     this.currentChatId = chatId;
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem('nicoraiCurrentChatId', chatId);
@@ -162,14 +168,11 @@ class ApiService {
     try {
       const history = this.getChatHistory();
 
-
       // Remove existing chat with the same ID if it exists
       const filteredHistory = history.filter(c => c.id !== chat.id);
 
-
       // Add the new/updated chat at the beginning (most recent)
       const updatedHistory = [chat, ...filteredHistory];
-
 
       // Keep only the last 20 chats to prevent localStorage from growing too large
       const trimmedHistory = updatedHistory.slice(0, 20);
@@ -216,6 +219,23 @@ class ApiService {
   }
 
 
+  // Change from private to public method
+  public getUserId(): string {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      let userId = localStorage.getItem('nicoraiUserId');
+      if (!userId) {
+        // Generate a new user ID with uniqueness from random + timestamp
+        userId = `user-${Math.random().toString(36).substring(2, 15)}-${Date.now()}`;
+        localStorage.setItem('nicoraiUserId', userId);
+        console.log('📝 Created new user ID:', userId);
+      }
+      return userId;
+    }
+    // Fallback for SSR (though this shouldn't happen in practice)
+    return `user-${Math.random().toString(36).substring(2, 15)}-${Date.now()}`;
+  }
+
+
   // Send a chat message and get a response
   async sendMessage(message: string, chatId?: string): Promise<ChatMessageWithView> {
     // Use the provided chatId or fall back to the currentChatId
@@ -224,9 +244,17 @@ class ApiService {
       // If no chatId is available, create a new chat
       const newChatId = this.createNewChat();
       this.currentChatId = newChatId;
+      
+      // Dispatch an event to notify components about the new chat
+      if (typeof window !== 'undefined') {
+        const chatChangeEvent = new CustomEvent('chatChanged', {
+          detail: { chatId: newChatId, messages: [] }
+        });
+        window.dispatchEvent(chatChangeEvent);
+      }
+      
       return this.sendMessage(message, newChatId);
     }
-
 
     // Create the user message
     const userMessage: ChatMessage = {
@@ -236,22 +264,42 @@ class ApiService {
       timestamp: new Date()
     };
 
-
     // Add user message to the correct chat
     this.addMessageToCurrentChat(userMessage, targetChatId);
 
+    // If this is the first message in a chat (or after chat was cleared),
+    // dispatch an event to ensure the chat is shown
+    const currentMessages = this.getCurrentChatMessages();
+    if (currentMessages.length <= 1 && typeof window !== 'undefined') {
+      const chatChangeEvent = new CustomEvent('chatChanged', {
+        detail: { chatId: targetChatId, messages: currentMessages }
+      });
+      window.dispatchEvent(chatChangeEvent);
+    }
 
     try {
-      // Always try the API first
+      // Get user ID using our utility function
+      const userId = this.getUserId();
+
+
+      // Create a payload with ALL details
       const payload = {
-        userId: 'user-123', // Can be dynamic in a real app
+        userId: userId, // Use our utility function
+        chatId: targetChatId, // Include which chat thread this belongs to
+        messageId: userMessage.id, // Include the message ID
         message: message,
         timestamp: new Date().toISOString()
       };
 
 
-      // Log request for debugging
-      console.log('Sending request to API Gateway:', payload);
+      // Log request with complete details for debugging
+      console.log('🚀 Sending complete message details to API Gateway:', {
+        userId: payload.userId,
+        chatId: payload.chatId,
+        messageId: payload.messageId,
+        message: payload.message,
+        timestamp: payload.timestamp
+      });
 
 
       // Make the actual API call
@@ -272,11 +320,13 @@ class ApiService {
       const responseData = await response.json();
       console.log('API Gateway response:', responseData);
 
-
       // Create AI message from response
       let aiContent = '';
       if (responseData.responseType === 'text' && responseData.content && typeof responseData.content.text === 'string') {
         aiContent = responseData.content.text;
+      } else if (responseData.responseType === 'text' && (!responseData.content || responseData.content.text === undefined)) {
+        // If responseType is 'text' but content is undefined or empty, show error message
+        aiContent = "I'm sorry, but I encountered an error processing your request. Please try again.";
       } else if (responseData.responseType === 'view') {
         aiContent = '';
       } else if (responseData.content && typeof responseData.content === 'string') {
@@ -319,43 +369,8 @@ class ApiService {
       return aiMessage;
     } catch (error) {
       console.error('Error sending message:', error);
-      // If API fails, check for mock triggers
-      const lowerMessage = message.toLowerCase();
-      if (lowerMessage.includes("table of technologies")) {
-        return this.createSpecialViewResponse('table', 'Technologies', {
-          title: 'Technologies',
-          description: 'List of technologies used by NicorAI',
-          headers: ['Technology', 'Category', 'Description'],
-          rows: [
-            ['React', 'Frontend', 'JavaScript library for building user interfaces'],
-            ['Next.js', 'Framework', 'React framework for production with SSR and SSG'],
-            ['TypeScript', 'Language', 'Typed superset of JavaScript'],
-            ['TailwindCSS', 'Styling', 'Utility-first CSS framework'],
-            ['Node.js', 'Backend', 'JavaScript runtime environment']
-          ]
-        }, targetChatId);
-      } else if (lowerMessage.includes("case studies as chart") || lowerMessage.includes("show me the case studies as chart")) {
-        return this.createSpecialViewResponse('chart', 'Case Studies', {
-          title: 'Case Studies Success Rate',
-          labels: ['E-commerce', 'Healthcare', 'Finance', 'Manufacturing', 'Technology'],
-          values: [88, 75, 92, 70, 95]
-        }, targetChatId);
-      } else if (
-        lowerMessage.includes("show me as card technologies") ||
-        lowerMessage.includes("card technologies") ||
-        lowerMessage.includes("technologies in card")
-      ) {
-        return this.createSpecialViewResponse('card', 'Technologies Card', {
-          title: 'Our Technology Stack',
-          content: 'We use cutting-edge technologies to build robust, scalable applications that meet your business needs.',
-          cards: [
-            { title: 'Frontend', content: 'React, Next.js, TypeScript, TailwindCSS' },
-            { title: 'Backend', content: 'Node.js, Express, Python, Django' },
-            { title: 'Database', content: 'MongoDB, PostgreSQL, Redis' }
-          ]
-        }, targetChatId);
-      }
-      // Create error message
+      
+      // Create simple error message with server down notification
       const errorMessage: ChatMessageWithView = {
         id: `msg-${Date.now()}-ai`,
         content: "I'm sorry, but I encountered an error processing your request. Please try again.",
@@ -397,7 +412,6 @@ class ApiService {
     // Save the updated chat
     this.saveChatSession(updatedChat);
 
-
     // Update chat title if this is a new chat
     this.updateChatTitle(updatedChat.id, updatedChat.messages);
 
@@ -412,183 +426,71 @@ class ApiService {
   }
 
 
-  // Generate a dynamic view (mock)
-  async getDynamicView(viewId: string): Promise<DynamicView | null> {
-    // In a real app, we would call the API Gateway to get the view
-    // But for development, we'll use mock data
-
-
-    try {
-      // Wait a bit to simulate API call
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-
-      // Check if this is a dynamic ID (created at runtime) that we may not have stored
-      if (viewId.startsWith('dynamic-')) {
-        // If it's a card view
-        if (viewId.includes('card')) {
-          console.log(`Creating fallback card view for dynamic ID: ${viewId}`);
-          return {
-            id: viewId,
-            type: 'card',
-            data: {
-              title: 'Our Technology Stack',
-              content: 'We use cutting-edge technologies to build robust, scalable applications that meet your business needs.',
-              cards: [
-                { title: 'Frontend', content: 'React, Next.js, TypeScript, TailwindCSS' },
-                { title: 'Backend', content: 'Node.js, Express, Python, Django' },
-                { title: 'Database', content: 'MongoDB, PostgreSQL, Redis' }
-              ]
-            }
-          };
-        }
-       
-        // If it's a table view
-        if (viewId.includes('table')) {
-          console.log(`Creating fallback table view for dynamic ID: ${viewId}`);
-          return {
-            id: viewId,
-            type: 'table',
-            data: {
-              title: 'Technologies(M)',
-              description: 'List of technologies used by NicorAI',
-              headers: ['Technology', 'Category', 'Description'],
-              rows: [
-                ['React', 'Frontend', 'JavaScript library for building user interfaces'],
-                ['Next.js', 'Framework', 'React framework for production with SSR and SSG'],
-                ['TypeScript', 'Language', 'Typed superset of JavaScript'],
-                ['TailwindCSS', 'Styling', 'Utility-first CSS framework'],
-                ['Node.js', 'Backend', 'JavaScript runtime environment']
-              ]
-            }
-          };
-        }
-       
-        // Generic fallback for any dynamic ID
-        console.log(`Creating generic fallback view for dynamic ID: ${viewId}`);
-        return {
-          id: viewId,
-          type: 'custom',
-          data: {
-            title: 'Dynamic Content',
-            content: '<div class="p-4 text-center"><p>This view was dynamically generated.</p></div>'
-          }
-        };
-      }
-
-
-      // Create a view based on the requested ID
-      switch (viewId) {
-        case 'table-example':
-          return {
-            id: 'table-example',
-            type: 'table',
-            data: {
-              title: 'NicorAI Services Comparison(M)',
-              headers: ['Service', 'Features', 'Use Case', 'Price'],
-              rows: [
-                ['API Master', 'API Integration, Custom Endpoints, Documentation', 'Streamline API Management', 'Custom Pricing'],
-                ['AI Agent Builder', 'Custom AI Agents, NLP Processing, Integration', 'Automate Customer Support', 'Based on Complexity'],
-                ['Data Services', 'Data Processing, Analytics, Dashboards', 'Business Intelligence', 'Subscription Based'],
-                ['Web Solutions', 'Custom Web Apps, UI/UX Design, Hosting', 'Online Presence', 'Project Based']
-              ]
-            }
-          };
-
-
-        case 'contact-info':
-          return {
-            id: 'contact-info',
-            type: 'table',
-            data: {
-              title: 'Contact NicorAI(M)',
-              description: 'Reach out to us through any of these channels',
-              headers: ['Contact Method', 'Details'],
-              rows: [
-                ['Email', 'contact@nicor.ai'],
-                ['Phone', '+91 (555) 123-4567'],
-                ['Office', 'TC 22/228(2), First Floor, SS Plaza, Sastamangalam, Thiruvananthapuram, Kerala, India - 695010'],
-                ['Schedule', 'Book a free consultation through our website']
-              ],
-              footer: 'We typically respond within 24 hours on business days.'
-            }
-          };
-
-
-        case 'chart-example':
-          return {
-            id: 'chart-example',
-            type: 'chart',
-            data: {
-              title: 'AI Implementation Success Rate by Industry(MOCK)',
-              labels: ['Retail', 'Healthcare', 'Finance', 'Manufacturing', 'Technology'],
-              values: [85, 72, 90, 68, 95]
-            }
-          };
-
-
-        case 'card-example':
-          return {
-            id: 'card-example',
-            type: 'card',
-            data: {
-              title: 'About NicorAI(MOCK)',
-              content: 'NicorAI Systems Private Limited is a company specializing in building custom AI solutions and rapid product development. We help businesses leverage the power of artificial intelligence to automate processes, gain insights from data, and enhance customer experiences.',
-              actions: [
-                {
-                  label: 'Learn More',
-                  url: '#'
-                },
-                {
-                  label: 'Contact Us',
-                  url: '#'
-                }
-              ]
-            }
-          };
-
-
-        default:
-          console.log(`Creating fallback view for unknown ID: ${viewId}`);
-          return {
-            id: viewId,
-            type: 'card',
-            data: {
-              title: 'NicorAI Information',
-              content: 'Information about our services and technologies',
-              cards: [
-                { title: 'Frontend Technologies', content: 'React, Next.js, TypeScript, TailwindCSS' },
-                { title: 'Backend Technologies', content: 'Node.js, Express, Python, Django' },
-                { title: 'Database Technologies', content: 'MongoDB, PostgreSQL, Redis' }
-              ]
-            }
-          };
-      }
-    } catch (error) {
-      console.error('Error fetching dynamic view:', error);
-      return null;
+  // Save multiple messages to the current chat session
+  saveMessages(messages: ChatMessage[], chatId?: string) {
+    const targetChatId = chatId || this.currentChatId;
+    if (!targetChatId) {
+      console.error('No target chat ID for saving messages');
+      return;
     }
+
+
+    const history = this.getChatHistory();
+    const currentChat = history.find(c => c.id === targetChatId) || {
+      id: targetChatId as string,
+      title: 'New Chat',
+      lastUpdated: new Date(),
+      messages: []
+    };
+
+
+    // Replace all messages with the new set
+    const updatedChat = {
+      ...currentChat,
+      messages: messages,
+      lastUpdated: new Date()
+    };
+
+
+    // Save the updated chat
+    this.saveChatSession(updatedChat);
+
+
+    // Update chat title
+    this.updateChatTitle(updatedChat.id, updatedChat.messages);
+
+
+    // Process any AI messages with dynamic views
+    messages.forEach(message => {
+      if (message.sender === 'ai' && (message as any).dynamicView) {
+        const view = (message as any).dynamicView;
+        const viewId = `view-for-message-${message.id}`;
+        this.storeViewAndAssociation(message.id, { ...view, id: viewId });
+      }
+    });
   }
+
 
 
   // Private helper to generate responses for fallback mode
-  private generateResponse(message: string): string {
-    message = message.toLowerCase();
+  // This is no longer used, but kept here for reference
+
+  // private generateResponse(message: string): string {
+  //   message = message.toLowerCase();
+
+  //   if (message.includes('hello') || message.includes('hi')) {
+  //     return "Hello! I'm the NicorAI assistant. How can I help you today?";
+  //   }
+
+  //   if (message.includes('help')) {
+  //     return "I'd be happy to help! You can ask me about our AI services, schedule a demo, or get information about how our solutions can benefit your business.";
+  //   }
+
+  //   // Default response
+  //   return `Thanks for your message. Our team at NicorAI specializes in building custom AI solutions to help businesses like yours. Would you like to know more about how we can assist with your specific needs?`;
+  // }
 
 
-    if (message.includes('hello') || message.includes('hi')) {
-      return "Hello! I'm the NicorAI assistant. How can I help you today?";
-    }
-
-
-    if (message.includes('help')) {
-      return "I'd be happy to help! You can ask me about our AI services, schedule a demo, or get information about how our solutions can benefit your business.";
-    }
-
-
-    // Default response
-    return `Thanks for your message. Our team at NicorAI specializes in building custom AI solutions to help businesses like yours. Would you like to know more about how we can assist with your specific needs?`;
-  }
 
 
   // Delete a chat session
@@ -605,7 +507,6 @@ class ApiService {
     // If we deleted the current chat, set the current chat to the most recent one
     if (this.currentChatId === chatId) {
       this.currentChatId = filteredHistory.length > 0 ? filteredHistory[0].id : null;
-
 
       // If there are no chats left, create a new one
       if (!this.currentChatId) {
@@ -626,172 +527,9 @@ class ApiService {
 
   // Check if API response has suggested a dynamic view (for Day 6)
   async checkForDynamicView(query: string): Promise<DynamicView | null> {
-    try {
-      // In a real implementation, this would check if the last API response
-      // contained a suggestion for a dynamic view
-
-
-      // For MVP demonstration, we can simulate this by checking if the API response
-      // included a responseType field set to "view" with a viewSpec
-
-
-      // To prevent showing the same view for every query, we should only
-      // return a view when the query specifically asks for relevant information
-      const lowerQuery = query.toLowerCase().trim();
-
-
-      // Get the current chat messages
-      const messages = this.getCurrentChatMessages();
-      if (messages.length === 0) return null;
-
-
-      // Get the last AI message
-      const lastAiMessage = [...messages].reverse().find(m => m.sender === 'ai');
-      if (!lastAiMessage) return null;
-
-
-      // Check if the content has special markers for a view
-      // This is just a simple implementation for the MVP - real implementation
-      // would use actual API response fields according to the API contract
-      const content = lastAiMessage.content;
-
-
-      // If we detect a "view suggestion" pattern in the API response
-      // Format: [VIEW_TYPE:data description]
-      const viewMatch = content.match(/\[(\w+)_VIEW:([^\]]+)\]/i);
-      if (viewMatch) {
-        const viewType = viewMatch[1].toLowerCase();
-        const viewDescription = viewMatch[2];
-
-
-        // Handle different view types based on markers from the API
-        if (viewType === 'table') {
-          // For MVP, we'll map to our pre-defined views based on what the API suggested
-          if (viewDescription.toLowerCase().includes('contact')) {
-            const viewId = 'contact-info';
-            // Check if this is the same view we just showed
-            if (this.lastDynamicViewId === viewId) {
-              // Only repeat if explicitly requested with the same keywords
-              if (!lowerQuery.includes('contact')) {
-                return null;
-              }
-            }
-            const view = await this.getDynamicView(viewId);
-            if (view) {
-              this.lastDynamicViewId = viewId;
-              return view;
-            }
-          } else if (viewDescription.toLowerCase().includes('service') ||
-            viewDescription.toLowerCase().includes('product')) {
-            const viewId = 'table-example';
-            // Check if this is the same view we just showed
-            if (this.lastDynamicViewId === viewId) {
-              // Only repeat if explicitly requested with the same keywords
-              if (!lowerQuery.includes('service') && !lowerQuery.includes('product')) {
-                return null;
-              }
-            }
-            const view = await this.getDynamicView(viewId);
-            if (view) {
-              this.lastDynamicViewId = viewId;
-              return view;
-            }
-          }
-        } else if (viewType === 'chart') {
-          const viewId = 'chart-example';
-          if (this.lastDynamicViewId === viewId && !lowerQuery.includes('chart')) {
-            return null;
-          }
-          const view = await this.getDynamicView(viewId);
-          if (view) {
-            this.lastDynamicViewId = viewId;
-            return view;
-          }
-        } else if (viewType === 'card') {
-          const viewId = 'card-example';
-          if (this.lastDynamicViewId === viewId && !lowerQuery.includes('about')) {
-            return null;
-          }
-          const view = await this.getDynamicView(viewId);
-          if (view) {
-            this.lastDynamicViewId = viewId;
-            return view;
-          }
-        }
-      }
-
-
-      // In development, check keywords in the query itself - only for specific queries
-      if (DEVELOPMENT_MODE) {
-        // We only want to show a view when specifically asked for it
-        // Contact info view
-        if (
-          lowerQuery === 'contact?' ||
-          lowerQuery.includes('contact information') ||
-          lowerQuery.includes('how can i contact') ||
-          lowerQuery.includes('contact details')
-        ) {
-          const viewId = 'contact-info';
-          if (this.lastDynamicViewId === viewId && !query.trim().toLowerCase().endsWith('contact?')) {
-            // Only show again if explicitly requesting with just "contact?"
-            return null;
-          }
-          const view = await this.getDynamicView(viewId);
-          if (view) {
-            this.lastDynamicViewId = viewId;
-            return view;
-          }
-        }
-        // Service comparison view
-        else if (
-          lowerQuery.includes('compare services') ||
-          lowerQuery.includes('service comparison') ||
-          lowerQuery.includes('show comparison') ||
-          lowerQuery.includes('compare products') ||
-          lowerQuery.includes('product table')
-        ) {
-          const viewId = 'table-example';
-          const view = await this.getDynamicView(viewId);
-          if (view) {
-            this.lastDynamicViewId = viewId;
-            return view;
-          }
-        }
-        // Performance chart view
-        else if (
-          lowerQuery.includes('show chart') ||
-          lowerQuery.includes('show performance') ||
-          lowerQuery.includes('performance chart') ||
-          lowerQuery.includes('success rate')
-        ) {
-          const viewId = 'chart-example';
-          const view = await this.getDynamicView(viewId);
-          if (view) {
-            this.lastDynamicViewId = viewId;
-            return view;
-          }
-        }
-        // About us card view
-        else if (
-          lowerQuery.includes('about nicor') ||
-          lowerQuery.includes('company info') ||
-          lowerQuery.includes('about the company')
-        ) {
-          const viewId = 'card-example';
-          const view = await this.getDynamicView(viewId);
-          if (view) {
-            this.lastDynamicViewId = viewId;
-            return view;
-          }
-        }
-      }
-
-
+    // All mock view generation is no longer supported
+    // We'll only support dynamicScreen views from actual backend responses
       return null;
-    } catch (error) {
-      console.error('Error checking for dynamic view:', error);
-      return null;
-    }
   }
 
 
@@ -809,52 +547,15 @@ class ApiService {
     try {
       // For the console-visible format where responseType is 'view'
       if (responseData.responseType === 'view' && responseData.content) {
-        let viewType = 'custom'; // Default
-        if (responseData.content.viewType) {
-          viewType = responseData.content.viewType;
-        } else if (responseData.content.output && typeof responseData.content.output === 'string') {
-          // If we have an output string and no specific viewType, use 'dynamicScreen'
-          viewType = 'dynamicScreen';
+        // Only create dynamicScreen views when output string is available
+        if (responseData.content.output && typeof responseData.content.output === 'string') {
+        return {
+          id: `dynamic-${Date.now()}`,
+            type: 'dynamicScreen',
+            data: responseData.content
+          };
         }
-       
-        return {
-          id: `dynamic-${Date.now()}`,
-          type: viewType as any,
-          data: responseData.content.viewSpec || responseData.content
-        };
       }
-
-
-      // Direct dynamic view ID format
-      if (responseData.id && responseData.id.startsWith('dynamic-')) {
-        return {
-          id: responseData.id,
-          type: responseData.type || 'custom',
-          data: responseData.data
-        };
-      }
-
-
-      // Alternative format that might come from the API
-      if (responseData.view) {
-        return {
-          id: `dynamic-${Date.now()}`,
-          type: responseData.view.type || 'custom',
-          data: responseData.view.data || responseData.view
-        };
-      }
-
-
-      // Check if the response itself matches our expected data structure
-      if (responseData.items && Array.isArray(responseData.items)) {
-        // This looks like the "items" array format seen in the console
-        return {
-          id: `dynamic-${Date.now()}`,
-          type: 'custom',
-          data: responseData
-        };
-      }
-
 
       return null;
     } catch (error) {
@@ -866,59 +567,17 @@ class ApiService {
 
   // Update sendMessage to also check for dynamic view data in API response
   private checkResponseForDynamicView(data: any): DynamicView | null {
-    if (!data) return null;
+    if (!data || !data.responseType || data.responseType !== 'view' || !data.content) return null;
    
     try {
-      // Check common format with responseType and content
-      if (data.responseType === 'view' && data.content) {
-        return this.createDynamicViewFromResponse(data);
-      }
-     
-      // Check for direct dynamic view format
-      if (data.id && data.id.startsWith('dynamic-') && data.type) {
-        return {
-          id: data.id,
-          type: data.type,
-          data: data.data
-        };
-      }
-     
-      // Check for nested view property
-      if (data.view) {
-        return this.createDynamicViewFromResponse({ view: data.view });
-      }
-     
-      // Check for items array format that should be a custom view
-      if (data.items && Array.isArray(data.items)) {
-        // This looks like a custom view with items array
+      // Check if we have valid output for dynamic screen
+      if (data.content.output && typeof data.content.output === 'string') {
         return {
           id: `dynamic-${Date.now()}`,
-          type: 'custom',
-          data: data
+          type: 'dynamicScreen',
+          data: data.content
         };
       }
-     
-      // Check the response for data payload of known formats
-      if (data.data) {
-        // If data contains nested items array
-        if (data.data.items && Array.isArray(data.data.items)) {
-          return {
-            id: `dynamic-${Date.now()}`,
-            type: 'custom',
-            data: data.data
-          };
-        }
-       
-        // Check if data contains table-like structure
-        if (data.data.headers || data.data.columns || data.data.rows) {
-          return {
-            id: `dynamic-${Date.now()}`,
-            type: 'table',
-            data: data.data
-          };
-        }
-      }
-     
       return null;
     } catch (error) {
       console.error('Error checking for dynamic view in response:', error);
@@ -977,30 +636,9 @@ class ApiService {
       console.error('Error storing view and association:', e);
     }
   }
-
-
-  // Helper method to create a special dynamic view response
-  private createSpecialViewResponse(viewType: 'table' | 'chart' | 'card' | 'custom', viewName: string, viewData: any, chatId?: string): ChatMessageWithView {
-    const aiMessage: ChatMessageWithView = {
-      id: `msg-${Date.now()}-ai`,
-      content: "",
-      sender: 'ai',
-      timestamp: new Date()
-    };
-    const dynamicView: DynamicView = {
-      id: `dynamic-${viewType}-${viewName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
-      type: viewType,
-      data: viewData
-    };
-    aiMessage.dynamicView = dynamicView;
-    this.addMessageToCurrentChat(aiMessage, chatId);
-    this.storeViewAndAssociation(aiMessage.id, dynamicView);
-    return aiMessage;
-  }
 }
 
 
 // Export a singleton instance
 const apiService = new ApiService();
 export default apiService;
-

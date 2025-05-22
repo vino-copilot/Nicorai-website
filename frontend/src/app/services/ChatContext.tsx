@@ -1,7 +1,6 @@
 'use client';
 
-
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import apiService, { ChatMessage, ChatSession } from './api';
 
 
@@ -189,10 +188,39 @@ export const useChatLoading = () => {
 
 export const ChatLoadingProvider = ({ children }: { children: ReactNode }) => {
   const [loadingChats, setLoadingChats] = useState<{ [chatId: string]: boolean }>({});
+  
+  // Store loading timeout references to clear them when needed
+  const loadingTimeouts = useRef<{ [chatId: string]: NodeJS.Timeout }>({});
 
   const setLoadingForChat = (chatId: string, loading: boolean) => {
-    setLoadingChats(prev => ({ ...prev, [chatId]: loading }));
+    // If chatId is empty or null, use a default key
+    const key = chatId || 'default-chat';
+    
+    // Clear any existing timeout for this chat
+    if (loadingTimeouts.current[key]) {
+      clearTimeout(loadingTimeouts.current[key]);
+      delete loadingTimeouts.current[key];
+    }
+    
+    // Update loading state
+    setLoadingChats(prev => ({ ...prev, [key]: loading }));
+    
+    // Set a safety timeout to clear loading state after 30 seconds
+    // This prevents infinite loading if something goes wrong
+    if (loading) {
+      loadingTimeouts.current[key] = setTimeout(() => {
+        console.log(`Auto-clearing loading state for chat ${key} after timeout`);
+        setLoadingChats(prev => ({ ...prev, [key]: false }));
+      }, 30000); // 30 seconds timeout
+    }
   };
+  
+  // Clean up timeouts on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(loadingTimeouts.current).forEach(timeout => clearTimeout(timeout));
+    };
+  }, []);
 
   return (
     <ChatLoadingContext.Provider value={{ loadingChats, setLoadingForChat }}>

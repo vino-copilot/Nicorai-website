@@ -32,25 +32,71 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
     const chatIdAtSend = apiService.getCurrentChatId();
     if (loadingChats[chatIdAtSend || '']) return;
     setInputValue('');
+    
+    // Set loading state to true for the current chat (if exists)
     if (chatIdAtSend) setLoadingForChat(chatIdAtSend, true);
+    
     setNotification({
       status: 'sending',
       message: 'Sending message...'
     });
-    // Only create a new chat if there is truly no current chat ID and no messages
-    const currentMessages = currentChatId ? apiService.getCurrentChatMessages() : [];
-    if (!currentChatId && currentMessages.length === 0) {
+    
+    // Create a new chat if:
+    // 1. There is no current chat ID, or
+    // 2. The chat was explicitly closed, or
+    // 3. There are no messages in the current chat
+    const currentMessages = chatIdAtSend ? apiService.getCurrentChatMessages() : [];
+    let finalChatId = chatIdAtSend;
+    
+    if (!chatIdAtSend || chatIdAtSend === '' || isChatExplicitlyClosed || currentMessages.length === 0) {
       const newChatId = apiService.createNewChat();
       apiService.setCurrentChat(newChatId);
+      finalChatId = newChatId;
+      
+      // Set the loading state for the new chat
+      setLoadingForChat(newChatId, true);
+      
+      // Trigger chat change event to notify other components about the new chat
+      const chatChangeEvent = new CustomEvent('chatChanged', {
+        detail: { chatId: newChatId, messages: [] }
+      });
+      window.dispatchEvent(chatChangeEvent);
     }
+
+    // Get the final chat ID we'll be using (now guaranteed to have a value)
+    finalChatId = finalChatId || 'default-chat';
+    
+    // Get userId using apiService
+    const userId = apiService.getUserId();
+    
+    // Generate a unique message ID
+    const messageId = `msg-${Date.now()}-user`;
+    
+    // Create a detailed message object for logging
+    const messageDetails = {
+      userId: userId,
+      chatId: finalChatId,
+      messageId: messageId,
+      content: content,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Log the complete message details in browser console
+    console.log('📨 Complete Message Details:', messageDetails);
+    console.table(messageDetails); // Display in table format for better visibility
+    
     try {
       const chatIdForSend = apiService.getCurrentChatId() || undefined;
       const aiResponse = await apiService.sendMessage(content, chatIdForSend);
+      
+      // Always dispatch chat change event to update UI with the response
       const chatChangeEvent = new CustomEvent('chatChanged', {
         detail: { chatId: apiService.getCurrentChatId(), messages: apiService.getCurrentChatMessages() }
       });
       window.dispatchEvent(chatChangeEvent);
+      
       setNotification({ status: 'success', message: 'Message sent!' });
+      
       if (aiResponse.dynamicView) {
         onMessageSent?.(false, aiResponse.dynamicView);
       } else {
@@ -73,8 +119,24 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
     } catch (error) {
       setNotification({ status: 'error', message: 'Failed to send message. Please try again.' });
       console.error('Error sending message:', error);
+      
+      // Make sure to dispatch chat change event even when there's an error
+      // This ensures the UI is updated with the error message
+      const chatChangeEvent = new CustomEvent('chatChanged', {
+        detail: { 
+          chatId: apiService.getCurrentChatId(), 
+          messages: apiService.getCurrentChatMessages() 
+        }
+      });
+      window.dispatchEvent(chatChangeEvent);
     } finally {
-      if (chatIdAtSend) setLoadingForChat(chatIdAtSend, false);
+      // Clear loading state for the chat ID we were working with
+      if (finalChatId) setLoadingForChat(finalChatId, false);
+      
+      // Also clear loading for the original chat ID if it's different
+      if (chatIdAtSend && chatIdAtSend !== finalChatId) {
+        setLoadingForChat(chatIdAtSend, false);
+      }
     }
   };
 
@@ -83,7 +145,11 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
     e.preventDefault();
     if (!inputValue.trim()) return;
     if (loadingChats[currentChatId || '']) return;
+    
+    // Always notify parent that chat should be visible before sending message
     onMessageSent?.(false);
+    
+    // Send the message
     sendMessage(inputValue);
   };
 

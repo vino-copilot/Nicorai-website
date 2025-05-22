@@ -1,13 +1,11 @@
 "use client";
 
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Chat from './components/Chat';
 import ChatInput from './components/ChatInput';
 import DynamicViewRenderer from './components/DynamicViewRenderer';
 import apiService, { DynamicView } from './services/api';
-
 
 export default function Home() {
   const [activeView, setActiveView] = useState<string | null>(null);
@@ -21,7 +19,6 @@ export default function Home() {
   const [isChatExplicitlyClosed, setIsChatExplicitlyClosed] = useState(false);
   const [activeDynamicView, setActiveDynamicView] = useState<DynamicView | null>(null);
 
-
   // On initial load, always show the initial landing page (isInitialView = true), regardless of chat history
   useEffect(() => {
     setIsInitialView(true);
@@ -33,13 +30,31 @@ export default function Home() {
   // Listen for chat selection from history
   useEffect(() => {
     const handleChatChange = (e: CustomEvent) => {
-      // If messages are empty, reset to initial view
+      // If chat ID exists, ensure the chat view is shown regardless of messages
+      if (e.detail.chatId) {
+        setActiveView(null);
+        setIsChatVisible(true);
+        
+        // If there are no messages, this is a new chat, so show initial view
+        if (!e.detail.messages || e.detail.messages.length === 0) {
+          setIsInitialView(true);
+        } else {
+          setIsInitialView(false);
+        }
+        
+        // Reset the explicit close state when a chat is selected
+        setIsChatExplicitlyClosed(false);
+        return;
+      }
+
+      // If messages are empty and no chatId, reset to initial view
       if (!e.detail.messages || e.detail.messages.length === 0) {
         setActiveView(null);
         setIsChatVisible(true);
         setIsInitialView(true);
         return;
       }
+      
       // Make sure the chat becomes visible when a chat is selected from history
       if (e.detail.messages && e.detail.messages.length > 0) {
         // Clear any active view when a chat is selected
@@ -59,10 +74,12 @@ export default function Home() {
     };
   }, []);
 
-
   // Function to handle sending a message in the chat
   const handleMessageSent = (isClosing?: boolean, dynamicView?: DynamicView, isClosed?: boolean) => {
-    setHasMessages(true);
+    // Check for existing messages
+    const hasExistingMessages = apiService.getCurrentChatMessages().length > 0;
+    setHasMessages(hasExistingMessages);
+   
     if (isClosing) {
       if (dynamicView) {
         if (isClosed) {
@@ -84,6 +101,8 @@ export default function Home() {
         setFullscreenDynamicView(null);
         // Mark chat as explicitly closed
         setIsChatExplicitlyClosed(true);
+        // Clear current chat ID to ensure new messages start a new chat
+        apiService.setCurrentChat('');
       }
       // If a tab was selected previously, make it visible again
       else if (activeView) {
@@ -94,6 +113,8 @@ export default function Home() {
         }
         // Mark chat as explicitly closed
         setIsChatExplicitlyClosed(true);
+        // Clear current chat ID to ensure new messages start a new chat
+        apiService.setCurrentChat('');
       }
       // Otherwise if we're already in initial view, just hide the chat
       else {
@@ -101,6 +122,8 @@ export default function Home() {
         setFullscreenDynamicView(null);
         // Mark chat as explicitly closed
         setIsChatExplicitlyClosed(true);
+        // Clear current chat ID to ensure new messages start a new chat
+        apiService.setCurrentChat('');
       }
      
       // Don't clear closed dynamic view when closing chat - we want to keep it
@@ -108,7 +131,12 @@ export default function Home() {
       setPendingDynamicView(null);
     } else {
       // Normal message sending behavior - not closing
-      setIsInitialView(false);
+     
+      // When we have existing messages, switch to chat view mode
+      if (hasExistingMessages) {
+        setIsInitialView(false);
+      }
+     
       setIsChatVisible(true); // Always show chat when a message is sent
      
       // Reset the explicit close state when sending a message
@@ -134,7 +162,6 @@ export default function Home() {
     }
   };
 
-
   // Handle navigation clicks from the sidebar
   const handleNavClick = (view: string) => {
     // Store previous active view
@@ -159,7 +186,6 @@ export default function Home() {
     }
   };
 
-
   // Handle closing a view
   const handleCloseView = () => {
     setActiveView(null);
@@ -178,7 +204,6 @@ export default function Home() {
     }
   };
 
-
   // Handle sidebar expansion state change
   const handleSidebarToggle = (expanded: boolean) => {
     setIsSidebarExpanded(expanded);
@@ -187,7 +212,6 @@ export default function Home() {
       window.dispatchEvent(new Event('resize'));
     }, 300); // Match the duration of the sidebar transition
   };
-
 
   // Check if we're on a mobile device
   const [isMobile, setIsMobile] = useState(false);
@@ -209,7 +233,6 @@ export default function Home() {
     };
   }, []);
 
-
   // Set up global keyboard handler for Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -218,19 +241,16 @@ export default function Home() {
       }
     };
 
-
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [activeView]);
 
-
   return (
     <main className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <Sidebar onNavClick={handleNavClick} activeView={activeView} onToggle={handleSidebarToggle} />
-
 
       {/* Main Content Area - adjust margin based on sidebar state */}
       <div className={`flex-1 h-screen overflow-hidden flex flex-col relative transition-all duration-300
@@ -287,7 +307,6 @@ export default function Home() {
           </div>
         )}
 
-
         {/* Fixed chat input box at the bottom (visible on all pages except initial view) */}
         {!isInitialView && !isChatVisible && activeView && (
           <div className={`fixed bottom-0 right-0 bg-white p-4 shadow-md z-10 transition-all duration-300
@@ -317,6 +336,12 @@ export default function Home() {
     </main>
   );
 }
+
+
+
+
+
+
 
 
 

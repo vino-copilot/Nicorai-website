@@ -4,7 +4,6 @@ import { Pixelify_Sans } from "next/font/google";
 import { Press_Start_2P } from "next/font/google";
 import "./globals.css";
 import { ChatProvider, ChatLoadingProvider } from "./services/ChatContext";
-// import AIBackgroundAnimation from "./components/AIBackgroundAnimation";
 
 
 const geistSans = Geist({
@@ -51,7 +50,6 @@ export default function RootLayout({
       >
         <ChatProvider>
           <ChatLoadingProvider>
-            {/* <AIBackgroundAnimation /> */}
             {children}
           </ChatLoadingProvider>
         </ChatProvider>

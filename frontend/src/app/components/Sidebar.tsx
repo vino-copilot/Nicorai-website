@@ -2,15 +2,9 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import apiService, { ChatSession } from '../services/api';
-import { Briefcase, CheckSquare, Mail, Users, Sparkles, Lightbulb } from 'lucide-react';
+import { Briefcase, CheckSquare, Mail, Users, Sparkles, Lightbulb, FlaskConical } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
 import { useChatLoading } from '../services/ChatContext';
-
-
-
-
-
-
 
 
 interface SidebarProps {
@@ -20,12 +14,6 @@ interface SidebarProps {
 }
 
 
-
-
-
-
-
-
 // Add this utility function at the top level, before the Sidebar component
 const isMobileDevice = () => {
   if (typeof window !== 'undefined') {
@@ -33,12 +21,6 @@ const isMobileDevice = () => {
   }
   return false;
 };
-
-
-
-
-
-
 
 
 // Custom CSS for the logo text to match the pixelated style
@@ -51,24 +33,12 @@ const logoTextStyle = {
 };
 
 
-
-
-
-
-
-
 // Custom CSS for the navigation items to use Pixelify Sans font
 const navItemStyle = {
   fontFamily: "var(--font-pixelify-sans)",
   letterSpacing: "0.02em",
   fontWeight: 400,
 };
-
-
-
-
-
-
 
 
 const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) => {
@@ -83,24 +53,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   const { loadingChats } = useChatLoading();
 
 
-
-
-
-
-
-
   // Notify parent about initial sidebar state
   useEffect(() => {
     if (onToggle) {
       onToggle(isExpanded);
     }
   }, []);
-
-
-
-
-
-
 
 
   // Fetch chat history when component mounts or when localStorage changes
@@ -133,36 +91,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   }, []);
 
 
-
-
-
-
-
-
   const navItems = [
     { id: 'what-we-do', label: 'What We Do', icon: Briefcase },
     { id: 'what-weve-done', label: "What We've Done", icon: CheckSquare },
-    { id: 'research-blog', label: 'Research', icon: Sparkles },
+    { id: 'research-blog', label: 'Research', icon: FlaskConical },
     { id: 'connect', label: 'Connect', icon: Mail },
     { id: 'us', label: 'Us', icon: Users },
   ];
 
 
-
-
-
-
-
-
   const handleNavClick = (id: string) => {
     onNavClick(id);
   };
-
-
-
-
-
-
 
 
   // Handle selecting a chat from the history
@@ -180,23 +120,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
     window.dispatchEvent(chatChangeEvent);
 
 
-
-
-
-
-
-
     // Ensure sidebar state is properly communicated when selecting chat
     if (onToggle) {
       onToggle(isExpanded);
     }
   };
-
-
-
-
-
-
 
 
   // Format the date for display in the sidebar
@@ -221,24 +149,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   };
 
 
-
-
-
-
-
-
   // Handle deleting a chat
   const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
     setPendingDeleteId(chatId);
     setShowConfirm(true);
   };
-
-
-
-
-
-
 
 
   const confirmDelete = () => {
@@ -258,22 +174,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   };
 
 
-
-
-
-
-
-
   const cancelDelete = () => {
     setShowConfirm(false);
     setPendingDeleteId(null);
   };
-
-
-
-
-
-
 
 
   // Toggle sidebar expansion
@@ -290,19 +194,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   };
 
 
-
-
-
-
-
-
   // Update the mobile detection useEffect
   useEffect(() => {
     const checkIfMobile = () => {
       const isMobileView = window.innerWidth < 768;
       setIsMobile(isMobileView);
       setIsLoading(false); // Set loading to false after initial check
-      console.log("Mobile detection:", isMobileView, window.innerWidth);
+      // console.log("Mobile detection:", isMobileView, window.innerWidth);
     };
    
     // Initial check
@@ -315,12 +213,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
       window.removeEventListener('resize', checkIfMobile);
     };
   }, []);
-
-
-
-
-
-
 
 
   // Auto-collapse on mobile initially - only on first render
@@ -341,12 +233,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   }, []);
 
 
-
-
-
-
-
-
   return (
     <>
       {/* Mobile overlay - only visible when sidebar is expanded on mobile */}
@@ -357,12 +243,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
           style={{ touchAction: 'none' }}
         ></div>
       )}
-
-
-
-
-
-
 
 
       {/* Sidebar */}
@@ -399,12 +279,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                   )}
                 </button>
               </div>
-
-
-
-
-
-
 
 
               {/* Logo/Profile Section */}
@@ -444,13 +318,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
               </div>
             </div>
 
-
-
-
-
-
-
-
             {/* Scrollable content section */}
             <div className="flex-1 overflow-y-auto sidebar-scroll flex flex-col">
               {/* Main content (menu + recent chats) */}
@@ -479,9 +346,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                     );
                   })}
                 </nav>
-
-
-
 
                 {/* Recent Chats Section */}
                 <div className={`${isExpanded ? 'p-4 border-t border-gray-200 mt-2' : 'p-2 mt-4'}`}>
@@ -592,9 +456,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                 </div>
               </div>
 
-
-
-
               {/* Footer: Social Media and Copyright - scrolls with content, but pushed to bottom if short */}
               <div className={`p-4 border-t border-gray-200 mt-auto`}>
                 {/* Social Media Icons */}
@@ -641,13 +502,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
         </div>
       )}
 
-
-
-
-
-
-
-
       <ConfirmModal
         open={showConfirm}
         title="Delete Chat"
@@ -683,16 +537,4 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
   );
 };
 
-
-
-
-
-
-
-
 export default Sidebar;
-
-
-
-
-
