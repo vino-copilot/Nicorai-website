@@ -43,7 +43,9 @@ import {
   Stethoscope,
   IndianRupee,
   BookOpenText,
-  BookText
+  BookText,
+  SearchCode,
+  Compass
 } from 'lucide-react';
 import ArticleDetailView from './ArticleDetailView';
 import ProjectDetailView from './ProjectDetailView';
@@ -356,39 +358,39 @@ const AIServicesSection = () => {
 
   const services = [
     {
-      title: "AI Strategy Consulting",
-      description: "We guide your organization through the AI adoption journey with strategic planning and roadmapping.",
-      icon: <Brain className="w-6 h-6 text-blue-600" />,
+      title: "AI Agent Development",
+      description: "Empower your operations with intelligent agents. We design, train, and deploy autonomous AI agents capable of reasoning, decision-making, and interacting with users across platforms, enhancing productivity and customer experience.",
+      icon: <Bot className="w-6 h-6 text-blue-600" />,
       color: "from-blue-50 to-blue-100/50"
     },
     {
-      title: "Natural Language Processing",
-      description: "Build intelligent chatbots, sentiment analysis tools, and automated content generation systems.",
-      icon: <BrainCircuit className="w-6 h-6 text-indigo-600" />,
+      title: "AI Workflow Automation",
+      description: "Transform business operations with intelligent automation. Streamline and automate end-to-end business processes using AI-driven decision systems that adapt and improve over time.",
+      icon: <Workflow className="w-6 h-6 text-indigo-600" />,
       color: "from-indigo-50 to-indigo-100/50"
     },
     {
-      title: "Computer Vision Solutions",
-      description: "Implement image recognition, object detection, and video analysis and many more for various applications.",
-      icon: <Search className="w-6 h-6 text-violet-600" />,
+      title: "Retrieval-Augmented Generation (RAG) Systems",
+      description: "Enable context-rich, accurate, and explainable AI responses. We build RAG pipelines combining LLMs with external knowledge sources for advanced chatbots, document Q&A systems, and support automation.",
+      icon: <SearchCode className="w-6 h-6 text-violet-600" />,
       color: "from-violet-50 to-violet-100/50"
     },
     {
-      title: "Predictive Analytics",
-      description: "Forecast future trends and behaviors with our machine learning-powered predictive models.",
-      icon: <LineChart className="w-6 h-6 text-blue-600" />,
+      title: "ML Model Development",
+      description: "Custom machine learning models built for your domain. From data engineering to deployment, we develop supervised, unsupervised, and reinforcement learning models tailored to your business objectives.",
+      icon: <BrainCircuit className="w-6 h-6 text-blue-600" />,
       color: "from-blue-50 to-blue-100/50"
     },
     {
-      title: "ML Model Development",
-      description: "We build, train, and deploy custom machine learning models tailored to your specific needs.",
-      icon: <Boxes className="w-6 h-6 text-indigo-600" />,
+      title: "Predictive Intelligence",
+      description: "Anticipate trends and make smarter decisions. Forecast behaviors, demand, risks, or opportunities with data-driven predictive models optimized for high accuracy and business ROI.",
+      icon: <TrendingUp className="w-6 h-6 text-indigo-600" />,
       color: "from-indigo-50 to-indigo-100/50"
     },
     {
-      title: "AI Process Automation",
-      description: "Automate repetitive tasks and complex workflows with intelligent AI-powered solutions.",
-      icon: <Workflow className="w-6 h-6 text-violet-600" />,
+      title: "AI Strategy & Enablement",
+      description: "Your AI transformation partner. We guide organizations through AI maturity assessment, roadmap creation, and technology adoption with a practical, results-oriented approach.",
+      icon: <Compass className="w-6 h-6 text-violet-600" />,
       color: "from-violet-50 to-violet-100/50"
     },
   ];
@@ -923,21 +925,21 @@ const FeaturedProjects = ({ onProjectSelect }: { onProjectSelect: (id: string) =
 const TestimonialsSection = () => {
   const testimonials = [
     {
-      content: "NicorAI's predictive analytics solution completely transformed our inventory management. We've seen a 22% increase in sales and significantly reduced overstock issues.",
-      author: "Sarah Johnson",
-      title: "CTO, RetailPlus Inc.",
+      content: "Partnering with NicorAI Systems has transformed our operations at DMART. Their machine learning models provided invaluable predictions on customer transactions, buying patterns, and vendor supply trends. The accuracy and insights from these models have significantly boosted our efficiency and decision-making. We couldn't be happier with the results and look forward to continued collaboration!",
+      author: "George Williams",
+      title: "CEO of DMART",
       image: "👩‍💼"
     },
     {
-      content: "The healthcare AI assistant developed by NicorAI has revolutionized our patient management system. Administrative tasks are down by 35% and patient satisfaction is at an all-time high.",
-      author: "Dr. Michael Chen",
-      title: "Director of Operations, MediCare Group",
+      content: "Implementing the Continuous Transaction Monitoring System developed by NicorAI Systems has been a game-changer for our financial security. Their advanced ML-powered system has significantly enhanced our ability to detect and prevent financial fraud, ensuring compliance and security. The system's accuracy and real-time monitoring capabilities have been instrumental in safeguarding our operations. We highly recommend NicorAI Systems for their expertise and dedication to excellence.",
+      author: "Senior Compliance Office",
+      title: "Leading Finance Institute",
       image: "👨‍⚕️"
     },
     {
-      content: "Working with NicorAI on our fraud detection system was seamless. Their AI solution reduced fraudulent transactions by 92% while minimizing false positives.",
-      author: "Alex Rivera",
-      title: "Head of Security, FinSecure",
+      content: "Working with NicorAI Systems has been a game-changer for our Toni & Guy franchise. We were overwhelmed with customer queries, especially outside of working hours, which affected our ability to respond promptly. The AI agent developed by NicorAI Systems transformed our customer service experience. Their solution not only handled a high volume of inquiries efficiently but also ensured our clients received accurate, personalized responses around the clock. We've seen a significant boost in customer satisfaction and operational efficiency. We highly recommend their innovative AI solutions to any business looking to enhance customer engagement.",
+      author: "Murad Hossain",
+      title: "Franchise Owner, Toni & Guy",
       image: "👨‍💼"
     }
   ];
@@ -1551,21 +1553,27 @@ const TeamSection = () => {
       title: "CEO",
       bio: "AI enthusiast with 15+ years of experience in machine learning and business leadership. Previously led AI initiatives at Tech Giant Inc.",
       image: "👨‍💻",
-      color: "from-indigo-500 to-blue-600"
+      color: "from-indigo-500 to-blue-600",
+      linkedin: "https://www.linkedin.com/in/sachin-shetty-7a473a51/",
+      // twitter: ""
     },
     {
-      name: "Vino S",
-      title: "CTO",
-      bio: "Former research scientist with expertise in NLP and conversational AI architectures. Published author with multiple patents in machine learning.",
+      name: "Vino Suresh",
+      title: "Chief Technology Officer",
+      bio: "Vino Suresh is the Chief Technology Officer at NicorAI Systems, bringing over 20 years of experience in designing and scaling enterprise platforms. A first-class Computer Science graduate, he has led cloud migrations, machine learning product launches, and mission-critical rollouts with a focus on engineering rigor and reliable delivery. A former club cricketer, Vino values strategic thinking and team cohesion. Outside work, he's a dedicated husband and father, inspired daily by his daughters' curiosity.",
       image: "👨‍💻",
-      color: "from-emerald-500 to-teal-600"
+      color: "from-emerald-500 to-teal-600",
+      linkedin: "https://www.linkedin.com/in/vino-s-95396615/",
+      twitter: "https://x.com/VinoSuresh11"
     },
     {
       name: "Supimon Pavithran",
       title: "Founder",
       bio: "PhD in Computer Science with specialization in predictive modeling and data analysis. Previously developed AI systems for Fortune 500 companies.",
       image: "👨‍💻",
-      color: "from-purple-500 to-pink-600"
+      color: "from-purple-500 to-pink-600",
+      linkedin: "https://www.linkedin.com/in/supimon-pavithran-452a1915",
+      twitter: "https://x.com/supimon"
     }
   ];
  
@@ -1609,12 +1617,12 @@ const TeamSection = () => {
                 <p className="text-indigo-600 font-medium mb-3">{member.title}</p>
                 <p className="text-gray-600 mb-4">{member.bio}</p>
                 <div className="flex space-x-3 mt-auto">
-                  <a href="#" className="text-gray-500 hover:text-indigo-600 transition-colors">
+                  <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-indigo-600 transition-colors">
                     <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                     </svg>
                   </a>
-                  <a href="#" className="text-gray-500 hover:text-blue-400 transition-colors">
+                  <a href={member.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-400 transition-colors">
                     <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
                     </svg>

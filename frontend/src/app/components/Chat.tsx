@@ -49,7 +49,7 @@ const Chat: React.FC<ChatProps> = ({
   const closedDynamicView = externalClosedDynamicView || internalClosedDynamicView;
 
   const faqSuggestions = [
-    "How can AI specifically help my business beyond just automation?",
+    "How can AI help my business?",
     "What services does NicorAI offer?",
     "What are the technologies used by NicorAI?",
     "What industries do you specialize in?"
@@ -416,12 +416,18 @@ const Chat: React.FC<ChatProps> = ({
     setInputValue('');
     setError(null);
    
-    // Only create a new chat if there is truly no current chat ID and no messages
+    // Create a new chat if there is no current chat ID (after page refresh or explicit closing)
     let currentChatId = chatIdAtSend;
-    if (!currentChatId && messages.length === 0) {
+    if (!currentChatId) {
       const newChatId = apiService.createNewChat();
       apiService.setCurrentChat(newChatId);
       currentChatId = newChatId;
+      
+      // Dispatch an event to notify components about the new chat
+      const chatChangeEvent = new CustomEvent('chatChanged', {
+        detail: { chatId: newChatId, messages: [] }
+      });
+      window.dispatchEvent(chatChangeEvent);
     }
    
     // Ensure we have a final chat ID

@@ -145,6 +145,10 @@ class ApiService {
       this.currentChatId = null;
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.removeItem('nicoraiCurrentChatId');
+        // Also ensure we don't have any partial messages saved
+        const chatHistory = this.getChatHistory();
+        const filteredHistory = chatHistory.filter(chat => chat.messages.length > 0);
+        localStorage.setItem('nicoraiChatHistory', JSON.stringify(filteredHistory));
       }
       return;
     }

@@ -25,6 +25,15 @@ export default function Home() {
     setIsChatVisible(true);
     setActiveView(null);
     setFullscreenDynamicView(null);
+    
+    // Clear the current chat ID on page refresh to ensure new messages start a new chat
+    apiService.setCurrentChat('');
+    
+    // Force a refresh of the chat state
+    const chatChangeEvent = new CustomEvent('chatChanged', {
+      detail: { chatId: '', messages: [] }
+    });
+    window.dispatchEvent(chatChangeEvent);
   }, []);
  
   // Listen for chat selection from history
