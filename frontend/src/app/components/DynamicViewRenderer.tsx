@@ -1075,6 +1075,25 @@ const ContactForm = () => {
     setFormState(prev => ({ ...prev, loading: true, submitted: false, error: null }));
  
     try {
+
+      // Execute reCAPTCHA and get token
+      let recaptchaToken = '';
+      if (typeof window !== 'undefined' && 'grecaptcha' in window && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
+        try {
+          // Type assertion to tell TypeScript that grecaptcha exists on window
+          const grecaptcha = (window as any).grecaptcha;
+          recaptchaToken = await grecaptcha.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, { action: 'contact' });
+        } catch (error) {
+          console.error('reCAPTCHA execution failed:', error);
+          setFormState(prev => ({
+            ...prev,
+            loading: false,
+            error: 'reCAPTCHA verification failed. Please try again.'
+          }));
+          return;
+        }
+      }
+
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -1085,6 +1104,7 @@ const ContactForm = () => {
           email: formState.email,
           company: formState.company,
           message: formState.message,
+          recaptchaToken: recaptchaToken,
         }),
       });
 
@@ -1550,8 +1570,8 @@ const TeamSection = () => {
   const team = [
     {
       name: "Sachin Shetty",
-      title: "CEO",
-      bio: "AI enthusiast with 15+ years of experience in machine learning and business leadership. Previously led AI initiatives at Tech Giant Inc.",
+      title: "Chief of Executions",
+      bio: "Sachin Shetty is the CEO of NicorAI Systems, driving the company’s strategic vision and growth with a blend of technical expertise and entrepreneurial insight. With 12 years of experience delivering enterprise solutions in Java and Adobe Experience Manager, he excels at turning complex challenges into scalable, AI-driven platforms. His leadership fosters innovation and accountability, while his passion for independent filmmaking sharpens his focus on user-centric design. Sachin is also a devoted husband and father, inspired by his daughter to build technology that enhances everyday life.",
       image: "👨‍💻",
       color: "from-indigo-500 to-blue-600",
       linkedin: "https://www.linkedin.com/in/sachin-shetty-7a473a51/",
@@ -1568,8 +1588,8 @@ const TeamSection = () => {
     },
     {
       name: "Supimon Pavithran",
-      title: "Founder",
-      bio: "PhD in Computer Science with specialization in predictive modeling and data analysis. Previously developed AI systems for Fortune 500 companies.",
+      title: "Chief of Business and Research",
+      bio: "Supimon Pavithran is the founder and Chief of Business & Research at NicorAI Systems, uniting commercial strategy with advanced AI innovation. With a background in Electronics & Communication Engineering, he brings deep expertise across languages like Rust, C++, Python, and Java, along with strong mathematical and LLM knowledge. Supimon leads R&D, builds key partnerships, and mentors the engineering team he personally recruited, shaping them into top AI talent. A strategic thinker and avid chess player, he balances work with fitness and family life, often sharing adventures with his wife and daughter.",
       image: "👨‍💻",
       color: "from-purple-500 to-pink-600",
       linkedin: "https://www.linkedin.com/in/supimon-pavithran-452a1915",

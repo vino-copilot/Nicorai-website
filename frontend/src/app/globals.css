@@ -68,3 +68,10 @@ textarea::-webkit-scrollbar {
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #1d4ed8 60%, #3b82f6 100%);
 }
+
+.grecaptcha-badge {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+ 
+ 

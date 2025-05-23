@@ -1,13 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import axios from 'axios';
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, company, message } = await request.json();
+    const { name, email, company, message, recaptchaToken } = await request.json();
 
     // Basic validation
     if (!name || !email || !message) {
       return NextResponse.json({ error: 'Missing required fields (name, email, message)' }, { status: 400 });
+    }
+
+    // reCAPTCHA verification
+    const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
+    if (!RECAPTCHA_SECRET_KEY) {
+      console.error('❌ RECAPTCHA_SECRET_KEY is not set in environment variables.');
+      return NextResponse.json({ error: 'Server configuration error: reCAPTCHA secret key not set.' }, { status: 500 });
+    }
+ 
+    if (!recaptchaToken) {
+      console.log('⚠️ Missing reCAPTCHA token in request body.');
+      return NextResponse.json({ error: 'reCAPTCHA token missing.' }, { status: 400 });
+    }
+ 
+    try {
+      console.log('🔑 Using RECAPTCHA_SECRET_KEY (last 4 chars):...' + RECAPTCHA_SECRET_KEY.slice(-4));
+      console.log('📝 Verifying recaptchaToken:', recaptchaToken);
+ 
+      const verificationResponse = await axios.post('https://www.google.com/recaptcha/api/siteverify', null, {
+        params: {
+          secret: RECAPTCHA_SECRET_KEY,
+          response: recaptchaToken
+        }
+      });
+ 
+      const { success, score } = verificationResponse.data;
+ 
+      console.log('⬅️ Google reCAPTCHA verification response:', verificationResponse.data);
+ 
+      if (!success || score < 0.5) {
+        console.warn(`⚠️ reCAPTCHA verification failed or score too low: Success=${success}, Score=${score}`);
+        return NextResponse.json({ error: 'reCAPTCHA verification failed. Please try again.' }, { status: 403 });
+      }
+ 
+      console.log(`✅ reCAPTCHA verification successful with score: ${score}`);
+ 
+    } catch (error) {
+      console.error('❌ reCAPTCHA verification failed:', error);
+      return NextResponse.json({ error: 'reCAPTCHA verification failed due to server error.' }, { status: 500 });
     }
 
     // Get SMTP credentials and email addresses from environment variables

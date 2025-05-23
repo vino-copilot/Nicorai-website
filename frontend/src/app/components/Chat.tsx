@@ -55,14 +55,6 @@ const Chat: React.FC<ChatProps> = ({
     "What industries do you specialize in?"
   ];
 
-  // FAQ answers mapping
-  const faqAnswers: Record<string, string> = {
-    "How can AI help my business?": "AI can help your business by:\n\n* **Automating repetitive tasks** - saving time and reducing errors\n* **Analyzing large datasets** to extract valuable insights\n* **Improving customer experiences** through personalization\n* **Enhancing decision-making** with data-driven recommendations\n* **Optimizing operations** to reduce costs and increase efficiency",
-    "What services does NicorAI offer?": "NicorAI offers a comprehensive range of services including:\n\n* **Custom AI Solutions** - tailored to your specific business needs\n* **Web & Mobile Development** - with AI integration capabilities\n* **API Integration** - connecting your systems with AI services\n* **Data Analytics** - turning your data into actionable insights\n* **Machine Learning Models** - for prediction and classification tasks\n* **Natural Language Processing** - for text analysis and generation\n* **AI Consulting** - helping you navigate the AI landscape",
-    "What are the technologies used by NicorAI?": "NicorAI uses cutting-edge technologies including:\n\n**Frontend**:\n* React, Next.js, TypeScript\n* TailwindCSS for styling\n\n**Backend**:\n* Node.js, Express, Python, Django\n\n**Databases**:\n* MongoDB and PostgreSQL\n\n**AI/ML**:\n* TensorFlow, PyTorch\n* OpenAI models\n* Custom ML algorithms",
-    "What industries do you specialize in?": "NicorAI specializes in a variety of industries including:\n\n* **Healthcare** - patient care optimization, diagnosis assistance\n* **Finance** - fraud detection, risk assessment\n* **E-commerce** - recommendation systems, inventory management\n* **Manufacturing** - predictive maintenance, quality control\n* **Technology** - automated workflows, data processing\n* **Education** - personalized learning, content generation\n* **Logistics** - route optimization, demand forecasting"
-  };
-
   // Check if we're on a mobile device
   const [isMobile, setIsMobile] = useState(false);
   // Add state for short screen height
@@ -539,7 +531,7 @@ const Chat: React.FC<ChatProps> = ({
   };
 
 
-  const handleFaqClick = (question: string) => {
+  const handleFaqClick = async (question: string) => {
     // Get the current chat ID or create one only if no chat exists
     const currentChatId = apiService.getCurrentChatId();
     if (!currentChatId) {
@@ -564,44 +556,74 @@ const Chat: React.FC<ChatProps> = ({
     // Add user message to the existing messages and update UI
     const updatedMessages = [...existingMessages, userMessage];
     setMessages(updatedMessages);
-   
-    // Get the predefined answer if it exists
-    const answer = faqAnswers[question] || "I don't have a predefined answer for this question.";
-   
-    // Create AI response message with the predefined answer
-    setTimeout(() => {
-      const aiMessageId = `msg-${Date.now()}-ai`;
-      const aiMessage: ChatMessage = {
-        id: aiMessageId,
-        content: answer,
-        sender: 'ai',
-        timestamp: new Date()
-      };
-     
-      // Add AI message to the chat
-      const messagesWithAnswer = [...updatedMessages, aiMessage];
-      setMessages(messagesWithAnswer);
-     
-      // Save both messages to ensure they persist
-      apiService.saveMessages(messagesWithAnswer);
 
+    // Set loading state
+    const chatId = apiService.getCurrentChatId() || '';
+    setLoadingForChat(chatId, true);
+    
+    try {
+      // Send the question to the backend using the existing sendMessage function
+      console.log(`Sending FAQ question: "${question}"`);
+      const aiResponse = await apiService.sendMessage(question, chatId);
+      
+      // Get updated messages from the API service
+      const latestMessages = apiService.getCurrentChatMessages();
+      setMessages(latestMessages);
+      
+      // Handle dynamic view if present in the response
+      if (aiResponse && aiResponse.dynamicView) {
+        console.log('Dynamic view found in AI response:', aiResponse.dynamicView);
+
+        // Get the ID of the latest AI message for associating with dynamic view
+        const latestAiMessage = latestMessages
+          .filter(m => m.sender === 'ai')
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+
+        if (latestAiMessage) {
+          // Always use the consistent view ID pattern
+          const consistentViewId = `view-for-message-${latestAiMessage.id}`;
+
+          // Create a copy of the view with this consistent ID
+          const consistentView: DynamicView = {
+            ...aiResponse.dynamicView,
+            id: consistentViewId
+          };
+
+          // Store the view and its association with the message
+          storeViewMessageAssociation(latestAiMessage.id, consistentViewId, consistentView);
+
+          // Show the view
+          setDynamicViewMessageId(latestAiMessage.id);
+          setDynamicView(consistentView);
+          setInternalClosedDynamicView(null);
+
+          // Notify parent to hide chat and show view
+          if (onMessageSent) {
+            onMessageSent(true, consistentView, false);
+          }
+        }
+      }
+      
       // Dispatch chat change event to ensure the chat thread opens
       const chatChangeEvent = new CustomEvent('chatChanged', {
         detail: { 
           chatId: apiService.getCurrentChatId(), 
-          messages: messagesWithAnswer 
+          messages: latestMessages 
         }
       });
       window.dispatchEvent(chatChangeEvent);
-     
-      // Log for debugging
-      console.log('Saving FAQ Q&A to chat history:', messagesWithAnswer.length, 'messages');
-     
+      
       // Scroll to bottom after adding messages
       setTimeout(scrollToBottom, 100);
-    }, 500); // Small delay to simulate AI thinking
+      
+    } catch (error) {
+      console.error('Error processing FAQ question:', error);
+      setError("I'm sorry, but I encountered an error processing your request. Please try again.");
+    } finally {
+      // Clear loading state
+      setLoadingForChat(chatId, false);
+    }
   };
-
 
 
   // Enhanced function to store message-view associations in localStorage

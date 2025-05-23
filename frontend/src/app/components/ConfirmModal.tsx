@@ -22,7 +22,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   if (!open) return null;
  
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-80 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-11/12 sm:max-w-xs md:max-w-sm lg:max-w-md p-4 sm:p-6 mx-2 flex flex-col items-center border border-blue-100 animate-pop-in">
         <div className="flex flex-col items-center mb-4">
           {/* Warning Icon */}

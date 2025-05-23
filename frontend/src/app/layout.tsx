@@ -45,6 +45,26 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2H9D1C9050"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+ 
+              gtag('config', 'G-2H9D1C9050');
+            `,
+          }}
+        />
+ 
+        {/* reCAPTCHA v3 API script */}
+        <script src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}></script>
+ 
+        <meta charSet="utf-8" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pixelifySans.variable} ${pressStart2P.variable} antialiased bg-gray-50`}
       >

@@ -292,8 +292,26 @@ class ApiService {
         chatId: targetChatId, // Include which chat thread this belongs to
         messageId: userMessage.id, // Include the message ID
         message: message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        recaptchaToken: '', // Placeholder for recaptcha token
       };
+ 
+      // Execute reCAPTCHA and get the token
+      if (typeof window !== 'undefined' && 
+          typeof (window as any).grecaptcha !== 'undefined' && 
+          process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
+        try {
+          const token = await (window as any).grecaptcha.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, { action: 'chat' });
+          payload.recaptchaToken = token;
+        } catch (error) {
+          console.error('reCAPTCHA execution failed:', error);
+          // Handle the error, perhaps by not sending the message or showing an alert
+          throw new Error('reCAPTCHA verification failed.');
+        }
+      } else if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
+        console.warn('reCAPTCHA site key is set, but grecaptcha object not found. Make sure the script is loaded correctly.');
+        // Depending on your requirements, you might want to prevent message sending here.
+      }
 
 
       // Log request with complete details for debugging

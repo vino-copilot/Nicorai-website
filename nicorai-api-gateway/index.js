@@ -45,11 +45,53 @@ app.use(express.json());
 app.post('/chat', async (req, res) => {
     console.log('➡️ Incoming request body:', req.body);
  
-    const { userId, chatId, messageId, message, timestamp } = req.body;
+    const { userId, chatId, messageId, message, timestamp, recaptchaToken } = req.body;
  
     if (!message) {
         return res.status(400).json({ error: 'Missing required field: message' });
     }
+
+    // reCAPTCHA verification
+    const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
+    if (!RECAPTCHA_SECRET_KEY) {
+        console.error('❌ RECAPTCHA_SECRET_KEY is not set in environment variables.');
+        return res.status(500).json({ error: 'Server configuration error: reCAPTCHA secret key not set.' });
+    }
+ 
+    if (!recaptchaToken) {
+        console.log('⚠️ Missing reCAPTCHA token in request body.');
+        return res.status(400).json({ error: 'reCAPTCHA token missing.' });
+    }
+ 
+    try {
+        console.log('🔑 Using RECAPTCHA_SECRET_KEY (last 4 chars):...' + RECAPTCHA_SECRET_KEY.slice(-4));
+        console.log('📝 Verifying recaptchaToken:', recaptchaToken);
+ 
+        const verificationResponse = await axios.post('https://www.google.com/recaptcha/api/siteverify', null, {
+            params: {
+                secret: RECAPTCHA_SECRET_KEY,
+                response: recaptchaToken
+            }
+        });
+ 
+        const { success, score } = verificationResponse.data;
+ 
+        console.log('⬅️ Google reCAPTCHA verification response:', verificationResponse.data);
+ 
+        if (!success || score < 0.5) { // You can adjust the score threshold (e.g., 0.5, 0.7)
+            console.warn(`⚠️ reCAPTCHA verification failed or score too low: Success=${success}, Score=${score}`);
+            return res.status(403).json({ error: 'reCAPTCHA verification failed. Please try again.' });
+        }
+ 
+        console.log(`✅ reCAPTCHA verification successful with score: ${score}`);
+ 
+    } catch (error) {
+        console.error('❌ reCAPTCHA verification failed:', error);
+        return res.status(500).json({ error: 'reCAPTCHA verification failed due to server error.' });
+    }
+ 
+    // Proceed with chat message processing only if reCAPTCHA is successful
+ 
  
     const cacheKey = `chat_cache:${message.trim().toLowerCase()}`;
     let cachedData;
