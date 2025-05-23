@@ -39,8 +39,14 @@ import {
   TrendingUpDown,
   TrendingUpDownIcon,
   TrendingUpIcon,
-  BrainCircuit
+  BrainCircuit,
+  Stethoscope,
+  IndianRupee,
+  BookOpenText,
+  BookText
 } from 'lucide-react';
+import ArticleDetailView from './ArticleDetailView';
+import ProjectDetailView from './ProjectDetailView';
 
 interface ViewProps {
   viewId: string;
@@ -631,16 +637,28 @@ const AIProcessSection = () => {
 
 // WHAT WE'VE DONE PAGE
 const WhatWeveDonePage: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+
+  // If a project is selected, show the project detail view
+  if (selectedProject) {
+    return (
+      <ProjectDetailView
+        projectId={selectedProject}
+        onClose={() => setSelectedProject(null)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
-      <CaseStudiesHero />
-      <FeaturedProjects />
+      <CaseStudiesHero onProjectSelect={setSelectedProject} />
+      <FeaturedProjects onProjectSelect={setSelectedProject} />
       <TestimonialsSection />
     </div>
   );
 };
  
-const CaseStudiesHero = () => {
+const CaseStudiesHero = ({ onProjectSelect }: { onProjectSelect: (id: string) => void }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   
@@ -673,7 +691,7 @@ const CaseStudiesHero = () => {
           className="text-center max-w-3xl mx-auto"
         >
           <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-700 border border-purple-100 mb-4">
-            <Briefcase size={14} className="mr-2" />
+            <BookText size={14} className="mr-2" />
             Case Studies
           </div>
           <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">
@@ -712,6 +730,7 @@ const CaseStudiesHero = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={() => onProjectSelect('predictive-maintenance')}
                     className="px-5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg shadow-md flex items-center text-sm font-medium"
                   >
                     View Full Case Study
@@ -732,7 +751,7 @@ const CaseStudiesHero = () => {
                     }}
                   >
                     <div className="w-24 h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center">
-                      <LineChart size={44} className="text-purple-600" />
+                      <Cpu size={44} className="text-purple-600" />
                     </div>
                   </motion.div>
                 </div>
@@ -745,21 +764,23 @@ const CaseStudiesHero = () => {
   );
 };
  
-const FeaturedProjects = () => {
+const FeaturedProjects = ({ onProjectSelect }: { onProjectSelect: (id: string) => void }) => {
   const projects = [
     {
-      title: "Healthcare AI Assistant",
-      description: "Developed an AI assistant for a major healthcare provider that reduced administrative workload by 35% and improved patient satisfaction.",
-      category: "Healthcare",
-      tags: ["NLP", "Workflow Automation"],
-      color: "blue",
-      icon: <Users className="w-8 h-8" />,
+      id: 'financial-fraud-detection',
+      title: "Financial Fraud Detection",
+      description: "Implemented an AI fraud detection system for a financial institution that reduced fraudulent transactions by 92%.",
+      category: "Finance",
+      tags: ["Security", "Pattern Recognition"],
+      color: "purple",
+      icon: <IndianRupee className="w-8 h-8" />,
       metrics: [
-        { value: "35%", label: "Reduced Workload" },
-        { value: "89%", label: "Patient Satisfaction" }
+        { value: "92%", label: "Fraud Reduction" },
+        { value: "$4.3M", label: "Cost Savings" }
       ]
     },
     {
+      id: 'retail-demand-forecasting',
       title: "Retail Demand Forecasting",
       description: "Built predictive models for a retail chain that improved inventory management and increased sales by 22%.",
       category: "Retail",
@@ -772,10 +793,11 @@ const FeaturedProjects = () => {
       ]
     },
     {
-      title: "Customer Support Chatbot",
+      id: 'customer-support-agent',
+      title: "Customer Support Agent",
       description: "Developed an intelligent chatbot for a SaaS company that handles 70% of customer queries without human intervention.",
       category: "SaaS",
-      tags: ["Chatbot", "NLP"],
+      tags: ["Agent", "NLP"],
       color: "yellow",
       icon: <MessageSquare className="w-8 h-8" />,
       metrics: [
@@ -784,15 +806,16 @@ const FeaturedProjects = () => {
       ]
     },
     {
-      title: "Financial Fraud Detection",
-      description: "Implemented an AI fraud detection system for a financial institution that reduced fraudulent transactions by 92%.",
-      category: "Finance",
-      tags: ["Security", "Pattern Recognition"],
-      color: "purple",
-      icon: <Shield className="w-8 h-8" />,
+      id: 'healthcare-ai-assistant',
+      title: "Healthcare AI Assistant",
+      description: "Developed an AI assistant for a major healthcare provider that reduced administrative workload by 35% and improved patient satisfaction.",
+      category: "Healthcare",
+      tags: ["NLP", "Workflow Automation"],
+      color: "blue",
+      icon: <Stethoscope className="w-8 h-8" />,
       metrics: [
-        { value: "92%", label: "Fraud Reduction" },
-        { value: "$4.3M", label: "Cost Savings" }
+        { value: "35%", label: "Reduced Workload" },
+        { value: "89%", label: "Patient Satisfaction" }
       ]
     }
   ];
@@ -881,6 +904,7 @@ const FeaturedProjects = () => {
                   <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
+                    onClick={() => onProjectSelect(project.id)}
                     className="w-full py-2 bg-gray-900 text-white rounded-lg shadow-sm flex items-center justify-center text-sm font-medium"
                   >
                     View Project Details
@@ -1523,46 +1547,25 @@ const OurStory = () => {
 const TeamSection = () => {
   const team = [
     {
-      name: "Jane Doe",
-      title: "CEO & Founder",
+      name: "Sachin Shetty",
+      title: "CEO",
       bio: "AI enthusiast with 15+ years of experience in machine learning and business leadership. Previously led AI initiatives at Tech Giant Inc.",
-      image: "👩‍💼",
+      image: "👨‍💻",
       color: "from-indigo-500 to-blue-600"
     },
     {
-      name: "John Smith",
+      name: "Vino S",
       title: "CTO",
       bio: "Former research scientist with expertise in NLP and conversational AI architectures. Published author with multiple patents in machine learning.",
       image: "👨‍💻",
       color: "from-emerald-500 to-teal-600"
     },
     {
-      name: "Emily Chen",
-      title: "Lead Data Scientist",
+      name: "Supimon Pavithran",
+      title: "Founder",
       bio: "PhD in Computer Science with specialization in predictive modeling and data analysis. Previously developed AI systems for Fortune 500 companies.",
-      image: "👩‍🔬",
+      image: "👨‍💻",
       color: "from-purple-500 to-pink-600"
-    },
-    {
-      name: "Michael Rodriguez",
-      title: "AI Research Director",
-      bio: "Former AI researcher at a leading tech company with expertise in deep learning and computer vision. Helped develop breakthrough AI technologies.",
-      image: "👨‍🔬",
-      color: "from-blue-500 to-cyan-600"
-    },
-    {
-      name: "Sarah Johnson",
-      title: "Head of Product",
-      bio: "Product management expert with experience bringing AI products from concept to market. Focused on creating intuitive user experiences for complex technologies.",
-      image: "👩‍💻",
-      color: "from-amber-500 to-orange-600"
-    },
-    {
-      name: "David Kim",
-      title: "Business Development Director",
-      bio: "Strategic partnership expert who has helped scale AI solutions across industries. Specializes in creating innovative business models around AI technologies.",
-      image: "👨‍💼",
-      color: "from-rose-500 to-red-600"
     }
   ];
  
@@ -1705,8 +1708,11 @@ const CoreValues = () => {
 
 // NEW RESEARCH AND BLOG PAGE START
 const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
+  const [selectedArticle, setSelectedArticle] = useState<string | null>(null);
+
   const blogPosts = [
     {
+      id: 'nicorai-website',
       title: "NicorAI: The Website",
       date: "May 19, 2025",
       excerpt: "NicorAI is a modern AI platform built with Next.js and React, offering a responsive design and interactive chat. It delivers rich content through text, charts, and cards, ensuring a smooth user experience across all devices...",
@@ -1714,6 +1720,7 @@ const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
       color: "blue",
     },
     {
+      id: 'understanding-llms',
       title: "Understanding Large Language Models (LLMs)",
       date: "October 15, 2023",
       excerpt: "Large Language Models are at the forefront of the current AI revolution. This article provides a high-level overview of LLM architecture, training processes, and their capabilities, along with ethical considerations...",
@@ -1721,6 +1728,7 @@ const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
       color: "indigo",
     },
     {
+      id: 'rashevsky-connection',
       title: "Bridging Biology and AI: The Rashevsky Connection",
       date: "September 30, 2023",
       excerpt: "Explore how the foundational mathematical biophysics work of Nicolas Rashevsky provides a unique lens through which we approach modern AI challenges, emphasizing systemic understanding and rigorous analysis.",
@@ -1740,6 +1748,16 @@ const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
     indigo: "bg-indigo-50 text-indigo-800",
     purple: "bg-purple-50 text-purple-800",
   };
+
+  // If an article is selected, show the article detail view
+  if (selectedArticle) {
+    return (
+      <ArticleDetailView
+        articleId={selectedArticle}
+        onClose={() => setSelectedArticle(null)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -1817,9 +1835,10 @@ const ResearchBlogPage: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
                     <motion.button
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
+                      onClick={() => setSelectedArticle(post.id)}
                       className="w-full py-2 bg-gray-900 text-white rounded-lg shadow-sm flex items-center justify-center text-sm font-medium"
                     >
-                      Publishing Soon
+                      Read more
                       <ArrowRight size={16} className="ml-1" />
                     </motion.button>
                   </div>

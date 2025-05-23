@@ -49,7 +49,7 @@ const Chat: React.FC<ChatProps> = ({
   const closedDynamicView = externalClosedDynamicView || internalClosedDynamicView;
 
   const faqSuggestions = [
-    "How can AI help my business?",
+    "How can AI specifically help my business beyond just automation?",
     "What services does NicorAI offer?",
     "What are the technologies used by NicorAI?",
     "What industries do you specialize in?"
