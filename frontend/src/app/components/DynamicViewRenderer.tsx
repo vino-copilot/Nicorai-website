@@ -1073,14 +1073,12 @@ const ContactForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormState(prev => ({ ...prev, loading: true, submitted: false, error: null }));
- 
-    try {
 
+    try {
       // Execute reCAPTCHA and get token
       let recaptchaToken = '';
       if (typeof window !== 'undefined' && 'grecaptcha' in window && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
         try {
-          // Type assertion to tell TypeScript that grecaptcha exists on window
           const grecaptcha = (window as any).grecaptcha;
           recaptchaToken = await grecaptcha.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, { action: 'contact' });
         } catch (error) {
@@ -1094,7 +1092,7 @@ const ContactForm = () => {
         }
       }
 
-      const response = await fetch('/api/contact', {
+      const response = await fetch('http://localhost:4000/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1120,6 +1118,13 @@ const ContactForm = () => {
           company: '',
           message: '',
         }));
+        // Log the sent message details to the browser console
+        console.log('Contact form message sent!', {
+          name: formState.name,
+          email: formState.email,
+          company: formState.company,
+          message: formState.message
+        });
         if (result.previewUrl) {
           console.log("Ethereal preview URL: ", result.previewUrl);
           // You could also display this URL to the user for testing if desired
@@ -1571,7 +1576,7 @@ const TeamSection = () => {
     {
       name: "Sachin Shetty",
       title: "Chief of Executions",
-      bio: "Sachin Shetty is the CEO of NicorAI Systems, driving the company’s strategic vision and growth with a blend of technical expertise and entrepreneurial insight. With 12 years of experience delivering enterprise solutions in Java and Adobe Experience Manager, he excels at turning complex challenges into scalable, AI-driven platforms. His leadership fosters innovation and accountability, while his passion for independent filmmaking sharpens his focus on user-centric design. Sachin is also a devoted husband and father, inspired by his daughter to build technology that enhances everyday life.",
+      bio: "Sachin Shetty is the CEO of NicorAI Systems, driving the company's strategic vision and growth with a blend of technical expertise and entrepreneurial insight. With 12 years of experience delivering enterprise solutions in Java and Adobe Experience Manager, he excels at turning complex challenges into scalable, AI-driven platforms. His leadership fosters innovation and accountability, while his passion for independent filmmaking sharpens his focus on user-centric design. Sachin is also a devoted husband and father, inspired by his daughter to build technology that enhances everyday life.",
       image: "👨‍💻",
       color: "from-indigo-500 to-blue-600",
       linkedin: "https://www.linkedin.com/in/sachin-shetty-7a473a51/",
