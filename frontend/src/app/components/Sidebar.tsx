@@ -77,22 +77,22 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
       setChatHistory(history);
       setCurrentChatId(apiService.getCurrentChatId());
     };
-   
+
     // Load initial history
     loadChatHistory();
-   
+
     // Set up an interval to periodically check for updates (every 5 seconds)
     const intervalId = setInterval(loadChatHistory, 5000);
-   
+
     // Add event listener for storage changes (to sync across tabs)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'nicoraiChatHistory') {
         loadChatHistory();
       }
     };
-   
+
     window.addEventListener('storage', handleStorageChange);
-   
+
     return () => {
       clearInterval(intervalId);
       window.removeEventListener('storage', handleStorageChange);
@@ -118,10 +118,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
   const handleSelectChat = (chatId: string) => {
     apiService.setCurrentChat(chatId);
     setCurrentChatId(chatId);
-   
+
     // Update local state - no need to reload the page
     const currentMessages = apiService.getCurrentChatMessages();
-   
+
     // Create a custom event to notify other components of the chat change
     const chatChangeEvent = new CustomEvent('chatChanged', {
       detail: { chatId, messages: currentMessages }
@@ -140,19 +140,19 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
   const formatChatDate = (date: Date) => {
     const now = new Date();
     const chatDate = new Date(date);
-   
+
     // If the chat is from today, show the time
     if (chatDate.toDateString() === now.toDateString()) {
       return chatDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
-   
+
     // If the chat is from yesterday, show "Yesterday"
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     if (chatDate.toDateString() === yesterday.toDateString()) {
       return 'Yesterday';
     }
-   
+
     // Otherwise, show the date
     return chatDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
@@ -197,7 +197,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
     if (onToggle) {
       onToggle(newExpandedState);
     }
-   
+
     // For debugging
     console.log("Toggle sidebar:", newExpandedState, "Mobile:", isMobile);
   };
@@ -211,13 +211,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
       setIsLoading(false); // Set loading to false after initial check
       // console.log("Mobile detection:", isMobileView, window.innerWidth);
     };
-   
+
     // Initial check
     checkIfMobile();
-   
+
     // Listen for window resize
     window.addEventListener('resize', checkIfMobile);
-   
+
     return () => {
       window.removeEventListener('resize', checkIfMobile);
     };
@@ -238,7 +238,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
         onToggle(true);
       }
     }
-  // Empty dependency array ensures this only runs once on mount
+    // Empty dependency array ensures this only runs once on mount
   }, []);
 
 
@@ -294,20 +294,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
               <div
                 className="flex flex-col items-center cursor-pointer"
                 onClick={() => {
-                  // Reset to initial view first
+                  // Only reset to landing page, do NOT create a new chat
                   onNavClick('');
-                 
-                  // Create a new chat
-                  const newChatId = apiService.createNewChat();
-                  setCurrentChatId(newChatId);
-                 
-                  // Notify components about the new chat
+                  apiService.setCurrentChat(''); // Clear current chat
                   const chatChangeEvent = new CustomEvent('chatChanged', {
-                    detail: { chatId: newChatId, messages: [] }
+                    detail: { chatId: '', messages: [] }
                   });
                   window.dispatchEvent(chatChangeEvent);
-                 
-                  // On mobile, close the sidebar after navigation
+
                   if (isMobile) {
                     toggleSidebar();
                   }
@@ -371,7 +365,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
                       )}
                     </div>
                   )}
-                 
+
                   <ul className="space-y-2">
                     {/* New Chat Button styled like a chat history item */}
                     <li className="group">
@@ -379,16 +373,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
                         onClick={() => {
                           // Reset to initial view first
                           onNavClick('');
-                          
+
                           // Clear the current chat (do NOT create a new chat)
                           apiService.setCurrentChat('');
-                          
+
                           // Notify other components to show landing page
                           const chatChangeEvent = new CustomEvent('chatChanged', {
                             detail: { chatId: '', messages: [] }
                           });
                           window.dispatchEvent(chatChangeEvent);
-                          
+
                           // On mobile, close the sidebar after resetting
                           if (isMobile && isExpanded) {
                             toggleSidebar();
@@ -408,7 +402,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
                         </div>
                       </div>
                     </li>
-                   
+
                     {/* Chat history - only visible when expanded */}
                     {isExpanded && (
                       <>
@@ -423,19 +417,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
                                     toggleSidebar();
                                   }
                                 }}
-                                className={`flex items-start p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer relative ${
-                                  chat.id === currentChatId ? 'bg-blue-50 border-l-2 border-blue-600 pl-3.5' : ''
-                                }`}
+                                className={`flex items-start p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer relative ${chat.id === currentChatId ? 'bg-blue-50 border-l-2 border-blue-600 pl-3.5' : ''
+                                  }`}
                               >
                                 <div className="flex-1 min-w-0">
-                                  <p className={`text-sm font-medium truncate group-hover:text-blue-600 ${
-                                    chat.id === currentChatId ? 'text-blue-600' : 'text-gray-900'
-                                  }`}>
+                                  <p className={`text-sm font-medium truncate group-hover:text-blue-600 ${chat.id === currentChatId ? 'text-blue-600' : 'text-gray-900'
+                                    }`}>
                                     {chat.title}
                                   </p>
-                                  <p className={`text-xs ${
-                                    chat.id === currentChatId ? 'text-blue-500' : 'text-gray-600'
-                                  } group-hover:text-blue-500 flex items-center gap-2`}>
+                                  <p className={`text-xs ${chat.id === currentChatId ? 'text-blue-500' : 'text-gray-600'
+                                    } group-hover:text-blue-500 flex items-center gap-2`}>
                                     {formatChatDate(chat.lastUpdated)}
                                     {loadingChats[chat.id] && (
                                       <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -486,7 +477,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
           </>
         )}
       </div>
-     
+
       {/* Mobile toggle button - always visible when on mobile and sidebar is collapsed */}
       {isMobile && !isExpanded && !isLoading && (
         <div className="fixed top-0 left-0 z-[100] p-4">

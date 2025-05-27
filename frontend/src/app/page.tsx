@@ -156,11 +156,8 @@ export default function Home() {
   // Handle closing a view
   const handleCloseView = () => {
     setActiveView(null);
-    
-    // If chat was not explicitly closed, show it again
-    if (!isChatExplicitlyClosed) {
-      setIsChatVisible(true);
-    }
+    setIsInitialView(true); // Show landing page after closing a tab
+    setIsChatVisible(true); // Always show chat/landing after closing a tab
   };
 
   // Handle sidebar toggle
