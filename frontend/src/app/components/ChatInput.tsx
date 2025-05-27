@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
-import apiService, { DynamicView } from '../services/api';
+import apiService from '../services/api';
 import { useChatLoading } from '../services/ChatContext';
 
 
 interface ChatInputProps {
-  onMessageSent?: (isClosing?: boolean, dynamicView?: DynamicView) => void;
+  onMessageSent?: (isClosing?: boolean) => void;
   isChatExplicitlyClosed?: boolean;
 }
 
@@ -66,28 +66,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
     // Get the final chat ID we'll be using (now guaranteed to have a value)
     finalChatId = finalChatId || 'default-chat';
     
-    // Get userId using apiService
-    const userId = apiService.getUserId();
-    
-    // Generate a unique message ID
-    const messageId = `msg-${Date.now()}-user`;
-    
-    // Create a detailed message object for logging
-    const messageDetails = {
-      userId: userId,
-      chatId: finalChatId,
-      messageId: messageId,
-      content: content,
-      timestamp: new Date().toISOString()
-    };
-    
-    // Log the complete message details in browser console
-    console.log('📨 Complete Message Details:', messageDetails);
-    console.table(messageDetails); // Display in table format for better visibility
-    
     try {
       const chatIdForSend = apiService.getCurrentChatId() || undefined;
-      const aiResponse = await apiService.sendMessage(content, chatIdForSend);
+      await apiService.sendMessage(content, chatIdForSend);
       
       // Always dispatch chat change event to update UI with the response
       const chatChangeEvent = new CustomEvent('chatChanged', {
@@ -97,25 +78,8 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
       
       setNotification({ status: 'success', message: 'Message sent!' });
       
-      if (aiResponse.dynamicView) {
-        onMessageSent?.(false, aiResponse.dynamicView);
-      } else {
-        const lowerContent = content.toLowerCase().trim();
-        const isViewRequest =
-          lowerContent.includes('contact') ||
-          lowerContent.includes('comparison') ||
-          lowerContent.includes('products') ||
-          lowerContent.includes('chart') ||
-          lowerContent.includes('table') ||
-          lowerContent.includes('about nicor') ||
-          lowerContent.includes('show');
-        if (isViewRequest) {
-          const apiSuggestedView = await apiService.checkForDynamicView(content);
-          if (apiSuggestedView) {
-            onMessageSent?.(false, apiSuggestedView);
-          }
-        }
-      }
+      // Notify parent that message was sent successfully
+      onMessageSent?.(false);
     } catch (error) {
       setNotification({ status: 'error', message: 'Failed to send message. Please try again.' });
       console.error('Error sending message:', error);
@@ -162,7 +126,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Ask any question about NicorAI...."
-          className="w-full p-3 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-12 min-h-12 max-h-32 placeholder-gray-500 text-gray-900"
+          className="w-full pl-4 pt-4 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-14 placeholder-gray-500 text-gray-900"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -174,7 +138,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
         <button
           type="submit"
           disabled={anyChatLoading}
-          className={`absolute right-3 mb-1 bottom-3 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${
+          className={`absolute right-3 mb-1 bottom-4 p-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 ${
             anyChatLoading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
@@ -205,7 +169,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
           )}
-          {notification.message}
+          <span>{notification.message}</span>
         </div>
       )}
     </form>

@@ -2,7 +2,7 @@
 // Connects to the real API Gateway
 
 // Configuration
-const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_URL ;
 const DEVELOPMENT_MODE = true; // Set to false in production
 
 // Types
@@ -22,52 +22,50 @@ export interface ChatSession {
 }
 
 
-export interface DynamicView {
-  id: string;
-  type: 'dynamicScreen';
-  data: any;
-}
-
-
-// Extend ChatMessage interface to include view information
-interface ChatMessageWithView extends ChatMessage {
-  dynamicView?: DynamicView;
-}
-
-
-// Define interface for dynamic view associations
-interface ViewAssociations {
-  [chatId: string]: {
-    [messageId: string]: string;  // messageId -> viewId
-  };
-}
-
-
 // API class
 class ApiService {
   private currentChatId: string | null = null;
-  private lastDynamicViewId: string | null = null; // Track the last view to prevent repetition
+  private apiAvailable: boolean = true; // Track API availability
+  private recaptchaVerifiedChats: Set<string> = new Set(); // Track chats with verified reCAPTCHA
 
 
   constructor() {
-    // Initialize with the most recent chat or create a new one
     this.initializeChat();
-    // Restore currentChatId from localStorage if available
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const savedChatId = localStorage.getItem('nicoraiCurrentChatId');
-      if (savedChatId) {
-        this.currentChatId = savedChatId;
-      }
+    this.checkApiAvailability();
+  }
+
+
+  // Check if API is available
+  private async checkApiAvailability() {
+    try {
+      const response = await fetch(`${API_GATEWAY_URL}/health`, { 
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        // Short timeout to quickly determine if API is available
+        signal: AbortSignal.timeout(3000)
+      });
+      
+      this.apiAvailable = response.ok;
+      console.log(`API availability check: ${this.apiAvailable ? 'Available' : 'Unavailable'}`);
+    } catch (error) {
+      console.warn('API appears to be unavailable:', error);
+      this.apiAvailable = false;
     }
   }
 
 
   private initializeChat() {
-    const history = this.getChatHistory();
-    if (history.length > 0) {
-      this.currentChatId = history[0].id; // Use the most recent chat
-    } else {
-      this.createNewChat();
+    if (typeof window !== 'undefined') {
+      // Check if there is an existing chat history
+      const history = this.getChatHistory();
+      
+      if (history.length > 0) {
+        // Use the most recent chat as the current chat
+        this.currentChatId = history[0].id;
+      } else {
+        // Do not create a new chat automatically
+        this.currentChatId = null;
+      }
     }
   }
 
@@ -75,88 +73,90 @@ class ApiService {
   // Create a new chat session
   createNewChat(): string {
     const newChatId = `chat-${Date.now()}`;
+    
     const newChat: ChatSession = {
       id: newChatId,
       title: 'New Chat',
       lastUpdated: new Date(),
       messages: []
     };
-
-
-    // Save to localStorage
-    this.saveChatSession(newChat);
-    this.currentChatId = newChatId;
+    
+    // Save the new chat to history
+    const history = this.getChatHistory();
+    history.unshift(newChat);
+    
     if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem('nicoraiCurrentChatId', newChatId);
+      localStorage.setItem('nicoraiChatHistory', JSON.stringify(history));
     }
+    
+    // Set as current chat
+    this.currentChatId = newChatId;
+    
     return newChatId;
   }
 
 
   // Get all chat sessions from localStorage
   getChatHistory(): ChatSession[] {
-    try {
-      let chatHistoryJSON = null;
-      if (typeof window !== 'undefined' && window.localStorage) {
-        chatHistoryJSON = localStorage.getItem('nicoraiChatHistory');
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const historyJson = localStorage.getItem('nicoraiChatHistory');
+      
+      if (historyJson) {
+        try {
+          const history: ChatSession[] = JSON.parse(historyJson);
+          
+          // Convert string dates back to Date objects
+          return history.map(chat => ({
+            ...chat,
+            lastUpdated: new Date(chat.lastUpdated),
+            messages: chat.messages.map(msg => ({
+              ...msg,
+              timestamp: new Date(msg.timestamp)
+            }))
+          }));
+        } catch (error) {
+          console.error('Error parsing chat history:', error);
+          return [];
+        }
       }
-      if (!chatHistoryJSON) return [];
-
-      const history = JSON.parse(chatHistoryJSON);
-
-      // Convert string timestamps back to Date objects
-      const convertedHistory = history.map((chat: any) => ({
-        ...chat,
-        lastUpdated: new Date(chat.lastUpdated),
-        messages: chat.messages.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        }))
-      }));
-
-
-      // Filter out empty chats (chats with no messages or just with the default title)
-      return convertedHistory.filter((chat: ChatSession) =>
-        chat.messages.length > 0 &&
-        !(chat.title === 'New Chat' && chat.messages.length === 0)
-      );
-    } catch (error) {
-      console.error('Error loading chat history:', error);
-      return [];
     }
+    
+    return [];
   }
 
 
   // Get messages for the current chat session
   getCurrentChatMessages(): ChatMessage[] {
-    if (!this.currentChatId) return [];
-
-
     const history = this.getChatHistory();
-    const currentChat = history.find(c => c.id === this.currentChatId);
-    return currentChat ? currentChat.messages : [];
+    const currentChat = history.find(chat => chat.id === this.currentChatId);
+    
+    if (currentChat) {
+      return currentChat.messages;
+    }
+    
+    return [];
   }
 
 
   // Set the current active chat
   setCurrentChat(chatId: string) {
-    // If chatId is empty, clear the current chat ID
+    // If the chat ID is empty, clear the current chat ID
     if (!chatId) {
       this.currentChatId = null;
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.removeItem('nicoraiCurrentChatId');
-        // Also ensure we don't have any partial messages saved
-        const chatHistory = this.getChatHistory();
-        const filteredHistory = chatHistory.filter(chat => chat.messages.length > 0);
-        localStorage.setItem('nicoraiChatHistory', JSON.stringify(filteredHistory));
-      }
       return;
     }
     
-    // Otherwise set to the provided chat ID
-    this.currentChatId = chatId;
-    if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem('nicoraiCurrentChatId', chatId);
+    // Check if the chat exists in history
+    const history = this.getChatHistory();
+    const chatExists = history.some(chat => chat.id === chatId);
+    
+    if (chatExists) {
+      this.currentChatId = chatId;
+      
+      // Update the chat's lastUpdated timestamp
+      this.updateChatTimestamp(chatId);
+    } else {
+      console.error(`Chat with ID ${chatId} not found in history`);
     }
   }
 
@@ -169,86 +169,108 @@ class ApiService {
 
   // Save a chat session to localStorage
   private saveChatSession(chat: ChatSession) {
-    try {
-      const history = this.getChatHistory();
+    const history = this.getChatHistory();
+    
+    // Find the index of the chat in history
+    const chatIndex = history.findIndex(c => c.id === chat.id);
+    
+    if (chatIndex !== -1) {
+      // Update existing chat
+      history[chatIndex] = chat;
+    } else {
+      // Add new chat to the beginning of the history
+      history.unshift(chat);
+    }
+    
+    // Sort history by lastUpdated (newest first)
+    history.sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime());
+    
+    // Save to localStorage
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('nicoraiChatHistory', JSON.stringify(history));
+    }
+  }
 
-      // Remove existing chat with the same ID if it exists
-      const filteredHistory = history.filter(c => c.id !== chat.id);
 
-      // Add the new/updated chat at the beginning (most recent)
-      const updatedHistory = [chat, ...filteredHistory];
-
-      // Keep only the last 20 chats to prevent localStorage from growing too large
-      const trimmedHistory = updatedHistory.slice(0, 20);
-
-
+  private updateChatTimestamp(chatId: string) {
+    const history = this.getChatHistory();
+    const chatIndex = history.findIndex(c => c.id === chatId);
+    
+    if (chatIndex !== -1) {
+      history[chatIndex].lastUpdated = new Date();
+      
+      // Sort history by lastUpdated (newest first)
+      history.sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime());
+      
+      // Save to localStorage
       if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem('nicoraiChatHistory', JSON.stringify(trimmedHistory));
+        localStorage.setItem('nicoraiChatHistory', JSON.stringify(history));
       }
-    } catch (error) {
-      console.error('Error saving chat session:', error);
     }
   }
 
 
   // Update chat title based on first few messages
   private updateChatTitle(chatId: string, messages: ChatMessage[]) {
-    if (messages.length < 2) return; // Need at least one user message and one AI response
-
-
-    const userMessage = messages.find(m => m.sender === 'user');
-    if (!userMessage) return;
-
-
-    // Use the first user message as the title (truncated)
-    const title = userMessage.content.length > 30
-      ? `${userMessage.content.substring(0, 30)}...`
-      : userMessage.content;
-
-
+    // Find the first user message to use as the title
+    const firstUserMessage = messages.find(msg => msg.sender === 'user');
+    
+    if (!firstUserMessage) return;
+    
     const history = this.getChatHistory();
-    const chat = history.find(c => c.id === chatId);
-
-
-    if (chat && chat.title === 'New Chat') {
-      const updatedChat = {
-        ...chat,
-        title,
-        lastUpdated: new Date()
-      };
-
-
-      this.saveChatSession(updatedChat);
+    const chatIndex = history.findIndex(c => c.id === chatId);
+    
+    if (chatIndex !== -1) {
+      // Create a title from the first user message (max 30 chars)
+      let title = firstUserMessage.content.trim();
+      
+      // Truncate to 30 chars and add ellipsis if needed
+      if (title.length > 30) {
+        title = title.substring(0, 27) + '...';
+      }
+      
+      // Update the chat title
+      history[chatIndex].title = title;
+      
+      // Save to localStorage
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('nicoraiChatHistory', JSON.stringify(history));
+      }
     }
   }
 
 
   // Change from private to public method
   public getUserId(): string {
+    // Check if we already have a user ID in localStorage
     if (typeof window !== 'undefined' && window.localStorage) {
-      let userId = localStorage.getItem('nicoraiUserId');
-      if (!userId) {
-        // Generate a new user ID with uniqueness from random + timestamp
-        userId = `user-${Math.random().toString(36).substring(2, 15)}-${Date.now()}`;
-        localStorage.setItem('nicoraiUserId', userId);
-        console.log('📝 Created new user ID:', userId);
+      const userId = localStorage.getItem('nicoraiUserId');
+      
+      if (userId) {
+        return userId;
       }
-      return userId;
+      
+      // Generate a new user ID
+      const newUserId = `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      localStorage.setItem('nicoraiUserId', newUserId);
+      
+      return newUserId;
     }
-    // Fallback for SSR (though this shouldn't happen in practice)
-    return `user-${Math.random().toString(36).substring(2, 15)}-${Date.now()}`;
+    
+    // Fallback for SSR
+    return `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
 
 
   // Send a chat message and get a response
-  async sendMessage(message: string, chatId?: string): Promise<ChatMessageWithView> {
+  async sendMessage(message: string, chatId?: string): Promise<ChatMessage> {
     // Use the provided chatId or fall back to the currentChatId
     const targetChatId = chatId || this.currentChatId;
     if (!targetChatId) {
       // If no chatId is available, create a new chat
       const newChatId = this.createNewChat();
       this.currentChatId = newChatId;
-      
+     
       // Dispatch an event to notify components about the new chat
       if (typeof window !== 'undefined') {
         const chatChangeEvent = new CustomEvent('chatChanged', {
@@ -256,10 +278,10 @@ class ApiService {
         });
         window.dispatchEvent(chatChangeEvent);
       }
-      
+     
       return this.sendMessage(message, newChatId);
     }
-
+ 
     // Create the user message
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}-user`,
@@ -267,10 +289,10 @@ class ApiService {
       sender: 'user',
       timestamp: new Date()
     };
-
+ 
     // Add user message to the correct chat
     this.addMessageToCurrentChat(userMessage, targetChatId);
-
+ 
     // If this is the first message in a chat (or after chat was cleared),
     // dispatch an event to ensure the chat is shown
     const currentMessages = this.getCurrentChatMessages();
@@ -280,12 +302,34 @@ class ApiService {
       });
       window.dispatchEvent(chatChangeEvent);
     }
-
+ 
     try {
       // Get user ID using our utility function
       const userId = this.getUserId();
-
-
+ 
+      // Prepare recaptchaToken only for the first message in a chat
+      let recaptchaToken = '';
+      const chatKey = targetChatId || 'default-chat';
+      // Only skip token if we've already confirmed backend accepted the first message
+      const shouldSkipRecaptcha = this.recaptchaVerifiedChats.has(chatKey);
+      if (!shouldSkipRecaptcha) {
+        if (
+          typeof window !== 'undefined' &&
+          typeof (window as any).grecaptcha !== 'undefined' &&
+          process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+        ) {
+          try {
+            recaptchaToken = await (window as any).grecaptcha.execute(
+              process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
+              { action: 'chat' }
+            );
+          } catch (error) {
+            console.error('reCAPTCHA execution failed:', error);
+            throw new Error('reCAPTCHA verification failed. Please try again.');
+          }
+        }
+      }
+ 
       // Create a payload with ALL details
       const payload = {
         userId: userId, // Use our utility function
@@ -293,27 +337,9 @@ class ApiService {
         messageId: userMessage.id, // Include the message ID
         message: message,
         timestamp: new Date().toISOString(),
-        // recaptchaToken: '', // Placeholder for recaptcha token
+        recaptchaToken: recaptchaToken, // Only present for first message in chat
       };
  
-      // Execute reCAPTCHA and get the token
-      // if (typeof window !== 'undefined' && 
-      //     typeof (window as any).grecaptcha !== 'undefined' && 
-      //     process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
-      //   try {
-      //     const token = await (window as any).grecaptcha.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, { action: 'chat' });
-      //     payload.recaptchaToken = token;
-      //   } catch (error) {
-      //     console.error('reCAPTCHA execution failed:', error);
-      //     // Handle the error, perhaps by not sending the message or showing an alert
-      //     throw new Error('reCAPTCHA verification failed.');
-      //   }
-      // } else if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
-      //   console.warn('reCAPTCHA site key is set, but grecaptcha object not found. Make sure the script is loaded correctly.');
-      //   // Depending on your requirements, you might want to prevent message sending here.
-      // }
-
-
       // Log request with complete details for debugging
       console.log('🚀 Sending complete message details to API Gateway:', {
         userId: payload.userId,
@@ -322,8 +348,8 @@ class ApiService {
         message: payload.message,
         timestamp: payload.timestamp
       });
-
-
+ 
+ 
       // Make the actual API call
       const response = await fetch(`${API_GATEWAY_URL}/chat`, {
         method: 'POST',
@@ -332,16 +358,16 @@ class ApiService {
         },
         body: JSON.stringify(payload)
       });
-
-
+ 
+ 
       if (!response.ok) {
         throw new Error('API request failed');
       }
-
-
+ 
+ 
       const responseData = await response.json();
       console.log('API Gateway response:', responseData);
-
+ 
       // Create AI message from response
       let aiContent = '';
       if (responseData.responseType === 'text' && responseData.content && typeof responseData.content.text === 'string') {
@@ -349,51 +375,29 @@ class ApiService {
       } else if (responseData.responseType === 'text' && (!responseData.content || responseData.content.text === undefined)) {
         // If responseType is 'text' but content is undefined or empty, show error message
         aiContent = "I'm sorry, but I encountered an error processing your request. Please try again.";
-      } else if (responseData.responseType === 'view') {
-        aiContent = '';
       } else if (responseData.content && typeof responseData.content === 'string') {
         aiContent = responseData.content;
       }
-      const aiMessage: ChatMessageWithView = {
+      const aiMessage: ChatMessage = {
         id: `msg-${Date.now()}-ai`,
         content: aiContent,
         sender: 'ai',
         timestamp: new Date()
       };
-
-
-      // Check for dynamic view in response
-      let dynamicView = null;
-      if (responseData.responseType === 'view') {
-        dynamicView = this.checkResponseForDynamicView(responseData);
-      } else if (responseData.content && typeof responseData.content === 'object') {
-        if (responseData.content.items && Array.isArray(responseData.content.items)) {
-          dynamicView = {
-            id: `dynamic-${Date.now()}`,
-            type: 'custom',
-            data: responseData.content
-          };
-        } else if (responseData.content.dynamicView || responseData.content.view) {
-          const viewData = responseData.content.dynamicView || responseData.content.view;
-          dynamicView = {
-            id: `dynamic-${Date.now()}`,
-            type: viewData.type || 'custom',
-            data: viewData.data || viewData
-          };
-        }
-      }
-      if (dynamicView) {
-        console.log('Dynamic view found in API response:', dynamicView);
-        aiMessage.dynamicView = dynamicView;
-      }
+ 
       // Add AI message to the correct chat
       this.addMessageToCurrentChat(aiMessage, targetChatId);
+ 
+      // After first successful message, mark chat as recaptcha-verified
+      if (!shouldSkipRecaptcha) {
+        this.recaptchaVerifiedChats.add(chatKey);
+      }
       return aiMessage;
     } catch (error) {
       console.error('Error sending message:', error);
-      
+     
       // Create simple error message with server down notification
-      const errorMessage: ChatMessageWithView = {
+      const errorMessage: ChatMessage = {
         id: `msg-${Date.now()}-ai`,
         content: "I'm sorry, but I encountered an error processing your request. Please try again.",
         sender: 'ai',
@@ -405,45 +409,79 @@ class ApiService {
   }
 
 
-  // Add a message to the current chat session
+  // Generate a fallback response when the API is unavailable
+  private generateFallbackResponse(message: string): string {
+    const lowercaseMessage = message.toLowerCase();
+    
+    // Simple pattern matching for common queries
+    if (lowercaseMessage.includes('hello') || lowercaseMessage.includes('hi')) {
+      return "Hello! I'm the NicorAI assistant. I'm currently operating in offline mode due to connection issues. How can I help you today?";
+    }
+    
+    if (lowercaseMessage.includes('help')) {
+      return "I'd be happy to help! However, I'm currently operating in offline mode due to connection issues. You can ask me about our AI services, but for the most up-to-date information, please try again later when our connection is restored.";
+    }
+    
+    if (lowercaseMessage.includes('what') && lowercaseMessage.includes('do')) {
+      return "NicorAI specializes in building custom AI solutions for businesses. Our services include AI consulting, development of machine learning models, and implementation of AI-powered systems. For more detailed information, please try again later when our connection to the server is restored.";
+    }
+    
+    // Default response
+    return "I'm currently operating in offline mode due to connection issues. Your message has been saved, and we'll process it once the connection is restored. Thank you for your patience.";
+  }
+
+
   private addMessageToCurrentChat(message: ChatMessage, chatId?: string) {
     const targetChatId = chatId || this.currentChatId;
+    
     if (!targetChatId) {
-      this.createNewChat();
+      console.error('No target chat ID for adding message');
       return;
     }
-
-
+    
     const history = this.getChatHistory();
-    const currentChat = history.find(c => c.id === targetChatId) || {
-      id: targetChatId as string,
-      title: 'New Chat',
-      lastUpdated: new Date(),
-      messages: []
-    };
-
-
-    // Add the new message
-    const updatedChat = {
-      ...currentChat,
-      messages: [...currentChat.messages, message],
-      lastUpdated: new Date()
-    };
-
-
-    // Save the updated chat
-    this.saveChatSession(updatedChat);
-
-    // Update chat title if this is a new chat
-    this.updateChatTitle(updatedChat.id, updatedChat.messages);
-
-
-    // If this is an AI message with a dynamicView, store the view association immediately
-    if (message.sender === 'ai' && (message as any).dynamicView) {
-      const view = (message as any).dynamicView;
-      const viewId = `view-for-message-${message.id}`;
-      // Store the view and association
-      this.storeViewAndAssociation(message.id, { ...view, id: viewId });
+    const currentChatIndex = history.findIndex(c => c.id === targetChatId);
+    
+    if (currentChatIndex === -1) {
+      // Create a new chat if it doesn't exist
+      const newChat: ChatSession = {
+        id: targetChatId,
+        title: 'New Chat',
+        lastUpdated: new Date(),
+        messages: [message]
+      };
+      
+      history.unshift(newChat);
+      this.saveChatSession(newChat);
+    } else {
+      // Add message to existing chat
+      history[currentChatIndex].messages.push(message);
+      history[currentChatIndex].lastUpdated = new Date();
+      
+      // Sort history by lastUpdated (newest first)
+      history.sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime());
+      
+      // Save to localStorage
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('nicoraiChatHistory', JSON.stringify(history));
+      }
+      
+      // Update chat title if this is a new chat
+      if (history[currentChatIndex].messages.length <= 2) {
+        this.updateChatTitle(targetChatId, history[currentChatIndex].messages);
+      }
+    }
+    
+    // Dispatch event to notify other components
+    if (typeof window !== 'undefined') {
+      const chatChangeEvent = new CustomEvent('chatChanged', {
+        detail: {
+          chatId: targetChatId,
+          messages: history.find(c => c.id === targetChatId)?.messages || []
+        }
+      });
+      
+      window.dispatchEvent(chatChangeEvent);
     }
   }
 
@@ -456,7 +494,6 @@ class ApiService {
       return;
     }
 
-
     const history = this.getChatHistory();
     const currentChat = history.find(c => c.id === targetChatId) || {
       id: targetChatId as string,
@@ -465,7 +502,6 @@ class ApiService {
       messages: []
     };
 
-
     // Replace all messages with the new set
     const updatedChat = {
       ...currentChat,
@@ -473,46 +509,12 @@ class ApiService {
       lastUpdated: new Date()
     };
 
-
     // Save the updated chat
     this.saveChatSession(updatedChat);
 
-
     // Update chat title
     this.updateChatTitle(updatedChat.id, updatedChat.messages);
-
-
-    // Process any AI messages with dynamic views
-    messages.forEach(message => {
-      if (message.sender === 'ai' && (message as any).dynamicView) {
-        const view = (message as any).dynamicView;
-        const viewId = `view-for-message-${message.id}`;
-        this.storeViewAndAssociation(message.id, { ...view, id: viewId });
-      }
-    });
   }
-
-
-
-  // Private helper to generate responses for fallback mode
-  // This is no longer used, but kept here for reference
-
-  // private generateResponse(message: string): string {
-  //   message = message.toLowerCase();
-
-  //   if (message.includes('hello') || message.includes('hi')) {
-  //     return "Hello! I'm the NicorAI assistant. How can I help you today?";
-  //   }
-
-  //   if (message.includes('help')) {
-  //     return "I'd be happy to help! You can ask me about our AI services, schedule a demo, or get information about how our solutions can benefit your business.";
-  //   }
-
-  //   // Default response
-  //   return `Thanks for your message. Our team at NicorAI specializes in building custom AI solutions to help businesses like yours. Would you like to know more about how we can assist with your specific needs?`;
-  // }
-
-
 
 
   // Delete a chat session
@@ -520,20 +522,15 @@ class ApiService {
     const history = this.getChatHistory();
     const filteredHistory = history.filter(c => c.id !== chatId);
 
-
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem('nicoraiChatHistory', JSON.stringify(filteredHistory));
     }
-
 
     // If we deleted the current chat, set the current chat to the most recent one
     if (this.currentChatId === chatId) {
       this.currentChatId = filteredHistory.length > 0 ? filteredHistory[0].id : null;
 
-      // If there are no chats left, create a new one
-      if (!this.currentChatId) {
-        this.createNewChat();
-      }
+      // Do not create a new chat automatically
     }
   }
 
@@ -543,120 +540,8 @@ class ApiService {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.removeItem('nicoraiChatHistory');
     }
-    this.createNewChat();
-  }
-
-
-  // Check if API response has suggested a dynamic view (for Day 6)
-  async checkForDynamicView(query: string): Promise<DynamicView | null> {
-    // All mock view generation is no longer supported
-    // We'll only support dynamicScreen views from actual backend responses
-      return null;
-  }
-
-
-  // Clear the tracked dynamic view (call this when closing a view)
-  clearLastDynamicView() {
-    this.lastDynamicViewId = null;
-  }
-
-
-  // Helper method to create a dynamic view from API response data
-  createDynamicViewFromResponse(responseData: any): DynamicView | null {
-    if (!responseData) return null;
-
-
-    try {
-      // For the console-visible format where responseType is 'view'
-      if (responseData.responseType === 'view' && responseData.content) {
-        // Only create dynamicScreen views when output string is available
-        if (responseData.content.output && typeof responseData.content.output === 'string') {
-        return {
-          id: `dynamic-${Date.now()}`,
-            type: 'dynamicScreen',
-            data: responseData.content
-          };
-        }
-      }
-
-      return null;
-    } catch (error) {
-      console.error('Error creating dynamic view from response:', error);
-      return null;
-    }
-  }
-
-
-  // Update sendMessage to also check for dynamic view data in API response
-  private checkResponseForDynamicView(data: any): DynamicView | null {
-    if (!data || !data.responseType || data.responseType !== 'view' || !data.content) return null;
-   
-    try {
-      // Check if we have valid output for dynamic screen
-      if (data.content.output && typeof data.content.output === 'string') {
-        return {
-          id: `dynamic-${Date.now()}`,
-          type: 'dynamicScreen',
-          data: data.content
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error('Error checking for dynamic view in response:', error);
-      return null;
-    }
-  }
-
-
-  // Helper method to store a view and its message association
-  private storeViewAndAssociation(messageId: string, view: DynamicView) {
-    if (!view || !view.id || !messageId) return;
-   
-    try {
-      // Ensure each messageId gets a unique viewId based on the message content
-      // This ensures different messages get different views
-      const currentChatId = this.getCurrentChatId();
-      if (!currentChatId) return;
-     
-      // Generate a unique view ID that includes the message ID to ensure uniqueness
-      const uniqueViewId = `view-for-message-${messageId}`;
-     
-      // Create a copy of the view with the unique ID
-      const uniqueView: DynamicView = {
-        ...view,
-        id: uniqueViewId
-      };
-     
-      // Store the view itself
-      let storedViews: Record<string, DynamicView> = {};
-      const storedViewsJson = localStorage.getItem('storedDynamicViews');
-      if (storedViewsJson) {
-        storedViews = JSON.parse(storedViewsJson);
-      }
-     
-      // Store with unique ID to ensure each message has its own view
-      storedViews[uniqueViewId] = uniqueView;
-      localStorage.setItem('storedDynamicViews', JSON.stringify(storedViews));
-     
-      // Store the association
-      let viewAssociations: ViewAssociations = {};
-      const associationsJson = localStorage.getItem('dynamicViewAssociations');
-      if (associationsJson) {
-        viewAssociations = JSON.parse(associationsJson);
-      }
-     
-      if (!viewAssociations[currentChatId]) {
-        viewAssociations[currentChatId] = {};
-      }
-     
-      // Store the association with the unique view ID
-      viewAssociations[currentChatId][messageId] = uniqueViewId;
-      localStorage.setItem('dynamicViewAssociations', JSON.stringify(viewAssociations));
-     
-      console.log(`Stored view ${uniqueViewId} for message ${messageId}`);
-    } catch (e) {
-      console.error('Error storing view and association:', e);
-    }
+    // Do not create a new chat automatically
+    this.currentChatId = null;
   }
 }
 

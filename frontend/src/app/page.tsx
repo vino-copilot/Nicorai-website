@@ -5,26 +5,22 @@ import Sidebar from './components/Sidebar';
 import Chat from './components/Chat';
 import ChatInput from './components/ChatInput';
 import DynamicViewRenderer from './components/DynamicViewRenderer';
-import apiService, { DynamicView } from './services/api';
+import apiService from './services/api';
 
 export default function Home() {
   const [activeView, setActiveView] = useState<string | null>(null);
   const [hasMessages, setHasMessages] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(true);
   const [isInitialView, setIsInitialView] = useState(true);
-  const [pendingDynamicView, setPendingDynamicView] = useState<DynamicView | null>(null);
-  const [closedDynamicView, setClosedDynamicView] = useState<DynamicView | null>(null);
-  const [fullscreenDynamicView, setFullscreenDynamicView] = useState<DynamicView | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isChatExplicitlyClosed, setIsChatExplicitlyClosed] = useState(false);
-  const [activeDynamicView, setActiveDynamicView] = useState<DynamicView | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // On initial load, always show the initial landing page (isInitialView = true), regardless of chat history
   useEffect(() => {
     setIsInitialView(true);
     setIsChatVisible(true);
     setActiveView(null);
-    setFullscreenDynamicView(null);
     
     // Clear the current chat ID on page refresh to ensure new messages start a new chat
     apiService.setCurrentChat('');
@@ -84,30 +80,18 @@ export default function Home() {
   }, []);
 
   // Function to handle sending a message in the chat
-  const handleMessageSent = (isClosing?: boolean, dynamicView?: DynamicView, isClosed?: boolean) => {
+  const handleMessageSent = (isClosing?: boolean) => {
     // Check for existing messages
     const hasExistingMessages = apiService.getCurrentChatMessages().length > 0;
     setHasMessages(hasExistingMessages);
    
     if (isClosing) {
-      if (dynamicView) {
-        if (isClosed) {
-          setClosedDynamicView(dynamicView);
-          setPendingDynamicView(null);
-          return;
-        }
-        setActiveDynamicView(dynamicView);
-        setActiveView('dynamic-view');
-        setIsChatVisible(false);
-        return;
-      }
       // Regular closing behavior
       // If no tab was selected (activeView is null) and we're not in initial view,
       // we should return to the initial view
       if (!activeView && !isInitialView) {
         setIsInitialView(true);
         setIsChatVisible(true); // Keep chat visible but in initial view
-        setFullscreenDynamicView(null);
         // Mark chat as explicitly closed
         setIsChatExplicitlyClosed(true);
         // Clear current chat ID to ensure new messages start a new chat
@@ -116,10 +100,6 @@ export default function Home() {
       // If a tab was selected previously, make it visible again
       else if (activeView) {
         setIsChatVisible(false);
-        // Clear fullscreen view when closing
-        if (activeView === 'dynamic-view') {
-          setFullscreenDynamicView(null);
-        }
         // Mark chat as explicitly closed
         setIsChatExplicitlyClosed(true);
         // Clear current chat ID to ensure new messages start a new chat
@@ -128,16 +108,11 @@ export default function Home() {
       // Otherwise if we're already in initial view, just hide the chat
       else {
         setIsChatVisible(false);
-        setFullscreenDynamicView(null);
         // Mark chat as explicitly closed
         setIsChatExplicitlyClosed(true);
         // Clear current chat ID to ensure new messages start a new chat
         apiService.setCurrentChat('');
       }
-     
-      // Don't clear closed dynamic view when closing chat - we want to keep it
-      // so the "Show response" button can be clicked later
-      setPendingDynamicView(null);
     } else {
       // Normal message sending behavior - not closing
      
@@ -150,19 +125,6 @@ export default function Home() {
      
       // Reset the explicit close state when sending a message
       setIsChatExplicitlyClosed(false);
-     
-      // Store the dynamic view if provided
-      if (dynamicView) {
-        if (isClosed) {
-          setClosedDynamicView(dynamicView);
-          setPendingDynamicView(null);
-          setActiveDynamicView(null);
-        } else {
-          setPendingDynamicView(dynamicView);
-          setClosedDynamicView(null);
-          setActiveDynamicView(null);
-        }
-      }
      
       // If a view is active, hide it
       if (activeView) {
@@ -187,10 +149,6 @@ export default function Home() {
     // we're currently showing the chat or changing views
     if (isChatVisible || prevActiveView !== view) {
       setIsChatVisible(false);
-      // Don't clear closedDynamicView, as we want to preserve it
-      // when the user returns to the chat
-      // Only clear pending dynamic view
-      setPendingDynamicView(null);
       // Do NOT set isChatExplicitlyClosed here; preserve chat state when switching tabs
     }
   };
@@ -198,150 +156,109 @@ export default function Home() {
   // Handle closing a view
   const handleCloseView = () => {
     setActiveView(null);
-    setActiveDynamicView(null);
-   
-    // If we have a chat history, show the chat in non-initial view
-    const currentMessages = apiService.getCurrentChatMessages();
-    if (currentMessages.length > 0) {
-      setIsInitialView(false);
-      setIsChatVisible(true);
-    }
-    // If no chat history, show initial view
-    else {
-      setIsInitialView(true);
+    
+    // If chat was not explicitly closed, show it again
+    if (!isChatExplicitlyClosed) {
       setIsChatVisible(true);
     }
   };
 
-  // Handle sidebar expansion state change
+  // Handle sidebar toggle
   const handleSidebarToggle = (expanded: boolean) => {
     setIsSidebarExpanded(expanded);
-    // Force a re-render of the main content area
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 300); // Match the duration of the sidebar transition
   };
 
-  // Check if we're on a mobile device
-  const [isMobile, setIsMobile] = useState(false);
- 
-  // Handle window resize to detect mobile
+  // Update isMobile state
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768); // 768px is typical md breakpoint
+      const windowWidth = window.innerWidth;
+      const mobileDetected = windowWidth < 768;
+      setIsMobile(mobileDetected);
+      
+      // On mobile, always collapse sidebar
+      if (mobileDetected) {
+        setIsSidebarExpanded(false);
+      }
     };
-   
+    
     // Initial check
     checkIfMobile();
-   
+    
     // Listen for window resize
     window.addEventListener('resize', checkIfMobile);
-   
+    
     return () => {
       window.removeEventListener('resize', checkIfMobile);
     };
   }, []);
 
-  // Set up global keyboard handler for Escape key
+  // Listen for keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // ESC key to close active view
       if (e.key === 'Escape' && activeView) {
         handleCloseView();
       }
     };
-
+    
     window.addEventListener('keydown', handleKeyDown);
+    
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [activeView]);
 
   return (
-    <main className="flex min-h-screen bg-gray-50">
+    <main className="flex min-h-screen h-screen bg-gray-50 overflow-hidden relative">
       {/* Sidebar */}
-      <Sidebar onNavClick={handleNavClick} activeView={activeView} onToggle={handleSidebarToggle} />
-
-      {/* Main Content Area - adjust margin based on sidebar state */}
-      <div className={`flex-1 h-screen overflow-hidden flex flex-col relative transition-all duration-300
-        ${isMobile
-          ? isSidebarExpanded ? 'ml-0' : 'ml-0'
-          : isSidebarExpanded ? 'ml-62' : 'ml-20'}`}
-        style={{ willChange: 'transform' }}
+      <Sidebar
+        onNavClick={handleNavClick}
+        activeView={activeView}
+        expanded={isSidebarExpanded}
+        onToggle={handleSidebarToggle}
+      />
+      
+      {/* Main Content - position absolute with left margin matching sidebar width */}
+      <div 
+        className="absolute top-0 right-0 bottom-0 left-0 overflow-auto transition-all duration-300 z-20 flex flex-col"
+        style={{ 
+          marginLeft: isMobile ? 
+            '0' : // On mobile, don't add margin as sidebar is overlaid
+            (isSidebarExpanded ? '15.5rem' : '5rem') // w-62 = 15.5rem (248px), w-20 = 5rem (80px)
+        }}
       >
-        {/* Render active view */}
+        {/* Chat Component */}
+        <Chat
+          isVisible={isChatVisible}
+          onMessageSent={handleMessageSent}
+          isInitialView={isInitialView}
+        />
+        
+        {/* Dynamic View Renderer */}
         {activeView && (
           <DynamicViewRenderer
             viewId={activeView}
             onClose={handleCloseView}
-            dynamicViewContent={activeView === 'dynamic-view' ? activeDynamicView : undefined}
           />
         )}
-       
-        {/* Render chat if visible */}
-        {isChatVisible && <Chat
-          key={activeView || 'default'}
-          isVisible={true}
-          onMessageSent={handleMessageSent}
-          isInitialView={isInitialView}
-          activeView={activeView}
-          pendingDynamicView={pendingDynamicView}
-          closedDynamicView={closedDynamicView}
-        />}
-       
-        {/* If nothing is visible, show a fallback */}
-        {!activeView && !isChatVisible && !isInitialView && (
-          <div className="flex items-center justify-center h-full">
-            <button
-              onClick={() => {
-                // Create a new chat when entering chat from closed state
-                const newChatId = apiService.createNewChat();
-               
-                // Notify components about the new chat
-                const chatChangeEvent = new CustomEvent('chatChanged', {
-                  detail: { chatId: newChatId, messages: [] }
-                });
-                window.dispatchEvent(chatChangeEvent);
-               
-                // Show chat view
-                setIsChatVisible(true);
-                setIsInitialView(true); // Show initial welcome view for the new chat
-               
-                // Reset the explicit close state when starting a new chat
-                setIsChatExplicitlyClosed(false);
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Start Chatting
-            </button>
-          </div>
-        )}
-
-        {/* Fixed chat input box at the bottom (visible on all pages except initial view) */}
-        {!isInitialView && !isChatVisible && activeView && (
-          <div className={`fixed bottom-0 right-0 bg-white p-4 shadow-md z-10 transition-all duration-300
-            ${isMobile
-              ? 'left-0'
-              : isSidebarExpanded ? 'left-0' : 'left-0'}`}
-          >
-            <ChatInput
-              isChatExplicitlyClosed={isChatExplicitlyClosed}
-              onMessageSent={(isClosing, dynamicView) => {
-              // Enhanced callback to guarantee the chat becomes visible
-              if (!isClosing) {
-                setIsChatVisible(true);
-                setActiveView(null);
-               
-                // Store dynamic view if provided
-                if (dynamicView) {
-                  setPendingDynamicView(dynamicView);
-                  setClosedDynamicView(null);
-                }
-              }
-              handleMessageSent(isClosing, dynamicView);
-            }} />
-          </div>
-        )}
       </div>
+      
+      {/* Global ChatInput - visible when a tab is active or chat is not visible */}
+      {(activeView || (!isChatVisible && !isInitialView)) && (
+        <div className="fixed bottom-0 left-0 right-0 z-30"
+          style={{ 
+            marginLeft: isMobile ? 
+              '0' : // On mobile, don't add margin as sidebar is overlaid
+              (isSidebarExpanded ? '15.5rem' : '5rem') // w-62 = 15.5rem (248px), w-20 = 5rem (80px)
+          }}>
+          <div className="bg-white rounded-xl shadow-lg p-2">
+            <ChatInput 
+              onMessageSent={handleMessageSent} 
+              isChatExplicitlyClosed={isChatExplicitlyClosed}
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 }

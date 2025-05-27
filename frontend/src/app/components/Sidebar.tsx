@@ -11,6 +11,7 @@ interface SidebarProps {
   onNavClick: (view: string) => void;
   activeView: string | null;
   onToggle?: (expanded: boolean) => void;
+  expanded?: boolean;
 }
 
 
@@ -41,16 +42,24 @@ const navItemStyle = {
 };
 
 
-const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, expanded }) => {
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(expanded !== undefined ? expanded : true);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(isMobileDevice());
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
   const { loadingChats } = useChatLoading();
+
+
+  // Update internal state when expanded prop changes
+  useEffect(() => {
+    if (expanded !== undefined) {
+      setIsExpanded(expanded);
+    }
+  }, [expanded]);
 
 
   // Notify parent about initial sidebar state
@@ -370,18 +379,17 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle }) =
                         onClick={() => {
                           // Reset to initial view first
                           onNavClick('');
-                         
-                          // Create a new chat
-                          const newChatId = apiService.createNewChat();
-                          setCurrentChatId(newChatId);
-                         
-                          // Notify other components
+                          
+                          // Clear the current chat (do NOT create a new chat)
+                          apiService.setCurrentChat('');
+                          
+                          // Notify other components to show landing page
                           const chatChangeEvent = new CustomEvent('chatChanged', {
-                            detail: { chatId: newChatId, messages: [] }
+                            detail: { chatId: '', messages: [] }
                           });
                           window.dispatchEvent(chatChangeEvent);
-                         
-                          // On mobile, close the sidebar after creating a new chat
+                          
+                          // On mobile, close the sidebar after resetting
                           if (isMobile && isExpanded) {
                             toggleSidebar();
                           }

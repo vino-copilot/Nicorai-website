@@ -1,7 +1,6 @@
 import React, { useId, useEffect, useState, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import DynamicContentRenderer from './DynamicContentRenderer';
 import {
   Brain,
   MessageSquare,
@@ -79,10 +78,14 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
       return (
         <div className="min-h-screen bg-white flex items-center justify-center p-1">
           <div className="w-full max-w-4xl">
-            <DynamicContentRenderer
-              view={dynamicViewContent}
-              onClose={onClose}
-            />
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-2xl font-bold mb-4">Dynamic Content</h2>
+              <p className="text-gray-600">
+                {typeof dynamicViewContent === 'object' 
+                  ? JSON.stringify(dynamicViewContent, null, 2) 
+                  : String(dynamicViewContent)}
+              </p>
+            </div>
           </div>
         </div>
       );
@@ -110,7 +113,7 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
   };
 
   return (
-    <div ref={containerRef} className="relative flex-1 h-full overflow-auto bg-white pb-20">
+    <div ref={containerRef} className="relative flex-1 h-full overflow-auto bg-white pb-20 z-10">
       {/* Remove close button for dynamic views to avoid duplication */}
       {viewId !== 'dynamic-view' && (
         <div className="sticky top-0 right-0 p-4 flex justify-end z-50 bg-transparent">
@@ -1178,7 +1181,6 @@ const ContactForm = () => {
                         </svg>
                       </div>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Message Sent!</h3>
                     <p className="text-gray-600">
                       Thank you for reaching out. A member of our team will get back to you shortly.
                     </p>
