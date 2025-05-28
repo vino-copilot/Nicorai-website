@@ -2,12 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Cpu, ChevronRight, Bot, Workflow, SearchCode, BrainCircuit, TrendingUp, Compass, Share2, Search, Notebook, Code, Rocket, Zap } from 'lucide-react';
 
-// Helper function for classNames conditional joining
-const cn = (...classes: any[]) => {
-  return classes.filter(Boolean).join(' ');
-};
-
-const WhatWeDoView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const WhatWeDoView: React.FC = () => {
   const servicesRef = useRef<HTMLDivElement>(null);
   const scrollToServices = () => {
     if (servicesRef.current) {

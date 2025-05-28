@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Users, Lightbulb, Goal, Eye, Handshake, Shield, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 
-const AboutUsView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const AboutUsView = () => {
   return (
     <div className="min-h-screen bg-white">
       <AboutHero />
@@ -15,11 +15,9 @@ const AboutUsView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
 
 const AboutHero = () => {
-  const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768);
       setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1023);
     };
     checkScreenSize();
@@ -42,11 +40,11 @@ const AboutHero = () => {
             About Us
           </div>
           <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">Pioneering Intelligent Solutions</h1>
-          <p className="text-xl text-gray-600 leading-relaxed">At NicorAI, we are a team of passionate innovators dedicated to pushing the boundaries of what's possible with Artificial Intelligence and Immersive Technologies. We're not just building AI; we're crafting intelligent solutions that transform businesses and shape the future. Inspired by the pioneering work of Nicolas Rashevsky, we approach AI with a deep understanding of the fundamental mathematical principles that underpin its power and potential.</p>
+          <p className="text-xl text-gray-600 leading-relaxed">At NicorAI, we are a team of passionate innovators dedicated to pushing the boundaries of what&apos;s possible with Artificial Intelligence and Immersive Technologies. We&apos;re not just building AI; we&apos;re crafting intelligent solutions that transform businesses and shape the future. Inspired by the pioneering work of Nicolas Rashevsky, we approach AI with a deep understanding of the fundamental mathematical principles that underpin its power and potential.</p>
           <br />
           <br />
           <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-6">We specialize in two core areas</h1>
-          <p className="text-xl text-gray-600 leading-relaxed">Cutting-edge Artificial Intelligence and immersive Augmented & Virtual Reality solutions</p>
+          <p className="text-xl text-gray-600 leading-relaxed">Cutting-edge Artificial Intelligence and immersive Augmented &amp; Virtual Reality solutions</p>
           <br />
           <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-6">AI/ML: Custom Solutions and Development</h1>
           <p className="text-xl text-gray-600 leading-relaxed">We design and develop bespoke narrow AI models precisely tailored to address unique business challenges, moving beyond gene solutions. Our services encompass AI-augmented development, enabling businesses to leverage AI in every part of their operational framework. From detailed data analysis to seamless deployment, we handle every step in the development lifecycle.</p>
@@ -63,7 +61,7 @@ const AboutHero = () => {
             <div className="flex justify-center mb-6">
               <Image src="/images/Nicolas_Rashevsky.png" alt="Nicolas Rashevsky" width={280} height={280} className="rounded-2xl shadow-lg border border-purple-100 bg-white object-cover" priority />
             </div>
-            <p className="text-xl text-gray-700 mb-4 leading-relaxed">At NicorAI, we believe that true innovation is built upon a foundation of groundbreaking ideas and visionary thinkers. Our journey into the world of artificial intelligence is deeply inspired by the pioneering work of Nicolas Rashevsky, a theoretical biophysicist whose ideas were far ahead of their time. Rashevsky's work wasn't just about biology; it was a profound exploration of how mathematical principles could unlock the secrets of complex systems — a vision that forms the core of our approach to AI today. He was, in many ways, a founding father of the AI revolution, and his legacy fuels our mission</p>
+            <p className="text-xl text-gray-700 mb-4 leading-relaxed">At NicorAI, we believe that true innovation is built upon a foundation of groundbreaking ideas and visionary thinkers. Our journey into the world of artificial intelligence is deeply inspired by the pioneering work of Nicolas Rashevsky, a theoretical biophysicist whose ideas were far ahead of their time. Rashevsky&apos;s work wasn&apos;t just about biology; it was a profound exploration of how mathematical principles could unlock the secrets of complex systems — a vision that forms the core of our approach to AI today. He was, in many ways, a founding father of the AI revolution, and his legacy fuels our mission</p>
           </div>
         </motion.div>
       </div>
@@ -83,9 +81,9 @@ const OurStory = () => {
               <div className="relative bg-white rounded-2xl overflow-hidden shadow-xl border border-indigo-100 p-8 h-full flex flex-col">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Story of Nicolas Rashevsky</h2>
                 <div className="space-y-4 text-gray-700">
-                  <p>Nicolas Rashevsky wasn't a computer scientist in the traditional sense. Born in 1899, he was a brilliant scholar who applied the rigor of mathematics to the complexities of the human body and, in doing so, stumbled upon concepts that would become crucial to artificial intelligence. He was a polymath, straddling the worlds of mathematics, physics, and biology. In 1934, he left for Chicago and became the first professor of mathematical biophysics at the University of Chicago. He was ahead of his time, and he believed in the power of mathematics to unlock the secrets of life.</p>
-                  <p>Rashevsky's approach was to apply mathematical modeling to biological systems, seeing patterns and structures that were previously hidden. His work on neural networks, though initially framed within the context of the human brain, laid the theoretical groundwork for the artificial neural networks that are fundamental to today's deep learning and AI systems. He co-authored the book "Mathematical Biophysics" which included the famous "Theory of the Brain" which is considered a core component of AI development, he even anticipated many technologies and challenges of the present day through his work.</p>
-                  <p>What sets us apart is our client-centric approach. We don't just implement technology; we partner with you to understand your business challenges and develop custom solutions that address your specific needs.</p>
+                  <p>Nicolas Rashevsky wasn&apos;t a computer scientist in the traditional sense. Born in 1899, he was a brilliant scholar who applied the rigor of mathematics to the complexities of the human body and, in doing so, stumbled upon concepts that would become crucial to artificial intelligence. He was a polymath, straddling the worlds of mathematics, physics, and biology. In 1934, he left for Chicago and became the first professor of mathematical biophysics at the University of Chicago. He was ahead of his time, and he believed in the power of mathematics to unlock the secrets of life.</p>
+                  <p>Rashevsky&apos;s approach was to apply mathematical modeling to biological systems, seeing patterns and structures that were previously hidden. His work on neural networks, though initially framed within the context of the human brain, laid the theoretical groundwork for the artificial neural networks that are fundamental to today&apos;s deep learning and AI systems. He co-authored the book &quot;Mathematical Biophysics&quot; which included the famous &quot;Theory of the Brain&quot; which is considered a core component of AI development, he even anticipated many technologies and challenges of the present day through his work.</p>
+                  <p>What sets us apart is our client-centric approach. We don&apos;t just implement technology; we partner with you to understand your business challenges and develop custom solutions that address your specific needs.</p>
                 </div>
               </div>
             </div>
@@ -112,7 +110,7 @@ const OurStory = () => {
                 </div>
                 <h3 className="text-2xl font-bold ml-4">Our Commitment</h3>
               </div>
-              <p className="text-indigo-100 text-[16px]">At NicorAI, we honor Rashevsky's legacy by embracing his scientific approach and commitment to solving complex problems. Inspired by his innovation, we strive to create impactful AI solutions that reflect his enduring influence.</p>
+              <p className="text-indigo-100 text-[16px]">At NicorAI, we honor Rashevsky&apos;s legacy by embracing his scientific approach and commitment to solving complex problems. Inspired by his innovation, we strive to create impactful AI solutions that reflect his enduring influence.</p>
             </div>
           </motion.div>
         </div>

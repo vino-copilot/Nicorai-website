@@ -1,11 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Tag, Share2, MessageSquare, BarChart3, IndianRupee, Stethoscope, Cpu } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowLeft, Calendar, Tag, MessageSquare } from 'lucide-react';
 
 interface ProjectDetailViewProps {
   projectId: string;
   onClose: () => void;
+}
+
+// Add Project type
+interface Project {
+  id: string;
+  title: string;
+  date: string;
+  category: string;
+  client: string;
+  duration: string;
+  content: Array<
+    | { type: 'paragraph' | 'heading'; content: string }
+    | { type: 'list'; items: string[] }
+    | { type: 'metrics'; items: { label: string; value: string }[] }
+  >;
+  technologies: string[];
+  image: string;
 }
 
 // Mock project data - In a real application, this would come from an API or database
@@ -323,11 +339,11 @@ const projects = {
 };
 
 const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId, onClose }) => {
-  const [project, setProject] = useState<any>(null);
+  const [project, setProject] = useState<Project | null>(null);
 
   useEffect(() => {
     // In a real application, this would be an API call
-    setProject(projects[projectId as keyof typeof projects]);
+    setProject(projects[projectId as keyof typeof projects] as Project);
   }, [projectId]);
 
   if (!project) {
@@ -399,7 +415,7 @@ const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId, onClos
             transition={{ duration: 0.5, delay: 0.2 }}
             className="prose prose-lg max-w-none"
           >
-            {project.content.map((section: any, index: number) => {
+            {project.content.map((section, index) => {
               if (section.type === 'heading') {
                 return (
                   <h2 key={index} className="text-2xl font-bold text-gray-900 mt-8 mb-4">
@@ -409,7 +425,7 @@ const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId, onClos
               } else if (section.type === 'list') {
                 return (
                   <ul key={index} className="list-disc pl-6 mb-6 space-y-2">
-                    {section.items.map((item: string, itemIndex: number) => (
+                    {('items' in section ? section.items : []).map((item: string, itemIndex: number) => (
                       <li key={itemIndex} className="text-gray-700">
                         {item}
                       </li>
@@ -419,7 +435,7 @@ const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId, onClos
               } else if (section.type === 'metrics') {
                 return (
                   <div key={index} className="grid grid-cols-2 md:grid-cols-4 gap-4 my-8">
-                    {section.items.map((metric: any, metricIndex: number) => (
+                    {('items' in section ? section.items : []).map((metric: { label: string; value: string }, metricIndex: number) => (
                       <div key={metricIndex} className="bg-gray-50 rounded-lg p-4 text-center">
                         <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
                         <div className="text-sm text-gray-600">{metric.label}</div>

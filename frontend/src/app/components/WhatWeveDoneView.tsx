@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { BookText, Cpu, ChevronRight, IndianRupee, BarChart3, MessageSquare, Stethoscope } from 'lucide-react';
 import ProjectDetailView from './ProjectDetailView';
 
-const WhatWeveDoneView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const WhatWeveDoneView = () => {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   if (selectedProject) {
     return <ProjectDetailView projectId={selectedProject} onClose={() => setSelectedProject(null)} />;
@@ -18,11 +18,9 @@ const WhatWeveDoneView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
 
 const CaseStudiesHero = ({ onProjectSelect }: { onProjectSelect: (id: string) => void }) => {
-  const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768);
       setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1023);
     };
     checkScreenSize();
@@ -165,7 +163,7 @@ const TestimonialsSection = () => {
           {testimonials.map((testimonial, index) => (
             <motion.div key={index} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: index * 0.1 }} className="bg-white rounded-2xl shadow-md p-6 border border-purple-100 relative flex flex-col h-full">
               <div className="absolute top-0 right-0 transform translate-x-2 -translate-y-2">
-                <div className="text-purple-300 text-7xl leading-none">"</div>
+                <div className="text-purple-300 text-7xl leading-none">&quot;</div>
               </div>
               <div className="flex-1 flex flex-col min-h-[160px]">
                 <p className="text-gray-600 mb-6 relative z-10" style={{ fontFamily: "Arial, Helvetica, sans-serif", fontSize: "16px", lineHeight: "24px" }}>{testimonial.content}</p>

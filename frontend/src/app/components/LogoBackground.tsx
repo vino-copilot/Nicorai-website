@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useMotionValue } from 'framer-motion';
+import Image from 'next/image';
  
 /**
  * LogoBackground component
@@ -49,9 +50,7 @@ const LogoBackground = () => {
       className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none flex items-center justify-center select-none w-full h-full"
       aria-hidden="true"
     >
-      <motion.img
-        src="/images/nicorai-logo-black.svg"
-        alt="Nicorai Logo Watermark"
+      <motion.div
         className="w-1/4 max-w-[140px] md:max-w-[200px] lg:max-w-[240px] opacity-4 md:opacity-4 drop-shadow-2xl"
         style={{
           rotateX,
@@ -61,7 +60,15 @@ const LogoBackground = () => {
         draggable={false}
         animate={{ y: [0, -20, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-      />
+      >
+        <Image
+          src="/images/nicorai-logo-black.svg"
+          alt="Nicorai Logo Watermark"
+          width={240}
+          height={240}
+          className="w-full h-full"
+        />
+      </motion.div>
     </div>
   );
 };

@@ -1,15 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Tag, Share2, MessageSquare } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowLeft, Calendar, Tag, MessageSquare } from 'lucide-react';
 
 interface ArticleDetailViewProps {
   articleId: string;
   onClose: () => void;
 }
 
+interface ArticleSection {
+  type: 'paragraph' | 'heading' | 'subheading' | 'list';
+  content?: string;
+  items?: string[];
+}
+
+interface Article {
+  id: string;
+  title: string;
+  date: string;
+  category: string;
+  author: string;
+  readTime: string;
+  content: ArticleSection[];
+  image: string;
+}
+
 // Mock article data - In a real application, this would come from an API or database
-const articles = {
+const articles: Record<string, Article> = {
   'nicorai-website': {
     id: 'nicorai-website',
     title: "Building NicorAI: A Modern AI-Powered Website Architecture",
@@ -215,7 +231,7 @@ const articles = {
 };
 
 const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({ articleId, onClose }) => {
-  const [article, setArticle] = useState<any>(null);
+  const [article, setArticle] = useState<Article | null>(null);
 
   useEffect(() => {
     // In a real application, this would be an API call
@@ -291,7 +307,7 @@ const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({ articleId, onClos
             transition={{ duration: 0.5, delay: 0.2 }}
             className="prose prose-lg max-w-none"
           >
-            {article.content.map((section: any, index: number) => {
+            {article.content.map((section, index) => {
               if (section.type === 'heading') {
                 return (
                   <h2 key={index} className="text-2xl font-bold text-gray-900 mt-8 mb-4">
@@ -307,7 +323,7 @@ const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({ articleId, onClos
               } else if (section.type === 'list') {
                 return (
                   <ul key={index} className="list-disc pl-6 mb-6 space-y-2">
-                    {section.items.map((item: string, itemIndex: number) => (
+                    {section.items?.map((item, itemIndex) => (
                       <li key={itemIndex} className="text-gray-700">
                         {item}
                       </li>

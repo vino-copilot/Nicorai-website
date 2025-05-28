@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquare, MapPin, Phone, Mail } from 'lucide-react';
 
-const ConnectView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const ConnectView: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <ContactHero />
@@ -13,11 +13,9 @@ const ConnectView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 };
 
 const ContactHero = () => {
-  const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768);
       setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1023);
     };
     checkScreenSize();
@@ -39,7 +37,7 @@ const ContactHero = () => {
             <MessageSquare size={14} className="mr-2" />
             Connect
           </div>
-          <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">Let's Connect!</h1>
+          <h1 className="text-5xl font-bold text-gray-900 tracking-tight mb-6">Let&apos;s Connect!</h1>
           <p className="text-xl text-gray-600 leading-relaxed">Ready to transform your business with AI? Reach out to our team to explore how NicorAI can help you achieve your goals.</p>
         </motion.div>
       </div>
@@ -56,9 +54,9 @@ const ContactForm = () => {
       let recaptchaToken = '';
       if (typeof window !== 'undefined' && 'grecaptcha' in window && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
         try {
-          const grecaptcha = (window as any).grecaptcha;
+          const grecaptcha = (window as unknown as { grecaptcha: { execute: (siteKey: string, options: { action: string }) => Promise<string> } }).grecaptcha;
           recaptchaToken = await grecaptcha.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, { action: 'contact' });
-        } catch (error) {
+        } catch {
           setFormState(prev => ({ ...prev, loading: false, error: 'reCAPTCHA verification failed. Please try again.' }));
           return;
         }
@@ -74,7 +72,7 @@ const ContactForm = () => {
       } else {
         setFormState(prev => ({ ...prev, loading: false, error: result.error || 'Failed to send message. Please try again.' }));
       }
-    } catch (err) {
+    } catch {
       setFormState(prev => ({ ...prev, loading: false, error: 'An unexpected error occurred. Please try again.' }));
     }
   };

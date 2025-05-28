@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import ArticleDetailView from './ArticleDetailView';
 
-const ResearchBlogView: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
+const ResearchBlogView: React.FC = () => {
   const [selectedArticle, setSelectedArticle] = useState<string | null>(null);
   const blogPosts = [
     { id: 'nicorai-website', title: "NicorAI: The Website", date: "May 19, 2025", excerpt: "NicorAI is a modern AI platform built with Next.js and React, offering a responsive design and interactive chat. It delivers rich content through text, charts, and cards, ensuring a smooth user experience across all devices...", category: "AI Trends", color: "blue" },

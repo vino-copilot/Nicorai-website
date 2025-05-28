@@ -4,7 +4,6 @@ import Image from 'next/image';
 import LogoBackground from './LogoBackground';
 import { useChatLoading } from '../services/ChatContext';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { format } from 'date-fns';
 
 
@@ -36,27 +35,23 @@ const Chat: React.FC<ChatProps> = ({
 
   // Check if we're on a mobile device
   const [isMobile, setIsMobile] = useState(false);
-  // Add state for short screen height
-  const [isShortScreen, setIsShortScreen] = useState(false);
 
-  // Handle window resize to detect mobile and short screen
+  // Handle window resize to detect mobile
   useEffect(() => {
-    const checkIfMobileAndShort = () => {
+    const checkIfMobile = () => {
       // Use explicit number comparison to avoid type issues
       const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
       setIsMobile(windowWidth < 768); // 768px is typical md breakpoint
-      setIsShortScreen(windowHeight < 724);
     };
 
     // Initial check
-    checkIfMobileAndShort();
+    checkIfMobile();
 
     // Listen for window resize
-    window.addEventListener('resize', checkIfMobileAndShort);
+    window.addEventListener('resize', checkIfMobile);
 
     return () => {
-      window.removeEventListener('resize', checkIfMobileAndShort);
+      window.removeEventListener('resize', checkIfMobile);
     };
   }, []);
 
@@ -391,10 +386,12 @@ const Chat: React.FC<ChatProps> = ({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                       </svg>
                     ) : (
-                      <img
+                      <Image
                         src="/images/nicorai-logo-black.svg"
                         alt="NicorAI"
                         className="h-6 w-6 object-contain"
+                        width={24}
+                        height={24}
                       />
                     )}
                   </div>
@@ -416,10 +413,12 @@ const Chat: React.FC<ChatProps> = ({
             {loadingChats[apiService.getCurrentChatId() || ''] && (
               <div className="flex justify-start mb-4">
                 <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden bg-white flex items-center justify-center">
-                  <img
+                  <Image
                     src="/images/nicorai-logo-black.svg"
                     alt="NicorAI"
                     className="h-6 w-6 object-contain"
+                    width={24}
+                    height={24}
                   />
                 </div>
                 <div className="bg-blue-100 rounded-2xl rounded-tl-none px-4 py-3 flex items-center max-w-[80%]">

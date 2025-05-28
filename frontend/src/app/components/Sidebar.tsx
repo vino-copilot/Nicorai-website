@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import apiService, { ChatSession } from '../services/api';
-import { Briefcase, CheckSquare, Mail, Users, Sparkles, Lightbulb, FlaskConical } from 'lucide-react';
+import { Briefcase, CheckSquare, Mail, Users, FlaskConical } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
 import { useChatLoading } from '../services/ChatContext';
 
@@ -24,24 +24,6 @@ const isMobileDevice = () => {
 };
 
 
-// Custom CSS for the logo text to match the pixelated style
-const logoTextStyle = {
-  fontFamily: "var(--font-press-start-2p)",
-  letterSpacing: "0.05em",
-  fontWeight: 400,
-  color: "#0f0f0f",
-  fontSize: "1.2rem",
-};
-
-
-// Custom CSS for the navigation items to use Pixelify Sans font
-const navItemStyle = {
-  fontFamily: "var(--font-pixelify-sans)",
-  letterSpacing: "0.02em",
-  fontWeight: 400,
-};
-
-
 const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, expanded }) => {
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
@@ -60,14 +42,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
       setIsExpanded(expanded);
     }
   }, [expanded]);
-
-
-  // Notify parent about initial sidebar state
-  useEffect(() => {
-    if (onToggle) {
-      onToggle(isExpanded);
-    }
-  }, []);
 
 
   // Fetch chat history when component mounts or when localStorage changes
@@ -221,24 +195,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
     return () => {
       window.removeEventListener('resize', checkIfMobile);
     };
-  }, []);
+  }, [isMobile, onToggle]);
 
 
   // Auto-collapse on mobile initially - only on first render
   useEffect(() => {
-    if (isMobile) {
-      console.log("Mobile detected, collapsing sidebar");
+    if (isMobileDevice()) {
       setIsExpanded(false);
-      if (onToggle) {
-        onToggle(false);
-      }
+      if (onToggle) onToggle(false);
     } else {
-      // Ensure desktop starts with proper expanded state
-      if (onToggle) {
-        onToggle(true);
-      }
+      setIsExpanded(true);
+      if (onToggle) onToggle(true);
     }
-    // Empty dependency array ensures this only runs once on mount
   }, []);
 
 
@@ -460,10 +428,22 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
                 {/* Social Media Icons */}
                 <div className={`flex ${isExpanded ? 'justify-center space-x-6' : 'flex-col space-y-4 items-center'} mb-3`}>
                   <Link href="https://www.linkedin.com/company/nicorai/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
-                    <img src="/images/linkedin.svg" alt="LinkedIn" width={27} height={27} className="object-contain" />
+                    <Image
+                      src="/images/linkedin.svg"
+                      alt="LinkedIn"
+                      width={27}
+                      height={27}
+                      className="object-contain"
+                    />
                   </Link>
                   <Link href="https://x.com/nicor_ai" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
-                    <img src="/images/X_logo_2023_original.svg" alt="X" width={24} height={24} className="object-contain" />
+                    <Image
+                      src="/images/X_logo_2023_original.svg"
+                      alt="X"
+                      width={24}
+                      height={24}
+                      className="object-contain"
+                    />
                   </Link>
                 </div>
                 {/* Copyright Notice */}

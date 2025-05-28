@@ -3,7 +3,6 @@
 
 // Configuration
 const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_URL ;
-const DEVELOPMENT_MODE = true; // Set to false in production
 
 // Types
 export interface ChatMessage {
@@ -315,11 +314,11 @@ class ApiService {
       if (!shouldSkipRecaptcha) {
         if (
           typeof window !== 'undefined' &&
-          typeof (window as any).grecaptcha !== 'undefined' &&
+          typeof (window as unknown as { grecaptcha: unknown }).grecaptcha !== 'undefined' &&
           process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
         ) {
           try {
-            recaptchaToken = await (window as any).grecaptcha.execute(
+            recaptchaToken = await (window as unknown as { grecaptcha: { execute: (siteKey: string, options: { action: string }) => Promise<string> } }).grecaptcha.execute(
               process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
               { action: 'chat' }
             );

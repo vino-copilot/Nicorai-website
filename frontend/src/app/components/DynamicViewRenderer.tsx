@@ -8,7 +8,7 @@ import ResearchBlogView from './ResearchBlogView';
 interface ViewProps {
   viewId: string;
   onClose: () => void;
-  dynamicViewContent?: any;
+  dynamicViewContent?: unknown;
 }
 
 const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicViewContent }) => {
@@ -39,15 +39,15 @@ const DynamicViewRenderer: React.FC<ViewProps> = ({ viewId, onClose, dynamicView
     }
     switch (viewId) {
       case 'what-we-do':
-        return <WhatWeDoView onClose={onClose} />;
+        return <WhatWeDoView />;
       case 'what-weve-done':
-        return <WhatWeveDoneView onClose={onClose} />;
+        return <WhatWeveDoneView/>;
       case 'connect':
-        return <ConnectView onClose={onClose} />;
+        return <ConnectView />;
       case 'us':
-        return <AboutUsView onClose={onClose} />;
+        return <AboutUsView />;
       case 'research-blog':
-        return <ResearchBlogView onClose={onClose} />;
+        return <ResearchBlogView />;
       default:
         return (
           <div className="flex items-center justify-center h-full">

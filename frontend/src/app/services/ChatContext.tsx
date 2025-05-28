@@ -218,7 +218,8 @@ export const ChatLoadingProvider = ({ children }: { children: ReactNode }) => {
   // Clean up timeouts on unmount
   useEffect(() => {
     return () => {
-      Object.values(loadingTimeouts.current).forEach(timeout => clearTimeout(timeout));
+      const timeouts = { ...loadingTimeouts.current };
+      Object.values(timeouts).forEach(timeout => clearTimeout(timeout));
     };
   }, []);
 

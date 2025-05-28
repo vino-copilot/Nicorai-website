@@ -11,7 +11,9 @@ const nextConfig: NextConfig = {
    * - Creates index.html as the entry point for CloudFront
    * - Supports client-side routing with proper CloudFront error page configuration
    */
-  output: 'export',
+
+  // for client side caching
+  // output: 'export',
   trailingSlash: true,
   images: {
     unoptimized: true,

@@ -9,7 +9,6 @@ import apiService from './services/api';
 
 export default function Home() {
   const [activeView, setActiveView] = useState<string | null>(null);
-  const [hasMessages, setHasMessages] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(true);
   const [isInitialView, setIsInitialView] = useState(true);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -83,7 +82,6 @@ export default function Home() {
   const handleMessageSent = (isClosing?: boolean) => {
     // Check for existing messages
     const hasExistingMessages = apiService.getCurrentChatMessages().length > 0;
-    setHasMessages(hasExistingMessages);
    
     if (isClosing) {
       // Regular closing behavior

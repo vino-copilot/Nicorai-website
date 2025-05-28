@@ -22,9 +22,6 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
   const { loadingChats, setLoadingForChat } = useChatLoading();
   const currentChatId = apiService.getCurrentChatId();
  
-  // Clear notification after 3 seconds
-  const clearNotificationTimeout = useRef<NodeJS.Timeout | null>(null);
-
   const anyChatLoading = Object.values(loadingChats).some(Boolean);
 
   const sendMessage = async (content: string) => {
