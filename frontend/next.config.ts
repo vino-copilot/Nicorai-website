@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
    */
 
   // for client side caching
-  // output: 'export',
+  output: 'export',
   trailingSlash: true,
   images: {
     unoptimized: true,
