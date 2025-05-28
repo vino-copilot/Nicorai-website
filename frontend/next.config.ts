@@ -12,8 +12,11 @@ const nextConfig: NextConfig = {
    * - Supports client-side routing with proper CloudFront error page configuration
    */
 
+  
   // for client side caching
-  output: 'export',
+  // output: 'export',
+
+
   trailingSlash: true,
   images: {
     unoptimized: true,
