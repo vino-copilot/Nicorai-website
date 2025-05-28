@@ -16,13 +16,10 @@ const handleChatMessage = asyncHandler(async (req, res) => {
  
   // Only verify reCAPTCHA on the first message in a chat thread
   let isFirstMessage = false;
-  let recaptchaVerifiedKey;
   if (chatId) {
-    recaptchaVerifiedKey = `recaptcha_verified:${chatId}`;
-    const alreadyVerified = redisService.isHealthy ? await redisService.get(recaptchaVerifiedKey) : null;
-    if (!alreadyVerified) {
-      isFirstMessage = true;
-    }
+    // Check if this is the first message in the thread
+    // We no longer store verification status, so we rely on chatId existence
+    isFirstMessage = false;
   } else {
     // If no chatId, treat as first message (shouldn't happen in normal flow)
     isFirstMessage = true;
@@ -34,18 +31,12 @@ const handleChatMessage = asyncHandler(async (req, res) => {
       if (!recaptchaResult.success) {
         throw ErrorTypes.forbidden('reCAPTCHA verification failed. Please try again.');
       }
-      // Mark this chatId as verified in Redis (1 day TTL)
-      if (recaptchaVerifiedKey && redisService.isHealthy) {
-        await redisService.set(recaptchaVerifiedKey, '1', { ttl: 86400 });
-      }
+      // No longer storing verification status in Redis
     } catch (error) {
       // If we're in development mode, allow requests without valid recaptchaToken
       if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
         console.warn('⚠️ Allowing request without valid reCAPTCHA in development mode');
-        // Still mark as verified so subsequent requests don't need token
-        if (recaptchaVerifiedKey && redisService.isHealthy) {
-          await redisService.set(recaptchaVerifiedKey, '1', { ttl: 86400 });
-        }
+        // No longer storing verification status in Redis
       } else {
         if (error.statusCode) {
           throw error; // If it's already an ApiError, just re-throw it
@@ -58,10 +49,7 @@ const handleChatMessage = asyncHandler(async (req, res) => {
     // If we're in development mode, allow requests without recaptchaToken
     if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
       console.warn('⚠️ Allowing request without reCAPTCHA token in development mode');
-      // Mark as verified so subsequent requests don't need token
-      if (recaptchaVerifiedKey && redisService.isHealthy) {
-        await redisService.set(recaptchaVerifiedKey, '1', { ttl: 86400 });
-      }
+      // No longer storing verification status in Redis
     } else {
       throw ErrorTypes.badRequest('Missing required field: recaptchaToken');
     }
