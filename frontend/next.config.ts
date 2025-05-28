@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
    */
 
 
-  // for client side caching
+  // for static export
   output: 'export',
 
 

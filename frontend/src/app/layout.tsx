@@ -4,6 +4,7 @@ import { Pixelify_Sans } from "next/font/google";
 import { Press_Start_2P } from "next/font/google";
 import "./globals.css";
 import { ChatProvider, ChatLoadingProvider } from "./services/ChatContext";
+import AutoRefreshClient from './components/AutoRefreshClient';
 
 
 const geistSans = Geist({
@@ -37,12 +38,7 @@ export const metadata: Metadata = {
   description: "NicorAI provides advanced AI solutions tailored to your business needs. Chat with our assistant to get started.",
 };
 
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -55,6 +51,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pixelifySans.variable} ${pressStart2P.variable} antialiased bg-gray-50`}
       >
+        <AutoRefreshClient />
         <ChatProvider>
           <ChatLoadingProvider>
             {children}

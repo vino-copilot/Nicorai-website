@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prebuild": "node scripts/generate-version.js",
+    "build": "npm run prebuild && next build && next export",
     "dev": "next dev",
-    "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "mkdir -p scripts || true"
   },
   "dependencies": {
     "@tailwindcss/line-clamp": "^0.4.4",
