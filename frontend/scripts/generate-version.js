@@ -1,3 +1,5 @@
+// This small Node.js script generates a version.json file that contains the current timestamp, which can be used for cache busting or frontend version tracking.
+
 const fs = require('fs');
 const path = require('path');
 
