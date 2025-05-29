@@ -6,6 +6,7 @@ import Chat from './components/Chat';
 import ChatInput from './components/ChatInput';
 import DynamicViewRenderer from './components/DynamicViewRenderer';
 import apiService from './services/api';
+import { useChatLoading } from './services/ChatContext';
 
 export default function Home() {
   const [activeView, setActiveView] = useState<string | null>(null);
@@ -17,7 +18,7 @@ export default function Home() {
   // Track last loading chatId
   const lastLoadingChatIdRef = useRef<string | null>(null);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
-  const { loadingChats } = require('./services/ChatContext'); // Import here to avoid circular import issues
+  const chatLoading = useChatLoading();
 
   // On initial load, always show the initial landing page (isInitialView = true), regardless of chat history
   useEffect(() => {
@@ -88,7 +89,7 @@ export default function Home() {
   useEffect(() => {
     // Poll loadingChats from ChatContext
     const interval = setInterval(() => {
-      const loadingChatsObj = require('./services/ChatContext').useChatLoading().loadingChats;
+      const loadingChatsObj = chatLoading.loadingChats;
       const loadingChatIds = Object.keys(loadingChatsObj).filter(
         (id) => loadingChatsObj[id]
       );
@@ -97,7 +98,7 @@ export default function Home() {
       }
     }, 300);
     return () => clearInterval(interval);
-  }, []);
+  }, [chatLoading]);
 
   // When a response is received for a chat that was loading and the chat is closed, open it
   useEffect(() => {

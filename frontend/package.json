@@ -7,8 +7,7 @@
     "build": "npm run prebuild && next build && next export",
     "dev": "next dev",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "mkdir -p scripts || true"
+    "lint": "next lint"
   },
   "dependencies": {
     "@tailwindcss/line-clamp": "^0.4.4",
