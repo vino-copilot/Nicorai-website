@@ -12,6 +12,7 @@ interface SidebarProps {
   activeView: string | null;
   onToggle?: (expanded: boolean) => void;
   expanded?: boolean;
+  setSelectedChatId?: (chatId: string | null) => void;
 }
 
 
@@ -24,7 +25,7 @@ const isMobileDevice = () => {
 };
 
 
-const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, expanded }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, expanded, setSelectedChatId }) => {
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(expanded !== undefined ? expanded : true);
@@ -34,6 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
   const { loadingChats } = useChatLoading();
+  const anyChatLoading = Object.values(loadingChats).some(Boolean);
 
 
   // Update internal state when expanded prop changes
@@ -92,6 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
   const handleSelectChat = (chatId: string) => {
     apiService.setCurrentChat(chatId);
     setCurrentChatId(chatId);
+    if (setSelectedChatId) setSelectedChatId(chatId);
 
     // Update local state - no need to reload the page
     const currentMessages = apiService.getCurrentChatMessages();
@@ -262,6 +265,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
               <div
                 className="flex flex-col items-center cursor-pointer"
                 onClick={() => {
+                  if (anyChatLoading) return; // Prevent reset if loading
                   // Only reset to landing page, do NOT create a new chat
                   onNavClick('');
                   apiService.setCurrentChat(''); // Clear current chat
@@ -274,6 +278,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
                     toggleSidebar();
                   }
                 }}
+                title={anyChatLoading ? 'Please wait for the current response before resetting the chat.' : 'Go to landing page'}
               >
                 <Image
                   src="/images/nicorai-logo-black.svg"
@@ -325,8 +330,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
                       <h2 className="font-semibold text-gray-800">Recent Chat</h2>
                       {chatHistory.length > 0 && (
                         <button
-                          onClick={() => setShowClearAllConfirm(true)}
-                          className="text-xs text-red-500 hover:text-red-700"
+                          onClick={() => {
+                            if (anyChatLoading) return;
+                            setShowClearAllConfirm(true);
+                          }}
+                          className={`text-xs text-red-500 hover:text-red-700 ${anyChatLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          style={{ pointerEvents: anyChatLoading ? 'none' : 'auto' }}
+                          title={anyChatLoading ? 'Please wait for the current response before clearing all chats.' : 'Clear all chat history'}
                         >
                           Clear All
                         </button>
@@ -339,12 +349,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
                     <li className="group">
                       <div
                         onClick={() => {
+                          if (anyChatLoading) return; // Prevent click if loading
                           // Reset to initial view first
                           onNavClick('');
-
-                          // Clear the current chat (do NOT create a new chat)
                           apiService.setCurrentChat('');
-
+                          if (setSelectedChatId) setSelectedChatId(null);
                           // Notify other components to show landing page
                           const chatChangeEvent = new CustomEvent('chatChanged', {
                             detail: { chatId: '', messages: [] }
@@ -356,7 +365,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
                             toggleSidebar();
                           }
                         }}
-                        className={`flex items-start ${isExpanded ? 'p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer border border-dashed border-gray-300' : 'p-0.5 justify-center'}`}
+                        className={`flex items-start ${isExpanded ? 'p-2 px-4 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors border border-dashed border-gray-300' : 'p-0.5 justify-center'} ${anyChatLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        style={{ pointerEvents: anyChatLoading ? 'none' : 'auto' }}
+                        title={anyChatLoading ? 'Please wait for the current response before starting a new chat.' : 'New Chat'}
                       >
                         <div className={`flex-1 min-w-0 flex ${isExpanded ? 'items-center' : 'justify-center'}`}>
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`${isExpanded ? 'w-4 h-4 mr-2' : 'w-6 h-6'} text-blue-600`}>
@@ -403,9 +414,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
                                 </div>
                                 {/* Always show delete button, on all screen sizes */}
                                 <button
-                                  onClick={(e) => handleDeleteChat(e, chat.id)}
-                                  className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1"
-                                  title="Delete chat"
+                                  onClick={(e) => {
+                                    if (loadingChats[chat.id]) return;
+                                    handleDeleteChat(e, chat.id);
+                                  }}
+                                  className={`opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1 ${loadingChats[chat.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  style={{ pointerEvents: loadingChats[chat.id] ? 'none' : 'auto' }}
+                                  title={loadingChats[chat.id] ? 'Please wait for the current response before deleting this chat.' : 'Delete chat'}
                                 >
                                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                                     <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />

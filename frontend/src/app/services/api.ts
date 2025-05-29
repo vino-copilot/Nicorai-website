@@ -432,15 +432,12 @@ class ApiService {
 
   private addMessageToCurrentChat(message: ChatMessage, chatId?: string) {
     const targetChatId = chatId || this.currentChatId;
-    
     if (!targetChatId) {
       console.error('No target chat ID for adding message');
       return;
     }
-    
     const history = this.getChatHistory();
     const currentChatIndex = history.findIndex(c => c.id === targetChatId);
-    
     if (currentChatIndex === -1) {
       // Create a new chat if it doesn't exist
       const newChat: ChatSession = {
@@ -449,28 +446,23 @@ class ApiService {
         lastUpdated: new Date(),
         messages: [message]
       };
-      
       history.unshift(newChat);
       this.saveChatSession(newChat);
     } else {
       // Add message to existing chat
       history[currentChatIndex].messages.push(message);
       history[currentChatIndex].lastUpdated = new Date();
-      
       // Sort history by lastUpdated (newest first)
       history.sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime());
-      
       // Save to localStorage
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.setItem('nicoraiChatHistory', JSON.stringify(history));
       }
-      
-      // Update chat title if this is a new chat
-      if (history[currentChatIndex].messages.length <= 2) {
+      // Only set the chat title if it is still 'New Chat'
+      if (history[currentChatIndex].title === 'New Chat') {
         this.updateChatTitle(targetChatId, history[currentChatIndex].messages);
       }
     }
-    
     // Dispatch event to notify other components
     if (typeof window !== 'undefined') {
       const chatChangeEvent = new CustomEvent('chatChanged', {
@@ -479,7 +471,6 @@ class ApiService {
           messages: history.find(c => c.id === targetChatId)?.messages || []
         }
       });
-      
       window.dispatchEvent(chatChangeEvent);
     }
   }

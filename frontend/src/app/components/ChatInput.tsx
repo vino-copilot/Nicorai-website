@@ -6,13 +6,14 @@ import { useChatLoading } from '../services/ChatContext';
 interface ChatInputProps {
   onMessageSent?: (isClosing?: boolean) => void;
   isChatExplicitlyClosed?: boolean;
+  chatId?: string | null;
 }
 
 
 type NotificationStatus = 'none' | 'sending' | 'success' | 'error';
 
 
-const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyClosed = false }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyClosed = false, chatId }) => {
   const [inputValue, setInputValue] = useState('');
   const [notification, setNotification] = useState<{status: NotificationStatus, message: string}>({
     status: 'none',
@@ -26,7 +27,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
 
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
-    const chatIdAtSend = apiService.getCurrentChatId();
+    let chatIdAtSend = chatId;
     if (loadingChats[chatIdAtSend || '']) return;
     setInputValue('');
     
@@ -49,10 +50,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
       const newChatId = apiService.createNewChat();
       apiService.setCurrentChat(newChatId);
       finalChatId = newChatId;
-      
+      chatIdAtSend = newChatId;
       // Set the loading state for the new chat
       setLoadingForChat(newChatId, true);
-      
       // Trigger chat change event to notify other components about the new chat
       const chatChangeEvent = new CustomEvent('chatChanged', {
         detail: { chatId: newChatId, messages: [] }
@@ -64,28 +64,24 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
     finalChatId = finalChatId || 'default-chat';
     
     try {
-      const chatIdForSend = apiService.getCurrentChatId() || undefined;
-      await apiService.sendMessage(content, chatIdForSend);
-      
+      // Always use the chatId at send time
+      await apiService.sendMessage(content, chatIdAtSend);
       // Always dispatch chat change event to update UI with the response
       const chatChangeEvent = new CustomEvent('chatChanged', {
-        detail: { chatId: apiService.getCurrentChatId(), messages: apiService.getCurrentChatMessages() }
+        detail: { chatId: chatIdAtSend, messages: apiService.getCurrentChatMessages() }
       });
       window.dispatchEvent(chatChangeEvent);
-      
       setNotification({ status: 'success', message: 'Message sent!' });
-      
       // Notify parent that message was sent successfully
       onMessageSent?.(false);
     } catch (error) {
       setNotification({ status: 'error', message: 'Failed to send message. Please try again.' });
       console.error('Error sending message:', error);
-      
       // Make sure to dispatch chat change event even when there's an error
       // This ensures the UI is updated with the error message
       const chatChangeEvent = new CustomEvent('chatChanged', {
         detail: { 
-          chatId: apiService.getCurrentChatId(), 
+          chatId: chatIdAtSend, 
           messages: apiService.getCurrentChatMessages() 
         }
       });
@@ -93,7 +89,6 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
     } finally {
       // Clear loading state for the chat ID we were working with
       if (finalChatId) setLoadingForChat(finalChatId, false);
-      
       // Also clear loading for the original chat ID if it's different
       if (chatIdAtSend && chatIdAtSend !== finalChatId) {
         setLoadingForChat(chatIdAtSend, false);

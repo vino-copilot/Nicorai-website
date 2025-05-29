@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from './components/Sidebar';
 import Chat from './components/Chat';
 import ChatInput from './components/ChatInput';
@@ -14,6 +14,10 @@ export default function Home() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isChatExplicitlyClosed, setIsChatExplicitlyClosed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  // Track last loading chatId
+  const lastLoadingChatIdRef = useRef<string | null>(null);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const { loadingChats } = require('./services/ChatContext'); // Import here to avoid circular import issues
 
   // On initial load, always show the initial landing page (isInitialView = true), regardless of chat history
   useEffect(() => {
@@ -38,35 +42,37 @@ export default function Home() {
       if (e.detail.chatId) {
         setActiveView(null);
         setIsChatVisible(true);
-        
+        setSelectedChatId(e.detail.chatId); // Track selected chat
         // If there are no messages, this is a new chat, so show initial view
         if (!e.detail.messages || e.detail.messages.length === 0) {
           setIsInitialView(true);
         } else {
           setIsInitialView(false);
         }
-        
-        // Reset the explicit close state when a chat is selected
         setIsChatExplicitlyClosed(false);
+        // Reset last loading chatId
+        lastLoadingChatIdRef.current = null;
         return;
       }
-
       // If messages are empty and no chatId, reset to initial view
       if (!e.detail.messages || e.detail.messages.length === 0) {
         setActiveView(null);
         setIsChatVisible(true);
         setIsInitialView(true);
+        setSelectedChatId(null);
+        // Reset last loading chatId
+        lastLoadingChatIdRef.current = null;
         return;
       }
-      
       // Make sure the chat becomes visible when a chat is selected from history
       if (e.detail.messages && e.detail.messages.length > 0) {
-        // Clear any active view when a chat is selected
         setActiveView(null);
         setIsChatVisible(true);
         setIsInitialView(false);
-        // Reset the explicit close state when showing chat
         setIsChatExplicitlyClosed(false);
+        setSelectedChatId(e.detail.chatId);
+        // Reset last loading chatId
+        lastLoadingChatIdRef.current = null;
       }
     };
    
@@ -77,6 +83,44 @@ export default function Home() {
       window.removeEventListener('chatChanged', handleChatChange as EventListener);
     };
   }, []);
+
+  // Track loading chats to detect when a response is received for a closed chat
+  useEffect(() => {
+    // Poll loadingChats from ChatContext
+    const interval = setInterval(() => {
+      const loadingChatsObj = require('./services/ChatContext').useChatLoading().loadingChats;
+      const loadingChatIds = Object.keys(loadingChatsObj).filter(
+        (id) => loadingChatsObj[id]
+      );
+      if (loadingChatIds.length > 0) {
+        lastLoadingChatIdRef.current = loadingChatIds[0];
+      }
+    }, 300);
+    return () => clearInterval(interval);
+  }, []);
+
+  // When a response is received for a chat that was loading and the chat is closed, open it
+  useEffect(() => {
+    const handler = (e: CustomEvent) => {
+      const chatId = e.detail.chatId;
+      const messages = e.detail.messages;
+      // If the chat was loading, is now not loading, and the chat is closed, open it
+      if (
+        lastLoadingChatIdRef.current &&
+        chatId === lastLoadingChatIdRef.current &&
+        isChatExplicitlyClosed &&
+        messages && messages.length > 0 &&
+        messages[messages.length - 1].sender === 'ai'
+      ) {
+        setIsChatVisible(true);
+        setIsInitialView(false);
+        setIsChatExplicitlyClosed(false);
+        lastLoadingChatIdRef.current = null;
+      }
+    };
+    window.addEventListener('chatChanged', handler as EventListener);
+    return () => window.removeEventListener('chatChanged', handler as EventListener);
+  }, [isChatExplicitlyClosed]);
 
   // Function to handle sending a message in the chat
   const handleMessageSent = (isClosing?: boolean) => {
@@ -92,24 +136,21 @@ export default function Home() {
         setIsChatVisible(true); // Keep chat visible but in initial view
         // Mark chat as explicitly closed
         setIsChatExplicitlyClosed(true);
-        // Clear current chat ID to ensure new messages start a new chat
-        apiService.setCurrentChat('');
+        // DO NOT clear current chat ID here
       }
       // If a tab was selected previously, make it visible again
       else if (activeView) {
         setIsChatVisible(false);
         // Mark chat as explicitly closed
         setIsChatExplicitlyClosed(true);
-        // Clear current chat ID to ensure new messages start a new chat
-        apiService.setCurrentChat('');
+        // DO NOT clear current chat ID here
       }
       // Otherwise if we're already in initial view, just hide the chat
       else {
         setIsChatVisible(false);
         // Mark chat as explicitly closed
         setIsChatExplicitlyClosed(true);
-        // Clear current chat ID to ensure new messages start a new chat
-        apiService.setCurrentChat('');
+        // DO NOT clear current chat ID here
       }
     } else {
       // Normal message sending behavior - not closing
@@ -211,6 +252,7 @@ export default function Home() {
         activeView={activeView}
         expanded={isSidebarExpanded}
         onToggle={handleSidebarToggle}
+        setSelectedChatId={setSelectedChatId} // Pass setter to sidebar
       />
       
       {/* Main Content - position absolute with left margin matching sidebar width */}
@@ -227,6 +269,7 @@ export default function Home() {
           isVisible={isChatVisible}
           onMessageSent={handleMessageSent}
           isInitialView={isInitialView}
+          chatId={selectedChatId} // Pass selected chatId
         />
         
         {/* Dynamic View Renderer */}
@@ -250,6 +293,7 @@ export default function Home() {
             <ChatInput 
               onMessageSent={handleMessageSent} 
               isChatExplicitlyClosed={isChatExplicitlyClosed}
+              chatId={selectedChatId} // Pass selected chatId
             />
           </div>
         </div>

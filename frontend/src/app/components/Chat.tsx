@@ -11,13 +11,15 @@ interface ChatProps {
   isVisible: boolean;
   onMessageSent?: (isClosing?: boolean) => void;
   isInitialView?: boolean;
+  chatId?: string | null;
 }
 
 
 const Chat: React.FC<ChatProps> = ({
   isVisible,
   onMessageSent,
-  isInitialView
+  isInitialView,
+  chatId
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -55,32 +57,33 @@ const Chat: React.FC<ChatProps> = ({
     };
   }, []);
 
-  // Load messages from the API service when the component mounts
+  // Load messages from the API service when the component mounts or chatId changes
   useEffect(() => {
     const loadMessages = () => {
-      const currentMessages = apiService.getCurrentChatMessages();
-      setMessages(currentMessages);
+      if (chatId) {
+        const history = apiService.getChatHistory();
+        const chat = history.find(c => c.id === chatId);
+        setMessages(chat ? chat.messages : []);
+      } else {
+        setMessages([]);
+      }
     };
-
-    // Load initial messages
     loadMessages();
-
     // Listen for chat change events
     const handleChatChange = (e: CustomEvent) => {
-      console.log('Chat change event received:', e.detail);
-      // Always reload messages from the API service
-      const updatedMessages = apiService.getCurrentChatMessages();
-      setMessages(updatedMessages);
+      if (e.detail.chatId === chatId) {
+        // Only update if the event is for this chat
+        const history = apiService.getChatHistory();
+        const chat = history.find(c => c.id === chatId);
+        setMessages(chat ? chat.messages : []);
+      }
     };
-
-    // Add event listeners
     window.addEventListener('chatChanged', handleChatChange as EventListener);
     window.addEventListener('storage', (e: StorageEvent) => {
       if (e.key === 'nicoraiChatHistory') {
         loadMessages();
       }
     });
-
     return () => {
       window.removeEventListener('chatChanged', handleChatChange as EventListener);
       window.removeEventListener('storage', (e: StorageEvent) => {
@@ -89,7 +92,7 @@ const Chat: React.FC<ChatProps> = ({
         }
       });
     };
-  }, []);
+  }, [chatId]);
 
 
   // Special effect to reload messages when component becomes visible (additional fix)
@@ -123,19 +126,6 @@ const Chat: React.FC<ChatProps> = ({
   }, [isInitialView]);
 
 
-  // Always reload messages when the current chat ID changes
-  useEffect(() => {
-    // This effect runs when the component mounts and whenever the current chat ID changes
-    const currentChatId = apiService.getCurrentChatId();
-
-    if (currentChatId) {
-      // Load messages for the current chat
-      const currentMessages = apiService.getCurrentChatMessages();
-      setMessages(currentMessages);
-    }
-  }, [apiService.getCurrentChatId()]);
-
-
   // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
@@ -164,10 +154,10 @@ const Chat: React.FC<ChatProps> = ({
   // Send a message to the API
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
-
-    // Check if we need to create a new chat
-    if (!apiService.getCurrentChatId()) {
-      apiService.createNewChat();
+    // Always use the chatId prop for sending
+    let chatIdAtSend = chatId;
+    if (!chatIdAtSend) {
+      chatIdAtSend = apiService.createNewChat();
     }
 
     // Add user message
@@ -186,14 +176,13 @@ const Chat: React.FC<ChatProps> = ({
     scrollToBottom();
 
     // Set loading state
-    const chatId = apiService.getCurrentChatId();
-    if (chatId) {
-      setLoadingForChat(chatId, true);
+    if (chatIdAtSend) {
+      setLoadingForChat(chatIdAtSend, true);
     }
 
     try {
-      // Send message to API
-      const response = await apiService.sendMessage(content);
+      // Send message to API, always passing the chatId at send time
+      const response = await apiService.sendMessage(content, chatIdAtSend);
 
       // Update messages with API response
       setMessages(prev => {
@@ -216,8 +205,8 @@ const Chat: React.FC<ChatProps> = ({
       setError('Failed to send message. Please try again.');
     } finally {
       // Clear loading state
-      if (chatId) {
-        setLoadingForChat(chatId, false);
+      if (chatIdAtSend) {
+        setLoadingForChat(chatIdAtSend, false);
       }
     }
   };
@@ -410,7 +399,7 @@ const Chat: React.FC<ChatProps> = ({
                 </div>
               </div>
             ))}
-            {loadingChats[apiService.getCurrentChatId() || ''] && (
+            {loadingChats[chatId || ''] && (
               <div className="flex justify-start mb-4">
                 <div className="flex-shrink-0 h-8 w-8 rounded-full mr-1 overflow-hidden bg-white flex items-center justify-center">
                   <Image
