@@ -277,7 +277,7 @@ const Chat: React.FC<ChatProps> = ({
       <div className={`w-full max-w-lg`}>
         <div className="mb-8 text-center">
           <h2 className="text-4xl font-bold text-gray-800 mb-2">Welcome to <span className="text-blue-600 text-3xl p-1 inline-block" style={{ fontFamily: "var(--font-press-start-2p)", transform: "translateY(4px)" }}>NicorAI</span></h2>
-          <p className="text-gray-700 text-xl leading-relaxed">What can I assist with you?</p>
+          <p className="text-gray-700 text-xl leading-relaxed">What can I assist with you</p>
         </div>
 
         {/* landing page chat input */}
