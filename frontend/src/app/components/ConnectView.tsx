@@ -142,7 +142,7 @@ const ContactForm = () => {
 const OfficeLocations = () => {
   const locations = [
     { city: "Kochi", address: "Confident Gem, Rajagiri Valley, Kakkanad, Kochi, Kerala, India 682039", phone: "+91 9995438403", email: "hello@nicor.ai", image: "🌉" },
-    { city: "Thiruvananthapuram", address: "Sasthamangalam, Thiruvananthapuram, Kerala 695010, 8.5114381,76.9672403", phone: "+91 9995438403", email: "nicorai@gmail.com", image: "🗽" }
+    { city: "Thiruvananthapuram", address: "Sasthamangalam, Thiruvananthapuram, Kerala 695010, 8.5114381,76.9672403", phone: "+91 9995438403", email: "hello@nicor.ai", image: "🗽" }
   ];
   return (
     <section className={`${window.innerWidth < 768 ? 'pt-6 pb-8' : 'py-10'} bg-gradient-to-b from-white to-blue-50 relative overflow-hidden`}>
