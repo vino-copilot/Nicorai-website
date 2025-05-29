@@ -18,7 +18,6 @@ const handleChatMessage = asyncHandler(async (req, res) => {
   let isFirstMessage = false;
   if (chatId) {
     // Check if this is the first message in the thread
-    // We no longer store verification status, so we rely on chatId existence
     isFirstMessage = false;
   } else {
     // If no chatId, treat as first message (shouldn't happen in normal flow)
@@ -33,26 +32,14 @@ const handleChatMessage = asyncHandler(async (req, res) => {
       }
       // No longer storing verification status in Redis
     } catch (error) {
-      // If we're in development mode, allow requests without valid recaptchaToken
-      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-        console.warn('⚠️ Allowing request without valid reCAPTCHA in development mode');
-        // No longer storing verification status in Redis
-      } else {
-        if (error.statusCode) {
-          throw error; // If it's already an ApiError, just re-throw it
-        }
-        throw ErrorTypes.internalServer('reCAPTCHA verification failed due to server error.', { cause: error.message });
+      if (error.statusCode) {
+        throw error; // If it's already an ApiError, just re-throw it
       }
+      throw ErrorTypes.internalServer('reCAPTCHA verification failed due to server error.', { cause: error.message });
     }
   } else if (isFirstMessage) {
     // First message but no token
-    // If we're in development mode, allow requests without recaptchaToken
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-      console.warn('⚠️ Allowing request without reCAPTCHA token in development mode');
-      // No longer storing verification status in Redis
-    } else {
-      throw ErrorTypes.badRequest('Missing required field: recaptchaToken');
-    }
+    throw ErrorTypes.badRequest('Missing required field: recaptchaToken');
   }
   // If not first message, skip reCAPTCHA verification
  
