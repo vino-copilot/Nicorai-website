@@ -117,7 +117,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
           ref={inputRef}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Ask any question..."
+          placeholder="Ask about NicorAI..."
           className="w-full pl-4 pt-4 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none h-14 placeholder-gray-500 text-gray-900"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
