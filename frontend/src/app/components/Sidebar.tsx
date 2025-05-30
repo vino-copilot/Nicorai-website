@@ -404,13 +404,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavClick, activeView, onToggle, exp
                                     }`}>
                                     {chat.title}
                                   </p>
-                                  <p className={`text-xs ${chat.id === currentChatId ? 'text-blue-500' : 'text-gray-600'
-                                    } group-hover:text-blue-500 flex items-center gap-2`}>
-                                    {formatChatDate(chat.lastUpdated)}
+                                  <div className={`text-xs ${chat.id === currentChatId ? 'text-blue-500' : 'text-gray-600'} group-hover:text-blue-500 flex items-center gap-2`}>
+                                    <p className="truncate">{formatChatDate(chat.lastUpdated)}</p>
                                     {loadingChats[chat.id] && (
                                       <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                                     )}
-                                  </p>
+                                  </div>
                                 </div>
                                 {/* Always show delete button, on all screen sizes */}
                                 <button

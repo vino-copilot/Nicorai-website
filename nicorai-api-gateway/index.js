@@ -10,7 +10,7 @@ const rateLimit = require('express-rate-limit');
 // Configuration settings
 const config = {
   app: {
-    port: process.env.PORT || 4000,
+    port: process.env.PORT ,
   },
   redis: {
     url: process.env.REDIS_URL,
