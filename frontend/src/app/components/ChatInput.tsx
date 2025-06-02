@@ -58,6 +58,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
         detail: { chatId: newChatId, messages: [] }
       });
       window.dispatchEvent(chatChangeEvent);
+    } else {
+      // If we're using an existing chat, make sure it's set as current
+      apiService.setCurrentChat(chatIdAtSend);
     }
 
     // Get the final chat ID we'll be using (now guaranteed to have a value)
@@ -103,6 +106,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent, isChatExplicitlyCl
     if (loadingChats[currentChatId || '']) return;
     
     // Always notify parent that chat should be visible before sending message
+    // Pass the chatId that we're about to use for sending the message
     onMessageSent?.(false);
     
     // Send the message

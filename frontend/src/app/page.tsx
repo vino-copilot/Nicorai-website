@@ -94,11 +94,18 @@ export default function Home() {
         (id) => loadingChatsObj[id]
       );
       if (loadingChatIds.length > 0) {
+        // Store the chat ID that's currently loading
         lastLoadingChatIdRef.current = loadingChatIds[0];
+        
+        // If the chat view isn't showing the currently loading chat, 
+        // this means we should update it when the response arrives
+        if (isChatExplicitlyClosed) {
+          // We'll handle this in the 'chatChanged' event listener
+        }
       }
     }, 300);
     return () => clearInterval(interval);
-  }, [chatLoading]);
+  }, [chatLoading, isChatExplicitlyClosed]);
 
   // When a response is received for a chat that was loading and the chat is closed, open it
   useEffect(() => {
@@ -116,6 +123,8 @@ export default function Home() {
         setIsChatVisible(true);
         setIsInitialView(false);
         setIsChatExplicitlyClosed(false);
+        // Set the selectedChatId to the one that was loading
+        setSelectedChatId(lastLoadingChatIdRef.current);
         lastLoadingChatIdRef.current = null;
       }
     };
