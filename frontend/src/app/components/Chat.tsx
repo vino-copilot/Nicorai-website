@@ -384,7 +384,7 @@ const Chat: React.FC<ChatProps> = ({
                       />
                     )}
                   </div>
-                  <div className={`${message.sender === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-blue-100 text-gray-800 rounded-tl-none ml-0'} rounded-2xl px-4 py-3 break-words`}>
+                  <div className={`${message.sender === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-blue-100 text-gray-800 rounded-tl-none ml-0'} rounded-2xl px-4 py-3 break-words`} style={{ overflowWrap: 'anywhere', wordBreak: 'break-word', maxWidth: '100%' }}>
                     {message.sender === 'ai' ? (
                       <div className="prose prose-sm max-w-none">
                         <ReactMarkdown>
