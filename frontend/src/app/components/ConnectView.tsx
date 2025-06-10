@@ -144,7 +144,7 @@ const OfficeLocations = () => {
   const locations = [
     {
       city: "Kochi",
-      address: "3rd Floor, Confident Gem, Rajagiri Valley, Kakkanad, Kochi, Kerala, India, 682039",
+      address: "3rd Floor - Confident Gem, Rajagiri Valley, Kakkanad, Kochi, Kerala, India, 682039",
       phone: "+91 9995438403",
       email: "hello@nicor.ai",
       mapUrl: "https://maps.app.goo.gl/AyenW3eBAHc8nzEaA",
