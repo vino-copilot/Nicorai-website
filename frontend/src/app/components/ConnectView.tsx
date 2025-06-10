@@ -142,8 +142,22 @@ const ContactForm = () => {
 
 const OfficeLocations = () => {
   const locations = [
-    { city: "Kochi", address: "Confident Gem, Rajagiri Valley, Kakkanad, Kochi, Kerala, India, 682039", phone: "+91 9995438403", email: "hello@nicor.ai", image: "🌉" },
-    { city: "Thiruvananthapuram", address: "Sasthamangalam, Thiruvananthapuram, Kerala, India, 695005", phone: "+91 8157840004", email: "hello@nicor.ai", image: "🗽" }
+    {
+      city: "Kochi",
+      address: "3rd Floor, Confident Gem, Rajagiri Valley, Kakkanad, Kochi, Kerala, India, 682039",
+      phone: "+91 9995438403",
+      email: "hello@nicor.ai",
+      mapUrl: "https://maps.app.goo.gl/AyenW3eBAHc8nzEaA",
+      image: "🌉"
+    },
+    {
+      city: "Trivandrum",
+      address: "1st Floor - Hussain's Plaza, Sasthamangalam, Trivandrum, Kerala, India, 695005",
+      phone: "+91 8157840004",
+      email: "hello@nicor.ai",
+      mapUrl: "https://maps.app.goo.gl/evVGo6YmqHNrE2m86",
+      image: "🗽"
+    }
   ];
   return (
     <section className={`${window.innerWidth < 768 ? 'pt-6 pb-8' : 'py-10'} bg-gradient-to-b from-white to-blue-50 relative overflow-hidden`}>
@@ -157,7 +171,15 @@ const OfficeLocations = () => {
         </motion.div>
         <div className="flex flex-wrap justify-center gap-8 mt-8">
           {locations.map((location, index) => (
-            <motion.div key={location.city} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: index * 0.1 }} whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300 w-full max-w-xs md:w-96 relative z-20">
+            <motion.div
+              key={location.city}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ y: -5 }}
+              className="bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden border border-gray-100 transition-all duration-300 w-full max-w-xs md:w-96 relative z-20"
+            >
               <div className="p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-3">{location.city}</h3>
                 <div className="space-y-3 text-gray-700">
@@ -166,7 +188,7 @@ const OfficeLocations = () => {
                   <p className="flex items-center"><Mail className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" /><span>{location.email}</span></p>
                 </div>
                 <div className="mt-6">
-                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.address)}`} target="_blank" rel="noopener noreferrer" className="w-full block">
+                  <a href={location.mapUrl} target="_blank" rel="noopener noreferrer" className="w-full block">
                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg flex items-center justify-center text-sm font-medium transition-colors duration-300">
                       Get Directions
                       <MapPin className="h-4 w-4 ml-2" />
