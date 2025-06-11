@@ -152,7 +152,7 @@ const OfficeLocations = () => {
     },
     {
       city: "Trivandrum",
-      address: "1st Floor - Hussain's Plaza, Sasthamangalam, Trivandrum, Kerala, India, 695005",
+      address: "1st Floor - SS Plaza, Sasthamangalam, Trivandrum, Kerala, India, 695005",
       phone: "+91 8157840004",
       email: "hello@nicor.ai",
       mapUrl: "https://maps.app.goo.gl/evVGo6YmqHNrE2m86",
